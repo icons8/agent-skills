@@ -1,0 +1,22 @@
+{
+  "name": "icons8",
+  "description": "Pick and fetch Icons8 icons so a project ends up with one consistent set instead of a pile of mismatched icons: locks the whole project to one pack, rejects wrong metaphors, previews with free PNG URLs and pulls SVG only for the final set. Bundles the Icons8 MCP server.",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Icons8",
+    "url": "https://icons8.com"
+  },
+  "homepage": "https://icons8.com/mcp",
+  "repository": "https://github.com/icons8/agent-skills",
+  "keywords": ["icons8", "icons", "icon-set", "svg", "png", "ui", "design", "mcp"],
+  "mcpServers": {
+    "icons8mcp": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.icons8.com/mcp/"
+      ]
+    }
+  }
+}
