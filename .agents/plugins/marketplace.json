@@ -1,0 +1,22 @@
+{
+  "name": "icons8",
+  "interface": {
+    "displayName": "Icons8"
+  },
+  "plugins": [
+    {
+      "name": "icons8",
+      "source": {
+        "source": "git-subdir",
+        "url": "icons8/agent-skills",
+        "path": ".",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
