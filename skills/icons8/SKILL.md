@@ -80,8 +80,10 @@ Three states, read them correctly:
 - **It answers `{"error": "You don't have access to this tool. Use get_icon_png_url instead."}`.**
   The usual case, and the clearest one: no key on the connection. One call is enough to confirm it,
   so you never have to guess.
-- **It answers `{"svg": ""}`.** Quieter and rarer: a key is attached but does not cover SVG. Check
-  the id against your search results once; if the id is right, it is the plan.
+- **It answers `{"error": "Icons8 API: ..."}`.** A key is attached but the API refused the call, and
+  the server hands you the API's own message: `Authentication data is invalid or missing (HTTP 401)`
+  for a key it does not accept. Read the message before blaming the plan — `Icon not found (HTTP 404)`
+  means the id is wrong, not the subscription.
 
 In all three, say it in one line and keep moving: SVG needs a plan from
 https://icons8.com/icons/pricing, and the key goes into the MCP server config as an
@@ -149,14 +151,15 @@ both of them away.
 
 ## Gotchas that will cost you time
 
-- `get_icon_svg` with a bad id returns `{"svg": ""}` and no error. Always check the string is
-  non-empty before writing a file.
+- `get_icon_svg` never answers with an empty string. Every failure comes back as `{"error": ...}`,
+  a bad id as `{"error": "Icons8 API: Icon not found (HTTP 404)"}`. Test for the `error` key before
+  writing a file; a test for an empty `svg` never fires.
 - `img.icons8.com` with `format=svg` returns 403 `PAID_FORMAT`. SVG only comes through
   `get_icon_svg`, which the server offers only when the connection carries a paid account's key
   (step 6). There is no shortcut.
-- `list_platforms` returns 98 packs and still misses live ones (`fluent` and
-  `fluent-systems-regular` work in search but are not in the list). A missing code is not proof
-  the pack is gone.
+- `list_platforms` returns 130 packs, `fluent` and `fluent-systems-regular` among them. If a code
+  you know works is still absent from the list, trust the search result: a missing code is not
+  proof the pack is gone.
 - The `category` filter takes an `apiCode` (`user-interface`), not a display name (`Logos`
   returns 0). `category="free-icons"` is a working free-only filter.
 - Platform codes are case sensitive: `FLUENT` returns 0.
