@@ -1,6 +1,6 @@
 # Packs
 
-98 packs, one project. `list_platforms` returns them all with `apiCode`, `isColor`,
+130 packs, one project. `list_platforms` returns them all with `apiCode`, `isColor`,
 `iconsCount` and `recommendedSize`. Always pass the exact `apiCode` to `search_icons`.
 
 ## Choosing, in order
@@ -11,7 +11,8 @@
    pack before committing. `kanban` exists in `m_outlined` and in no other pack tested
    (`ios7`, `color`, `win10`, `p1em`, `carbon_copy`, `dusk`, `fluent-systems-regular` all miss it).
    High-coverage packs: `color` (13,078), `ios7` (11,177), `ios_filled` (10,661), `win10` (9,196),
-   `fluent-systems-filled` (8,785), `ios11` (8,223), `androidL` (7,840). `m_outlined` has 5,579,
+   `fluent-systems-regular` (9,186), `fluent-systems-filled` (8,785), `ios11` (8,223),
+   `androidL` (7,840). `m_outlined` has 5,579,
    good vocabulary but expect holes.
 3. **Do you need two states?** Tab bars and toggles need an outline plus a filled twin of the
    same drawing. Use a pair from the list below, never two unrelated packs.
@@ -29,7 +30,7 @@
 | `ios7` | iOS 27 Outlined | 11,177 | 50 | best coverage in outline |
 | `ios_filled` | iOS 27 Filled | 10,661 | 50 | filled twin of `ios7` |
 | `ios11` | iOS 27 Glyph | 8,223 | 30 | small solid glyphs |
-| `fluent-systems-regular` | Windows 11 Regular | not listed | 24 | Windows apps (works in search, missing from `list_platforms`) |
+| `fluent-systems-regular` | Windows 11 Regular | 9,186 | 24 | Windows apps, coverage on par with `win10` |
 | `fluent-systems-filled` | Windows 11 Filled | 8,785 | 24 | filled twin of the above |
 | `win10` | Windows 10 | 9,196 | 32 | desktop, wide coverage |
 | `forma-light` / `-regular-filled` / `-bold` / `-thin` | Forma family | ~3,450 each | 24 | when you need a specific stroke weight; `-sharp` variants for square corners |
@@ -83,8 +84,9 @@ The same `commonName` usually exists in both halves of a pair, so the drawings l
   `ios` gives `ios7`, `office` gives `office40`. Others (`forma`, `glyph`, `sf`, `tiny`) return
   zero. Codes are case sensitive: `FLUENT` returns zero. Always check the `platform` field in
   the response equals what you asked for.
-- **`list_platforms` is incomplete.** `fluent` and `fluent-systems-regular` return results in
-  search but are absent from the 98-item list.
+- **A code absent from `list_platforms` is not proof the pack is gone.** The list has caught up
+  with search — `fluent` and `fluent-systems-regular` are both in it now — but if a code you know
+  works is missing, trust the search result over the list.
 - **Coverage is per pack, not per catalog.** `m_outlined` has no plain outline `star`
   (`star--v2` and `star--v3` are a star inside a star, `filled-star` is the clean one) while
   `ios7` has a plain `star` (id 104). Same for `home`: `m_outlined` starts at `home--v2`.
