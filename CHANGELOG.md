@@ -4,6 +4,26 @@ All notable changes to the **icons8** plugin are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](https://semver.org).
 The plugin version lives in `.claude-plugin/plugin.json`.
 
+## [0.1.1] — 2026-08-11
+
+Two facts the skill stated about the MCP server no longer held. Re-checked against the live API and
+corrected; no behaviour of the skill's workflow changes.
+
+### Fixed
+
+- **`get_icon_svg` never answers with an empty string.** Every failure comes back as
+  `{"error": ...}` — a bad id as `{"error": "Icons8 API: Icon not found (HTTP 404)"}` — so the two
+  places that told the reader to test the `svg` string for emptiness were guarding a state that
+  cannot occur. Both now test for the `error` key. Step 6's third state is rewritten the same way and
+  says to read the message before blaming the plan: `Icon not found` is a wrong id, `Authentication
+  data is invalid or missing (HTTP 401)` is the key.
+
+- **`list_platforms` returns 130 packs, not 98, and `fluent` and `fluent-systems-regular` are both in
+  it.** Three places said otherwise. `fluent-systems-regular` reports 9,186 icons, which puts it in
+  the high-coverage group beside `win10` (9,196) — the old "not listed" cell in `PACKS.md` had kept it
+  out of consideration for Windows work. The caution is kept without the stale example: a code
+  missing from the list is still not proof the pack is gone.
+
 ## [0.1.0] — 2026-07-30
 
 First release. Packages the `icons8` skill to the
