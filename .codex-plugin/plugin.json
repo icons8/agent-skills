@@ -1,7 +1,7 @@
 {
   "name": "icons8",
-  "version": "0.1.1",
-  "description": "Pick and fetch Icons8 icons so a project ends up with one consistent set instead of a pile of mismatched icons: locks the whole project to one pack, rejects wrong metaphors, previews with free PNG URLs and pulls SVG only for the final set.",
+  "version": "0.2.0",
+  "description": "Pick and fetch Icons8 icons so a project ends up with one consistent set instead of a pile of mismatched icons: locks the whole project to one pack, rejects wrong metaphors, previews with free PNG URLs and pulls SVG only for the final set. Bundles the Icons8 MCP server.",
   "author": {
     "name": "Icons8",
     "url": "https://icons8.com"
@@ -11,7 +11,7 @@
   "license": "Apache-2.0",
   "keywords": ["icons8", "icons", "icon-set", "svg", "png", "ui", "design", "mcp"],
   "skills": "./skills/",
-  "mcpServers": "./.codex-plugin/mcp.json",
+  "mcpServers": "./mcp.json",
   "interface": {
     "displayName": "Icons8",
     "shortDescription": "One consistent icon set per project, from 368,000+ Icons8 icons",

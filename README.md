@@ -4,7 +4,8 @@ An [Agent Skill](https://agentskills.io) that gives coding agents taste when pic
 project ends up with **one consistent set** instead of a pile of mismatched icons.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
-(368,000+ icons across 100+ styles). Works out of the box, no account and no API key required.
+(368,000+ icons across 100+ styles). Installing it is the whole setup: sign in through the browser
+once on first use, and search and high-res PNG are free from there. No API key to paste.
 
 ## Why
 
@@ -35,8 +36,8 @@ final set.
 /plugin install icons8@icons8
 ```
 
-That registers both the skill and the Icons8 MCP server. Nothing else to configure — approve the
-server on first use and start asking for icons.
+That registers both the skill and the Icons8 MCP server. Approve the server on first use, sign in
+when the browser opens, and start asking for icons. `/mcp` signs in again later if you need it.
 
 ### OpenAI Codex
 
@@ -48,26 +49,42 @@ Then install **icons8** from the plugin browser (`/plugins`, or the Plugins sect
 The skill triggers by intent — just ask for icons; slash commands are Claude Code-only.
 
 The plugin **bundles the MCP server here too**, so installing it registers `icons8mcp` — check with
-`codex mcp list`. No sign-in step: the free PNG tier needs no key. `.codex-plugin/plugin.json` points
-`mcpServers` at `./.codex-plugin/mcp.json` (Codex takes a *path* here, unlike Claude Code's inline
-object), declaring the same `npx mcp-remote` command Claude Code uses.
+`codex mcp list`, and sign in with `codex mcp login icons8mcp`. `.codex-plugin/plugin.json` points
+`mcpServers` at the root `./mcp.json`, the same file Claude Code and every Agent Plugins v1 client
+read, so there is one server definition rather than one per format.
 
 On an older Codex that doesn't read `mcpServers` from a plugin manifest, add it yourself:
 
 ```
-codex mcp add icons8mcp -- npx mcp-remote https://mcp.icons8.com/mcp/
+codex mcp add icons8mcp --url https://mcp.icons8.com/mcp/
 ```
 
 or in `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.icons8mcp]
-command = "npx"
-args = ["mcp-remote", "https://mcp.icons8.com/mcp/"]
+url = "https://mcp.icons8.com/mcp/"
 ```
 
 Either way the server has to be there: icon ids come from `search_icons` and nowhere else, so without
 it the skill reports that it isn't connected rather than guessing an id.
+
+### Any Agent Plugins v1 client
+
+The repository root is a conforming [Agent Plugins v1](https://agent-plugins.org/specification)
+package: `plugin.json` is the portable manifest, `mcp.json` declares the Icons8 server, and `skills/`
+is the location the spec fixes for skill discovery. Clients on the
+[compatible clients](https://agent-plugins.org/compatible-clients) list pick up both the skill and
+the server from those files.
+
+In **VS Code**, no marketplace is needed — run `Chat: Install Plugin From Source` from the Command
+Palette and paste the repository URL. In **GitHub Copilot CLI**, `copilot plugin install`; what it
+installs also shows up in VS Code. **Cursor** installs from marketplaces only, so it needs the plugin
+listed in one — either Cursor's registry or a team marketplace imported from a repo.
+
+`.claude-plugin/` and `.codex-plugin/` keep their manifests, because Claude Code isn't on the
+compatible-clients list yet and Codex still reads its own. They no longer keep their own copy of the
+server, though: both point `mcpServers` at the root `mcp.json`.
 
 ### Any agent via npx
 
@@ -85,37 +102,57 @@ has nothing to search and will say so.
 
 ## Pick your plan
 
-**Free high-res PNG** — what the plugin bundles. No key, no account. The server exposes
+**Free high-res PNG** — what the plugin bundles, once you sign in. The server exposes
 `search_icons`, `list_categories`, `list_platforms` and `get_icon_png_url`, which is everything the
 skill needs to choose a pack, build the contact sheet, and prototype straight from
 `https://img.icons8.com/?id=…&format=png&size=24`. Free icon usage requires attribution — see the
 [Icons8 license](https://icons8.com/license).
 
-**Full SVG access** — [subscribe for $15](https://icons8.com/icons/pricing), then add the
-authenticated server yourself, following the
-[MCP README](https://github.com/icons8/icons8-mcp#pick-your-plan). In Claude Code:
+**Full SVG access** — [subscribe for $15](https://icons8.com/icons/pricing). There is no second
+setup: the account you already signed in with carries the plan, and a fifth tool, `get_icon_svg`,
+appears alongside the other four. The skill's final step then inlines real SVG for the approved set.
+If the agent still hands back PNG, sign in again so it picks up the new plan — `/mcp` in Claude Code,
+`codex mcp login icons8mcp` in Codex, **Connect** in Cursor.
+
+**A client without OAuth** — send an API key instead. The MCP tab of your Icons8 account has the
+snippet with your key already in it, or write the header by hand:
+
+```json
+{
+  "mcpServers": {
+    "icons8mcp": {
+      "type": "http",
+      "url": "https://mcp.icons8.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+In Claude Code the same thing is one command:
 
 ```bash
-claude mcp add icons8mcp-svg -- \
-  npx mcp-remote https://mcp.icons8.com/mcp/ \
+claude mcp add --transport http icons8mcp https://mcp.icons8.com/mcp/ \
   --header "Authorization: Bearer YOUR_API_KEY"
 ```
 
-A fifth tool, `get_icon_svg`, becomes available and the skill's final step inlines real SVG for the
-approved set. Two things worth knowing:
+A key skips the browser entirely, which is what you want on a build server or in CI where nobody is
+around to sign in. If you set this up with a key before, leave it alone — it still works.
 
-- The server only advertises `get_icon_svg` when a non-empty bearer token is present, which is why
-  the keyless bundled server shows four tools rather than a fifth one that fails.
-- Your authenticated server sits *alongside* the bundled one, so the PNG tools appear twice. If that
-  bothers you, disable the `icons8` plugin and keep only your own server entry — the skill itself
-  works either way.
-
-Without a key the skill stays on the PNG path, which is its recommended path for prototyping
+Without a paid plan the skill stays on the PNG path, which is its recommended path for prototyping
 regardless of plan.
 
 ## What's inside
 
 ```
+plugin.json                   # Agent Plugins v1 manifest — the portable one
+mcp.json                      # the only MCP config; all three manifests point here
+.mcp.json                     # symlink to it — the name Claude Code's inventory looks for
+.claude-plugin/               # Claude Code manifest + marketplace
+.codex-plugin/                # Codex manifest
+.agents/plugins/              # Agent Plugins marketplace entry
 skills/icons8/
 ├── SKILL.md                  # the loop, the rejection rules, criteria by context, gotchas
 └── references/
@@ -125,6 +162,9 @@ skills/icons8/
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
+
+The three manifests describe the same plugin for three packaging formats, so `version` and
+`description` have to move together. The server itself is declared once, in `mcp.json`.
 
 ## The lock file
 
@@ -148,9 +188,9 @@ Commit it. The next session picks up where this one left off.
 ## Requirements
 
 - A client that supports the Agent Skills standard (Claude Code, Codex, VS Code + Copilot, Cursor, …)
-- [Node.js](https://nodejs.org/) — the bundled server runs through `npx mcp-remote`
 - Network access to `https://mcp.icons8.com/mcp/`
-- An Icons8 API key **only** for SVG delivery
+- An Icons8 account, signed in through the browser on first use
+- An Icons8 API key **only** where the client cannot do OAuth, or on CI
 
 ## License
 

@@ -7,10 +7,8 @@
     {
       "name": "icons8",
       "source": {
-        "source": "git-subdir",
-        "url": "icons8/agent-skills",
-        "path": ".",
-        "ref": "main"
+        "source": "local",
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",
