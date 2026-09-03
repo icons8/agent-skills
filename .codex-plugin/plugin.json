@@ -14,7 +14,7 @@
   "mcpServers": "./mcp.json",
   "interface": {
     "displayName": "Icons8",
-    "shortDescription": "One consistent icon set per project, from 368,000+ Icons8 icons",
+    "shortDescription": "One consistent icon set per project, from 420,000+ Icons8 icons",
     "longDescription": "Turns the Icons8 MCP server into a workflow with taste. Lists every icon a screen needs before searching, picks one pack for the whole project and locks it in icons8.json, filters every search by that pack so results are 10 different metaphors instead of 10 styles of one, rejects brand logos and machine parts that search ranks first, previews on a free PNG contact sheet, and fetches SVG only for the approved final set.",
     "developerName": "Icons8",
     "category": "Productivity",

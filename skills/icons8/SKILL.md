@@ -165,7 +165,7 @@ both of them away.
 - `img.icons8.com` with `format=svg` returns 403 `PAID_FORMAT`. SVG only comes through
   `get_icon_svg`, which the server offers only when the connection carries a paid plan (step 6).
   There is no shortcut.
-- `list_platforms` returns 130 packs, `fluent` and `fluent-systems-regular` among them. If a code
+- `list_platforms` returns 132 packs, `fluent` and `fluent-systems-regular` among them. If a code
   you know works is still absent from the list, trust the search result: a missing code is not
   proof the pack is gone.
 - The `category` filter takes an `apiCode` (`user-interface`), not a display name (`Logos`

@@ -1,6 +1,6 @@
 # Packs
 
-130 packs, one project. `list_platforms` returns them all with `apiCode`, `isColor`,
+132 packs, one project. `list_platforms` returns them all with `apiCode`, `isColor`,
 `iconsCount` and `recommendedSize`. Always pass the exact `apiCode` to `search_icons`.
 
 ## Choosing, in order

@@ -4,7 +4,7 @@ An [Agent Skill](https://agentskills.io) that gives coding agents taste when pic
 project ends up with **one consistent set** instead of a pile of mismatched icons.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
-(368,000+ icons across 100+ styles). Installing it is the whole setup: sign in through the browser
+(420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser
 once on first use, and search and high-res PNG are free from there. No API key to paste.
 
 ## Why
