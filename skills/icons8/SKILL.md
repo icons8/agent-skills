@@ -70,25 +70,33 @@ the same pack.
 icons so CSS drives the color. Skip this step entirely for color, 3D and hand-drawn packs:
 their SVG is huge and a PNG at 2x is the better asset.
 
-SVG is the one paid part of this workflow, and the gate is the connection's API key, not the icon.
-Three states, read them correctly:
+SVG is the one paid part of this workflow, and the gate is the plan the connection carries, not the
+icon. The connection is authenticated either by the account signed in through the browser or by an
+`Authorization: Bearer <key>` header, and the plan rides on whichever of the two is in use. Three
+states, read them correctly:
 
-- **`get_icon_svg` is missing from your tool list.** The account has no SVG plan. The tool still
-  exists on the server and still answers if you call it; the server just stops advertising it without
-  a key. Its absence is not a broken server, not proof the server is PNG-only, and not a reason to
-  rewrite this skill.
+- **`get_icon_svg` is missing from your tool list.** The connection has no SVG plan. The tool still
+  exists on the server and still answers if you call it; the server just stops advertising it to a
+  free connection. Its absence is not a broken server, not proof the server is PNG-only, and not a
+  reason to rewrite this skill.
 - **It answers `{"error": "You don't have access to this tool. Use get_icon_png_url instead."}`.**
-  The usual case, and the clearest one: no key on the connection. One call is enough to confirm it,
-  so you never have to guess.
-- **It answers `{"error": "Icons8 API: ..."}`.** A key is attached but the API refused the call, and
-  the server hands you the API's own message: `Authentication data is invalid or missing (HTTP 401)`
-  for a key it does not accept. Read the message before blaming the plan — `Icon not found (HTTP 404)`
-  means the id is wrong, not the subscription.
+  The usual case, and the clearest one: the connection is on the free plan. One call is enough to
+  confirm it, so you never have to guess.
+- **It answers `{"error": "Icons8 API: ..."}`.** The connection is authenticated but the API refused
+  the call, and the server hands you the API's own message: `Authentication data is invalid or
+  missing (HTTP 401)` for credentials it does not accept. Read the message before blaming the plan —
+  `Icon not found (HTTP 404)` means the id is wrong, not the subscription.
 
-In all three, say it in one line and keep moving: SVG needs a plan from
-https://icons8.com/icons/pricing, and the key goes into the MCP server config as an
-`Authorization: Bearer <key>` header — per-client setup at https://icons8.com/mcp. Then ship the PNG
-version at 2x. The design does not wait on a subscription.
+A fourth state is not about the plan at all: if the client reports the whole server as needing
+authentication, nobody is signed in yet. Say so and let the user sign in — no tool call diagnoses it,
+because none of them get through.
+
+In the three plan states, say it in one line and keep moving: SVG needs a plan from
+https://icons8.com/icons/pricing. There is no second server to add — the subscribed account carries
+the plan, and signing in again picks it up (`/mcp` in Claude Code, `codex mcp login icons8mcp` in
+Codex). A client that cannot do OAuth sends an API key in the `Authorization` header instead;
+per-client setup is at https://icons8.com/mcp. Then ship the PNG version at 2x. The design does not
+wait on a subscription.
 
 **If the requirement is `currentColor`, PNG still gets you there.** This is the one thing inline SVG
 buys in product UI, and a plain `<img>` cannot do it — but the same PNG used as an alpha mask can,
@@ -155,9 +163,9 @@ both of them away.
   a bad id as `{"error": "Icons8 API: Icon not found (HTTP 404)"}`. Test for the `error` key before
   writing a file; a test for an empty `svg` never fires.
 - `img.icons8.com` with `format=svg` returns 403 `PAID_FORMAT`. SVG only comes through
-  `get_icon_svg`, which the server offers only when the connection carries a paid account's key
-  (step 6). There is no shortcut.
-- `list_platforms` returns 130 packs, `fluent` and `fluent-systems-regular` among them. If a code
+  `get_icon_svg`, which the server offers only when the connection carries a paid plan (step 6).
+  There is no shortcut.
+- `list_platforms` returns 132 packs, `fluent` and `fluent-systems-regular` among them. If a code
   you know works is still absent from the list, trust the search result: a missing code is not
   proof the pack is gone.
 - The `category` filter takes an `apiCode` (`user-interface`), not a display name (`Logos`

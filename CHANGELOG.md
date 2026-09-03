@@ -2,7 +2,91 @@
 
 All notable changes to the **icons8** plugin are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](https://semver.org).
-The plugin version lives in `.claude-plugin/plugin.json`.
+The plugin version lives in three manifests that have to agree: `plugin.json`,
+`.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
+
+## [0.2.0] — 2026-09-03
+
+Two things land together here. The plugin now ships as a conforming
+[Agent Plugins v1](https://agent-plugins.org/specification) package, so clients that implement the
+standard install it from the repository root instead of needing a Claude Code or Codex specific
+path. And the Icons8 server moved to OAuth, so signing in replaces pasting a key — which changes how
+the skill reads the SVG paywall, and what the README tells you to do about it. The way the skill
+picks icons is untouched.
+
+### Added
+
+- **`plugin.json` at the repository root** — the portable manifest, `$schema` pinned to
+  `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`. Its schema is closed, so the fields
+  the client-specific manifests carry outside that set (`skills`, `mcpServers`, `interface`) are not
+  repeated here: `skills/` is already the location the spec fixes for discovery, and MCP
+  configuration belongs in its own file.
+
+- **`mcp.json` at the repository root** — the MCP configuration, at the path the specification fixes
+  for it and with `$schema` pinned to `https://agent-plugins.org/schemas/1.0.0/mcp.schema.json`. A
+  conforming client reads the server from here and from nowhere else, so this is where the Icons8
+  server is now declared — once, rather than once per packaging format, with both client manifests
+  pointing `mcpServers` at it.
+
+### Changed
+
+- **The bundled server connects over HTTP instead of through `npx mcp-remote`.** `mcp.icons8.com`
+  speaks the MCP Streamable HTTP transport directly, so the entry is now
+  `"type": "streamable-http"` with a `url`. That removes the bridge process and the Node.js
+  requirement from every client that reads this file — Claude Code accepts `streamable-http` as an
+  alias for its own `http` type. `npx mcp-remote` is gone from the documentation entirely: the
+  older-Codex fallback is now `codex mcp add icons8mcp --url …`, so no path through these docs still
+  needs the bridge or a Node.js runtime.
+
+- **The Codex manifest's `description` now matches the other three.** It had been missing the closing
+  "Bundles the Icons8 MCP server." since 0.1.0 — true then and truer now, since that manifest points
+  at the same `mcp.json` as everything else.
+
+- **The server authenticates with OAuth, so the README's plan section is rewritten.** Signing in
+  through the browser is now the whole setup, and search and high-res PNG follow from it — the old
+  "no account and no API key required" no longer describes what happens on first use. SVG needs no
+  separate server either: the subscribed account carries the plan and `get_icon_svg` joins the other
+  four tools. An API key in an `Authorization` header remains the path for a client that cannot do
+  OAuth, and for CI, where nobody is around to sign in.
+
+- **The skill reads the SVG gate as a plan, not as a key.** Step 6 used to tell the agent that the
+  gate was "the connection's API key", so a signed-in paid user with no key in sight read as
+  keyless — the wrong diagnosis, and the wrong advice to hand back. It now names the plan the
+  connection carries, whether that comes from the signed-in account or from a bearer header, and
+  adds the state no tool call can diagnose: when the client reports the whole server as needing
+  authentication, nobody has signed in yet.
+
+- **README names the install path per client.** VS Code takes a repository URL through
+  `Chat: Install Plugin From Source` with no marketplace; Copilot CLI uses `copilot plugin install`;
+  Cursor installs from marketplaces only. The section used to say "whatever install path that client
+  documents", which is where the reader's actual question starts.
+
+- **`.claude-plugin/` and `.codex-plugin/` keep their own manifests.** Claude Code is not on the
+  [compatible clients](https://agent-plugins.org/compatible-clients) list and Codex still documents
+  `.codex-plugin/plugin.json`, so the portable files are additive rather than a replacement — which
+  is what the spec's own migration guidance calls for. What they no longer keep is their own copy of
+  the server definition.
+
+### Fixed
+
+- **Codex found no plugin in the marketplace.** `codex plugin marketplace add icons8/agent-skills` —
+  the command the README gives — added the marketplace and then listed nothing in the plugin browser,
+  so the documented install path dead-ended. It had been broken since 0.1.0. The entry in
+  `.agents/plugins/marketplace.json` declared a `git-subdir` source with `"path": "."`, and Codex
+  resolves that source only for a real subdirectory: `"."`, `"./"` and `""` all yield an empty
+  listing, while a genuine subdirectory resolves. The source is now `local` with `"path": "./"`,
+  which resolves against the marketplace root and so covers a clone, a fork and a local checkout
+  alike. Nothing else about the entry changes, and both `.codex-plugin/plugin.json` and the skill
+  were always fine — only the marketplace index pointed into the void.
+
+- **`claude plugin details` counted no MCP servers.** It reported `MCP servers (0)` while
+  `claude mcp list` showed the server connected. Claude Code builds that inventory by reading a file
+  named `.mcp.json` at the plugin root and does not resolve the path a manifest's `mcpServers`
+  declares, so a manifest pointing at `mcp.json` left the count empty. The Agent Plugins
+  specification fixes the configuration filename as `mcp.json` and forbids any alternative path, so
+  `.mcp.json` is a symlink to it rather than a second file: one definition, reachable under both
+  names. Where a checkout cannot create symlinks the count falls back to `0` and the server still
+  loads, which is the behaviour before this change.
 
 ## [0.1.1] — 2026-08-11
 
