@@ -5,6 +5,56 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
+## [0.3.0] — 2026-09-04
+
+The plugin's second skill: illustrations. `ouch` brings to Ouch! artwork the discipline `icons8`
+brought to icons, and lands ahead of the server: the illustration tools reach `mcp.icons8.com`
+with an upcoming server release. Until they appear, the skill reports them as unavailable and
+stops, per its own rules.
+
+### Added
+
+- **`ouch` skill** — choose and ship Icons8 illustrations (Ouch!) so a deliverable ends up with
+  pictures that are about the product, read as one set, and can legally and technically be
+  published. The rules that survived four test/rewrite cycles plus an independent review: every
+  slot query carries the product's own noun, and absence states show the missing container, never
+  the inhabitant; one style per project, locked in `ouch.json`, with two named escapes (an
+  existing page's style always wins; public repos filter to `free_distribution: true`); a
+  priority ladder that settles collisions (licence → existing style → subject coverage →
+  surface and contrast → tone → the first tier); a contrast gate for non-white backgrounds; and
+  layout rules measured in real browsers, including "`max-height` never upscales a small SVG"
+  and ground-line alignment for 3D artwork. Watermarked previews are for choosing only;
+  presigned original URLs live an hour and never go into a page.
+
+- **Bundled references** — `STYLES.md`: the 43-style first tier with counts verified against the
+  API on 2026-09-04, the free tier in full (15 styles, only two big enough for a whole page),
+  styles by surface and tone; `SLOTS.md`: slot kits per project type and known-thin subjects;
+  `VOCABULARY.md`: state → query translations with measured result counts (`login` returns
+  padlocks, `welcome` returns lettering, `empty state` beats `empty`).
+
+- **`scripts/measure.py`** — ground-line offset, mass offset and mean saturation in one script:
+  the single source of those formulas for both the skill and its gates, after two hand-copied
+  versions drifted apart. Rasterizes SVG through headless Chrome at the artwork's own aspect
+  ratio (a fixed 300×300 window parked small files in a corner and skewed geometry by 60
+  percentage points).
+
+- **Tested before landing.** Four test/rewrite cycles plus an independent review: the skill's
+  factual claims checked against the live server (57 of 60 exact; the three stale ones were
+  format constants, replaced with "read the response"), and a fresh composite case (public
+  licence × dark hero × a thin free-tier subject) passing 18 of 18 deterministic gates. The eval
+  suite itself — four `claude plugin eval` cases and the gates runner — lives in the development
+  workspace; the repository's `.gitignore` keeps `evals/` out of the shipped plugin, same as for
+  the icon skill.
+
+### Changed
+
+- **Manifests now describe both skills.** `description` and `keywords` in the three plugin
+  manifests and both marketplace entries; the Codex `interface` gains an illustrations default
+  prompt. Version moves to 0.3.0 everywhere it lives.
+
+- **README** — the intro names both skills, "What's inside" maps `skills/ouch/`, and a new
+  "Illustrations: the `ouch` skill" section states the rules and the server rollout status.
+
 ## [0.2.0] — 2026-09-03
 
 Two things land together here. The plugin now ships as a conforming
