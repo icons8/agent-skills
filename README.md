@@ -1,7 +1,8 @@
 # Icons8 — Agent Skills
 
-An [Agent Skill](https://agentskills.io) that gives coding agents taste when picking icons, so a
-project ends up with **one consistent set** instead of a pile of mismatched icons.
+Two [Agent Skills](https://agentskills.io) that give coding agents taste when picking Icons8
+artwork: `icons8` for icons and `ouch` for Ouch! illustrations, so a project ends up with
+**one consistent set** instead of a pile of mismatched pieces.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
 (420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser
@@ -159,6 +160,13 @@ skills/icons8/
     ├── PACKS.md              # which pack for which job, outline+filled pairs, coverage numbers
     ├── VOCABULARY.md         # concept → commonName map, verified visually, plus the traps
     └── KITS.md               # ready concept lists: SaaS UI, landing, ecommerce, dev docs, analytics
+skills/ouch/
+├── SKILL.md                  # the sequence, hard rules, the priority ladder, gotchas
+├── references/
+│   ├── STYLES.md             # the 43-style first tier, the free tier in full, styles by surface
+│   ├── SLOTS.md              # slot kits per project type, thin subjects
+│   └── VOCABULARY.md         # state → search query map, measured against the live server
+└── scripts/measure.py        # ground line, mass offset, saturation: one source of the formulas
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
@@ -184,6 +192,31 @@ even for one extra icon:
 ```
 
 Commit it. The next session picks up where this one left off.
+
+## Illustrations: the `ouch` skill
+
+The same discipline for [Ouch! illustrations](https://icons8.com/illustrations): hero images,
+empty states, onboarding, 404s and docs spots, from a catalog of 345 styles. What it enforces,
+each rule earned in test runs rather than declared:
+
+- **The picture is about the product, not about the interface.** Every slot query carries the
+  product's own noun. Empty states show the missing container (an empty pot for a plant app),
+  never a happy owner of the thing the heading says is absent.
+- **One style per project**, locked in `ouch.json`, with named escapes: an existing page's style
+  always wins, and a public repo filters to `free_distribution: true`.
+- **A first-tier shortlist of 43 styles** picked by the Icons8 side: a preference with named
+  exits, not a fence. Subject coverage outranks tone, and the skill's priority ladder says in
+  which order the rules give way.
+- **Contrast gate** for non-white backgrounds, and layout rules measured in real browsers:
+  absolute box heights, `max-height` never upscales a small SVG, ground-line alignment for 3D
+  artwork. `scripts/measure.py` ships with the skill and does the measuring.
+- **Watermarked previews are for choosing; originals are fetched once, for the approved set.**
+  Presigned URLs live an hour and never go into a page.
+
+**Server note:** `mcp.icons8.com` currently exposes the icon tools. The illustration tools
+(`search_illustrations`, `get_illustration_svg`, `get_illustration_png_url`,
+`list_illustrations_styles`, `list_illustrations_categories`) ship with an upcoming server
+release. Until they appear, the skill reports them as unavailable and stops, per its own rules.
 
 ## Requirements
 
