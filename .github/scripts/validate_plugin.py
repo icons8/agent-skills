@@ -268,7 +268,9 @@ else:
 # --- 7. every documented invocation is one an agent can actually run ----------
 # One line, one invocation. \S* eats whatever precedes the filename — "./", a full relative path, a
 # quote, or $CLAUDE_PLUGIN_ROOT — so the captured group is the whole path token to classify.
-INVOCATION = re.compile(r"(?:python3?|py\s+-3)\s+(\S*\.py)")
+INVOCATION = re.compile(r"(?:python3?|py(?:\s+-3)?)\s+(\S*\.py)")
+ROOTED_PREFIXES = ("/", "$CLAUDE_PLUGIN_ROOT", "${CLAUDE_PLUGIN_ROOT}",
+                   "$env:CLAUDE_PLUGIN_ROOT", "%CLAUDE_PLUGIN_ROOT%")
 DOCS = [rel for rel in tracked("*.md")
         if rel.startswith(("skills/", "commands/")) or rel == "README.md"]
 invocations_found = 0
@@ -285,12 +287,16 @@ for rel in DOCS:
             continue
         invocations_found += 1
         path_token = match.group(1).strip("\"'`")
-        rooted = path_token.startswith(("/", "$CLAUDE_PLUGIN_ROOT", "${CLAUDE_PLUGIN_ROOT}"))
+        # A document that tells a Windows reader what to type has to spell the variable that
+        # shell's way: `${VAR}` is POSIX, `$env:VAR` is PowerShell and `%VAR%` is cmd. All three
+        # name the same plugin root, so all three count as rooted — a check that knew only the
+        # POSIX form would report the correct Windows line as a defect.
+        rooted = path_token.startswith(ROOTED_PREFIXES)
         check(f"{rel}:{lineno}: no relative script path", rooted,
               f"line {lineno}: {line.strip()!r}; the agent's working directory is the user's "
               "project, not this plugin")
         check(f"{rel}:{lineno}: the script path is quoted against spaces",
-              '"$CLAUDE_PLUGIN_ROOT' in line or '"${CLAUDE_PLUGIN_ROOT}' in line,
+              any(f'"{prefix}' in line for prefix in ROOTED_PREFIXES if prefix != "/"),
               f"line {lineno}: {line.strip()!r}; Windows profile directories routinely contain a space")
     if re.search(r"(?<![\w-])python3(?![\w-])", text):
         # File-scoped on purpose: the Windows fallback is documented once, in prose, for the whole
