@@ -180,7 +180,8 @@ When they conflict, take the subject and say so in the run notes.
 ### 3. Shortlist styles, then resolve the exact id
 
 `references/STYLES.md` opens with the **first tier**: 43 styles the Icons8 side
-picked out of 345 as the ones worth reaching for first. Build the shortlist from
+picked out of the catalog (346 styles on 2026-09-07) as the ones worth reaching
+for first. Build the shortlist from
 there, take two or three, call `list_illustrations_styles` to get exact
 `pretty_id` values, and run one search per slot against each candidate. Count
 hits, then commit.
@@ -249,8 +250,17 @@ Measure, do not eyeball:
 ```
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/ouch/scripts/measure.py" assets/illustrations/*
 # per file: ground-line offset %, mass offset %, saturation
-# Windows: `py` instead of `python3`; the script expands `*` itself
 ```
+
+On Windows the interpreter and the variable are both spelled differently, and
+`${CLAUDE_PLUGIN_ROOT}` expands in neither shell:
+
+```
+py -3 "$env:CLAUDE_PLUGIN_ROOT\skills\ouch\scripts\measure.py" assets\illustrations\*   # PowerShell
+py -3 "%CLAUDE_PLUGIN_ROOT%\skills\ouch\scripts\measure.py" assets\illustrations\*      # cmd
+```
+
+The script expands `*` itself, so the pattern works in both.
 
 The script ships with this skill; installed as a bare skill rather than a
 plugin, it sits in this skill's own `scripts/` folder. It needs Python 3 with
@@ -297,6 +307,7 @@ contact sheet and different on the page.
 
 ```
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/ouch/scripts/measure.py" <files>   # same tool as step 5; saturation column
+# Windows: the `py -3` lines in step 5 apply here too
 ```
 
 A truly colourless work (under 0.10) next to a colourful one (over 0.35) is a
@@ -327,8 +338,9 @@ files.
 | Need | Call | Result |
 | --- | --- | --- |
 | Flat, line, hand-drawn art | `get_illustration_svg` | vector, 1-70 KB measured |
-| Anything at card size | `get_illustration_png_url(size="standard")` | 456 px long side |
-| A real hero | `get_illustration_png_url(size="hd")` | largest source; size varies per artwork (2048-3000 px seen), read the returned `width`/`height`, resize before shipping |
+| A thumbnail or a contact sheet | `get_illustration_png_url(size="low")` | the small raster; needs no plan |
+| Anything at card size | `get_illustration_png_url(size="standard")` | 456 px long side; needs no plan |
+| A real hero | `get_illustration_png_url(size="hd")` | largest source; size varies per artwork (2048-3000 px seen), read the returned `width`/`height`, resize before shipping. Needs an account whose plan covers the illustration, the same as SVG |
 | 3D styles | PNG only | 3D artwork has no SVG at all |
 
 Then write `ouch.json` next to the project so the next session stays on the

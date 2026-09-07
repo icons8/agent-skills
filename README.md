@@ -197,7 +197,7 @@ Commit it. The next session picks up where this one left off.
 ## Illustrations: the `ouch` skill
 
 The same discipline for [Ouch! illustrations](https://icons8.com/illustrations): hero images,
-empty states, onboarding, 404s and docs spots, from a catalog of 345 styles. What it enforces,
+empty states, onboarding, 404s and docs spots, from a catalog of 346 styles. What it enforces,
 each rule earned in test runs rather than declared:
 
 - **The picture is about the product, not about the interface.** Every slot query carries the

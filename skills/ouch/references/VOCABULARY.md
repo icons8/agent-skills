@@ -57,7 +57,7 @@ before promising it, and expect to fall back on a neighbouring subject.
 | Search | `search` | 1352 | search bars and magnifiers as objects |
 | Security, privacy | `security` | 2260 | shields, keyholes, cybersecurity scenes |
 | Team, collaboration | `team` | 1067 | people finishing a puzzle, hands joined in a circle, avatar rows |
-| Meeting, call | `team meeting` | 1980 | online meeting windows, colleagues at laptops; `animated: true` narrows it to 103 (remeasured 2026-09-07) |
+| Meeting, call | `team meeting` | 1981 | online meeting windows, colleagues at laptops; `animated: true` narrows it to 103 (remeasured 2026-09-07) |
 | Calendar, scheduling | `calendar` | 641 | wall and desk calendars, deadline clocks, planning scenes |
 | Pricing | `pricing` | 422 | price tags, percent badges, plan comparison |
 | Upgrade to paid | `upgrade` | 168 | crowned mountain, hardware upgrades. Thin and literal, check it fits |
