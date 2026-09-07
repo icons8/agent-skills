@@ -16,10 +16,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Packaging and documentation checks against tracked files. This plugin ships no executable
-  # scripts, so the manifests and the skill documents are the whole product and the whole suite.
-  # Linux only: Windows runners check out with core.symlinks=false, which turns .mcp.json into a
-  # regular file and would fail the symlink check for a reason that is not a defect.
+  # Packaging and documentation checks against tracked files: the manifests and the skill documents
+  # are the product, and this is the job that reads them. Linux only, because none of it depends on
+  # the operating system — everything that does is in `portability` below, which is where a
+  # per-platform verdict actually means something.
   validate:
     runs-on: ubuntu-latest
     steps:

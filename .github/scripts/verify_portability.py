@@ -10,9 +10,11 @@ which is the point of the matrix. Windows is where it earns its keep:
   1. Git for Windows sets `core.autocrlf=true` in its system configuration, so without a
      `.gitattributes` every checked-out file arrives with CRLF. A strict frontmatter parser looks
      for "^---\\n" and does not find it.
-  2. Windows checks out with `core.symlinks=false`, so `.mcp.json` is not a symlink there but a
-     regular file whose content is the link target. A client that reads it directly gets the text
-     "mcp.json" where JSON was expected — the plugin must not depend on that file resolving.
+  2. A Windows clone keeps `.mcp.json` as a symlink only where git is allowed to create one —
+     Developer Mode or an elevated shell. GitHub's windows-latest image qualifies and does keep it;
+     a developer's own machine routinely does not, and there git writes a regular file whose content
+     is the link target. Both are accepted, and a third state is not: the plugin must reach its
+     server either way, and a copy of mcp.json would be a second definition to keep in sync.
   3. NTFS and APFS are case-insensitive, so `references/packs.md` opens the real `PACKS.md` on a
      developer's machine and 404s for a Linux user. Case is checked against the directory listing,
      not with `is_file()`.
@@ -115,9 +117,9 @@ if link.is_symlink():
     state = f"a symlink to {os.readlink(link)!r}"
     resolved = os.readlink(link) == "mcp.json"
 else:
-    # This is the Windows checkout: core.symlinks=false writes a regular file whose content is the
-    # link target. Any third state — a copy of mcp.json, an empty file — means the symlink was
-    # replaced in the repository and two server definitions now drift apart.
+    # A clone that could not create the symlink wrote a regular file whose content is the link
+    # target. Any third state — a copy of mcp.json, an empty file — means the symlink was replaced
+    # in the repository and two server definitions now drift apart.
     body = link.read_bytes().decode("utf-8", "replace").strip()
     state = f"a regular file containing {body[:40]!r}"
     resolved = body == "mcp.json"
