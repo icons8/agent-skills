@@ -211,7 +211,8 @@ each rule earned in test runs rather than declared:
 - **Contrast gate** for non-white backgrounds, and layout rules measured in real browsers:
   absolute box heights, `max-height` never upscales a small SVG, ground-line alignment for 3D
   artwork. `scripts/measure.py` ships with the skill and does the measuring: Python 3 with
-  Pillow (`python3 -m pip install pillow`, or `uv run` the script), plus Chrome or Edge to
+  Pillow (`python3 -m pip install pillow`, `py -3 -m pip install pillow` on Windows, where
+  python.org's installer creates no `python3`, or `uv run` the script), plus Chrome or Edge to
   rasterize SVG. PNG needs no browser.
 - **Watermarked previews are for choosing; originals are fetched once, for the approved set.**
   Presigned URLs live an hour and never go into a page.
