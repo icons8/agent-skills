@@ -165,7 +165,8 @@ skills/ouch/
 ├── references/
 │   ├── STYLES.md             # the 43-style first tier, the free tier in full, styles by surface
 │   ├── SLOTS.md              # slot kits per project type, thin subjects
-│   └── VOCABULARY.md         # state → search query map, measured against the live server
+│   ├── VOCABULARY.md         # state → search query map, measured against the live server
+│   └── LAYOUT.md             # the browser measurements behind the layout rules
 └── scripts/measure.py        # ground line, mass offset, saturation: one source of the formulas
 ```
 
@@ -209,7 +210,9 @@ each rule earned in test runs rather than declared:
   which order the rules give way.
 - **Contrast gate** for non-white backgrounds, and layout rules measured in real browsers:
   absolute box heights, `max-height` never upscales a small SVG, ground-line alignment for 3D
-  artwork. `scripts/measure.py` ships with the skill and does the measuring.
+  artwork. `scripts/measure.py` ships with the skill and does the measuring: Python 3 with
+  Pillow (`python3 -m pip install pillow`, or `uv run` the script), plus Chrome or Edge to
+  rasterize SVG. PNG needs no browser.
 - **Watermarked previews are for choosing; originals are fetched once, for the approved set.**
   Presigned URLs live an hour and never go into a page.
 

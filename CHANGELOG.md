@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
-## [0.3.0] — 2026-09-04
+## [0.3.0] — 2026-09-07
 
 The plugin's second skill: illustrations. `ouch` brings to Ouch! artwork the discipline `icons8`
 brought to icons, and lands ahead of the server: the illustration tools reach `mcp.icons8.com`
@@ -30,13 +30,18 @@ stops, per its own rules.
   API on 2026-09-04, the free tier in full (15 styles, only two big enough for a whole page),
   styles by surface and tone; `SLOTS.md`: slot kits per project type and known-thin subjects;
   `VOCABULARY.md`: state → query translations with measured result counts (`login` returns
-  padlocks, `welcome` returns lettering, `empty state` beats `empty`).
+  padlocks, `welcome` returns lettering, `empty state` beats `empty`); `LAYOUT.md`: the browser
+  measurements behind the layout rules, kept out of `SKILL.md` so the skill itself stays short.
 
 - **`scripts/measure.py`** — ground-line offset, mass offset and mean saturation in one script:
   the single source of those formulas for both the skill and its gates, after two hand-copied
   versions drifted apart. Rasterizes SVG through headless Chrome at the artwork's own aspect
   ratio (a fixed 300×300 window parked small files in a corner and skewed geometry by 60
-  percentage points).
+  percentage points). Needs Python 3 with Pillow, declared in the script (PEP 723 metadata, so
+  `uv run` installs it) and named in a plain error when missing; finds Chrome or Edge on macOS,
+  Linux and Windows, builds `file:` URIs that Windows Chrome accepts, expands `*` itself for
+  cmd and PowerShell, and writes rasters to a temporary directory instead of next to the
+  sources. The skill calls it through `${CLAUDE_PLUGIN_ROOT}`.
 
 - **Tested before landing.** Four test/rewrite cycles plus an independent review: the skill's
   factual claims checked against the live server (57 of 60 exact; the three stale ones were
@@ -49,7 +54,8 @@ stops, per its own rules.
 ### Changed
 
 - **Manifests now describe both skills.** `description` and `keywords` in the three plugin
-  manifests and both marketplace entries; the Codex `interface` gains an illustrations default
+  manifests, `description` in the Claude marketplace entry (the Agent Plugins marketplace entry
+  carries neither field and is unchanged); the Codex `interface` gains an illustrations default
   prompt. Version moves to 0.3.0 everywhere it lives.
 
 - **README** — the intro names both skills, "What's inside" maps `skills/ouch/`, and a new

@@ -67,7 +67,7 @@ Never present a menu of options. Pick, say why in one line, move on.
    as one picture used twice. Compare headings, not just ids.
 6. **Test the style against the real background before locking it**, whenever
    the background is not white.
-7. **Public or redistributable deliverable means `free_only=True`**, and the
+7. **Public or redistributable deliverable means `free_only: true`**, and the
    page says where the art came from.
 
 ## When rules collide
@@ -216,85 +216,62 @@ means nothing here: "Midnight" is line art for light pages.
 
 ### 5. Even out shape in the layout, not in the picking
 
-Illustrations in one style come in every proportion: one search returned
-456×301, 238×456, 456×256 and 405×456. Coverage is often two to four candidates
-per slot, so filtering by ratio would leave you with nothing. Four test runs
-tried to filter and every one of them ended up with a mixed row anyway.
-
-So fix it where it is always fixable, in CSS:
+Illustrations in one style come in every proportion, and coverage is often two
+to four candidates per slot, so filtering by ratio leaves you with nothing: four
+test runs tried, and every one ended with a mixed row anyway. Fix it where it is
+always fixable, in CSS:
 
 ```css
 .slot-art { height: 180px; display: grid; place-items: center; overflow: hidden; }
 .slot-art img { max-height: 180px; max-width: 100%; width: auto; object-fit: contain; }
 ```
 
-**Repeat the number, do not write `max-height: 100%`.** Measured in a browser:
-with the percentage version a 269×563 illustration rendered 262×548 inside a
-180px box and covered the heading under it. With `max-height: 180px` the same
-four illustrations came out 86×180, 257×180, 180×180 and 211×180, a level row
-with nothing cropped. Percentage heights on SVG fail silently, and the page
-looks broken only after you render it.
+Three rules, each earned by a broken render. The measurements behind them are
+in `references/LAYOUT.md`.
 
-**And `max-height` never upscales.** Intrinsic sizes of served files vary from
-~60 px to 1000 px with no relation to the artwork's importance. When the
-file is smaller than its box, `max-height` leaves it small: measured, a hero
-with intrinsic 85×109 rendered 109 px tall inside a 340 px box and the row
-read as broken. So pick per image: artwork larger than the box gets
-`max-height: <box>px`; artwork smaller than the box gets an explicit
-`height: <box>px` (or a width). Then screenshot the page: both size failures
-in testing were caught only by looking at a render, never by reading the CSS.
+- **Repeat the number, never `max-height: 100%`.** Percentage heights on SVG
+  fail silently: a 269×563 file rendered 548 px tall inside a 180 px box and
+  covered the heading under it.
+- **`max-height` never upscales.** Served files run from ~60 px to 1000 px
+  intrinsic with no relation to the artwork's importance. Artwork larger than
+  the box gets `max-height: <box>px`; artwork smaller than the box gets an
+  explicit `height: <box>px` (or a width). Then screenshot the page: both size
+  failures in testing were caught only in a render, never by reading the CSS.
+- **3D artwork is not centred by its own box.** Shadows and ground contact pull
+  the mass up to 14% of the frame off centre, and in a row of cards that reads
+  as "one of them slipped". **Align the ground line, not the centre of mass:**
+  objects that stand (a pack, a box, a phone) line up by their bottoms. The
+  centroid is only for subjects that genuinely float (a balloon, a character
+  mid-air), because anything detached from the main object drags it.
 
-One box height per row or per set, artwork centred inside it. Then the row is
-even whatever the catalog gave you.
-
-**3D artwork is not centred by its own box.** The file is cropped tight, so the
-box centre sits in the middle of pixels, not in the middle of the object: a
-render carries a shadow and a ground contact that pull the mass down, or floats
-the object high. Measured on eight works from `3d-casual-life` and
-`3d-enterprise`, the centre of mass sits up to **14% of the frame** away from
-the centre of the box (−14.1%, −12.5%, +10.2% vertically; −7.7% horizontally on
-one). In a row of cards that reads as "one of them slipped".
-
-**Align the ground line, not the centre of mass.** Objects that sit on a
-surface (a pack, a box, a calendar, a phone) line up by their bottoms, and the
-bottom is a stable statistic. The centre of mass is not: anything detached from
-the main object drags it. Measured on a coffee pack with beans flying above it,
-the centroid asked for a 14.2% nudge while the bottoms of the same three step
-illustrations were already within 5 points of each other. A run that followed
-the centroid over-corrected and had to catch it in a render.
-
-So: bottoms for anything that stands, centroid only for subjects that genuinely
-float (a balloon, an abstract shape, a character mid-air).
+Measure, do not eyeball:
 
 ```
-python3 scripts/measure.py assets/illustrations/*
-# ships with this skill; per file: ground-line offset %, mass offset %, saturation
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/ouch/scripts/measure.py" assets/illustrations/*
+# per file: ground-line offset %, mass offset %, saturation
+# Windows: `py` instead of `python3`; the script expands `*` itself
 ```
 
-Do not re-derive the formulas inline: two hand-copied versions have already
-drifted apart once. The script is the single source; the eval gates import
-the same functions.
+The script ships with this skill; installed as a bare skill rather than a
+plugin, it sits in this skill's own `scripts/` folder. It needs Python 3 with
+Pillow (`python3 -m pip install pillow`, or `uv run` the script) and Chrome or
+Edge to rasterize SVG; PNG needs no browser. Do not re-derive the formulas
+inline: two hand-copied versions have already drifted apart once, and the eval
+gates import the same functions.
 
-**Every set on the page counts as a row.** Two phone screens side by side, four
-state mockups, three cards: if a reader sees them together, they are a row.
-Tested failure: a run nudged the three desktop cards and left the pair of phone
-screens untouched, because the brief only used the word "row" for the cards.
+Then apply the numbers:
 
-**In a set, normalise all of them, do not apply a threshold.** Measure every
-picture in it, then nudge each one by its own offset so all masses land on
-the same line. Skipping the small ones is what a blind review caught: two cards
-were pulled to a common line, the third was left at 3.2% because it was "under
-the threshold", and it became the one that read as slipped. A threshold only
-makes sense for a single picture standing alone.
-
-```
-appraisal −16.4% → translateY(+32.6px)   ← at a 200px box
-vault      +8.8% → translateY(−17.6px)
-transit    −3.2% → translateY(+6.4px)    ← small, but the row needs it too
-```
+- **Every set on the page counts as a row.** Two phone screens side by side,
+  four state mockups, three cards: if a reader sees them together, they are a
+  row. A run nudged the cards and left the phone pair untouched because the
+  brief only used the word "row" for the cards.
+- **In a set, normalise all of them, do not apply a threshold.** Nudge each
+  picture by its own offset so all bottoms (or masses) land on one line:
+  `−16.4% → translateY(+32.8px)` at a 200 px box. The card left alone at 3.2%
+  because it was "under the threshold" became the one a blind review called
+  slipped. A threshold only makes sense for a single picture standing alone.
 
 Flat and line styles rarely need this; every style with a drop shadow does.
-
 Two things still belong to picking: prefer candidates whose ratio is closer to
 the box when you have the choice, and never stretch or crop artwork to force a
 shape.
@@ -311,34 +288,31 @@ Check five things: every picture is about the product, no two pictures are the
 same, the drawing manner is identical across the set, **every picture is the
 same kind of subject**, and **every picture uses the same colour treatment**.
 
-One style id is not one look. Measured inside `little`: two picks came back
-effectively monochrome (mean saturation 0.04 and 0.06) next to three coloured
-ones (0.50 to 0.59), and a blind reviewer called the set "split in half".
-Styles hold both plain-ink and duotone drawings, and there is no recolour tool
-to fix it afterwards, so the fix is to replace the odd ones at selection time.
-Do not eyeball this, measure it. Near-grey and low-saturation colour look the
-same on a contact sheet and different on the page:
+**One style id is not one look.** Styles hold both plain-ink and duotone
+drawings: inside `little`, two picks measured 0.04 and 0.06 saturation next to
+three at 0.50 to 0.59, and a blind reviewer called the set "split in half".
+There is no recolour tool, so replace the odd ones at selection time. Measure
+rather than eyeball: near-grey and low-saturation colour look the same on a
+contact sheet and different on the page.
 
 ```
-python3 scripts/measure.py <files>   # same tool as step 5; saturation column
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/ouch/scripts/measure.py" <files>   # same tool as step 5; saturation column
 ```
 
-Run it over the set. A truly colourless work (under 0.10) next to a colourful
-one (over 0.35) is a broken set, replace the odd one. A run that had this rule
-in words still shipped such a set, so treat the number as the check, not the
-intention.
+A truly colourless work (under 0.10) next to a colourful one (over 0.35) is a
+broken set: replace the odd one. A run that had this rule in words still
+shipped such a set, so treat the number as the check, not the intention.
 
-The number only catches the gross split. Four blue icons and one steel-grey
-one all measure alike and still read as two sets, so after the number, look:
-same hue family, same accent, same amount of colour per picture. If one picture is doing a different job from the others
-(an icon among characters, a scene among single objects), replace it.
+The number only catches the gross split. After it, look: same hue family, same
+accent, same amount of colour per picture. Four blue icons and one steel-grey
+one measure alike and still read as two sets.
 
-That last one is not the same as equal box heights. A full-length human figure
-and a single object, both fitted to a 200px box and both filling their frame,
-still read at different scales: the figure shrinks its own head to fit while the
-object keeps its bulk. Measured on a real pair, both occupied 0.99 of the frame
-and still looked mismatched. So decide the register up front, all figures or all
-objects, and hold it across the set. Mixing them cannot be fixed in CSS.
+**Decide the register up front, all figures or all objects, and hold it.** A
+full-length figure and a single object, both fitted to a 200 px box and both
+filling their frame, still read at different scales: the figure shrinks its own
+head to fit while the object keeps its bulk. Mixing them cannot be fixed in
+CSS. Same for jobs: an icon among characters, or a scene among single objects,
+gets replaced.
 
 Selection happens entirely on previews, and previews are free: the link arrives
 inside the search response, needs no second call and costs no download. Pulling
@@ -427,7 +401,7 @@ style:
   which is normal for 3D and for some flat styles too. Neither means a bad id.
 - **`free_distribution: false` is not a licence warning.** For a subscriber it
   is the ordinary case. But when the deliverable is public, filter with
-  `free_only=True` and credit Icons8 on the page.
+  `free_only: true` and credit Icons8 on the page.
 
 ## What to hand back
 
@@ -444,5 +418,6 @@ tools are unavailable, say so and stop.
 - `references/STYLES.md`: styles by surface, the free tier in full, catalog facts.
 - `references/SLOTS.md`: slot lists per project type, and thin subjects.
 - `references/VOCABULARY.md`: slot to subject map, phrases that work.
+- `references/LAYOUT.md`: the browser measurements behind steps 5 and 6.
 - `scripts/measure.py`: ground line, mass offset and saturation for steps 5-6;
-  the single source of those formulas.
+  the single source of those formulas. Python 3 + Pillow; Chrome or Edge for SVG.

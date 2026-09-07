@@ -32,8 +32,9 @@ hero · three feature blocks · social proof or integrations · pricing accent �
 final call to action
 
 Hero carries the aspect ratio for the page; feature blocks must share one crop.
-Default styles: 3D Casual Life (broad), 3D Enterprise (B2B), Hand Drawn
-Animation (human tone).
+Default styles: `3d-casual-life` (broad), `3d-enterprise` (B2B, outside the
+first tier), `anthropic-claude-hand-drawn` (human tone). Exact `pretty_id`
+values come from `list_illustrations_styles`; the names here are for reading.
 
 ### Onboarding and first run (4-6 slots)
 
@@ -72,7 +73,7 @@ Illustrations at 3D styles work; hand-drawn with thin lines does not.
 
 article header · two or three inline spots · newsletter block
 
-Journal and Clip are built for this. Inline spots must be visually quieter than
+`journal` and `clip` are built for this. Inline spots must be visually quieter than
 the header or they compete with the text.
 
 ### Docs and help centre (4-6 slots)
