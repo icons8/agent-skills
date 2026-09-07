@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A rapid string of pushes to the same branch/PR only needs the latest run: cancel a superseded
+# one instead of letting them queue and burn runner time on commits nobody will look at.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Packaging and documentation checks against tracked files. This plugin ships no executable
+  # scripts, so the manifests and the skill documents are the whole product and the whole suite.
+  # Linux only: Windows runners check out with core.symlinks=false, which turns .mcp.json into a
+  # regular file and would fail the symlink check for a reason that is not a defect.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python .github/scripts/validate_plugin.py
