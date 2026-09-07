@@ -8,9 +8,9 @@ The plugin version lives in three manifests that have to agree: `plugin.json`,
 ## [0.3.0] — 2026-09-07
 
 The plugin's second skill: illustrations. `ouch` brings to Ouch! artwork the discipline `icons8`
-brought to icons, and lands ahead of the server: the illustration tools reach `mcp.icons8.com`
-with an upcoming server release. Until they appear, the skill reports them as unavailable and
-stops, per its own rules.
+brought to icons. The five illustration tools it relies on went live on `mcp.icons8.com` on
+2026-09-07; on a connection that does not expose them, the skill says so and stops, per its own
+rules.
 
 ### Added
 
@@ -59,7 +59,7 @@ stops, per its own rules.
   prompt. Version moves to 0.3.0 everywhere it lives.
 
 - **README** — the intro names both skills, "What's inside" maps `skills/ouch/`, and a new
-  "Illustrations: the `ouch` skill" section states the rules and the server rollout status.
+  "Illustrations: the `ouch` skill" section states the rules and the server status.
 
 ## [0.2.0] — 2026-09-03
 

@@ -326,7 +326,7 @@ files.
 
 | Need | Call | Result |
 | --- | --- | --- |
-| Flat, line, hand-drawn art | `get_illustration_svg` | vector, 1-20 KB measured |
+| Flat, line, hand-drawn art | `get_illustration_svg` | vector, 1-70 KB measured |
 | Anything at card size | `get_illustration_png_url(size="standard")` | 456 px long side |
 | A real hero | `get_illustration_png_url(size="hd")` | largest source; size varies per artwork (2048-3000 px seen), read the returned `width`/`height`, resize before shipping |
 | 3D styles | PNG only | 3D artwork has no SVG at all |
@@ -377,7 +377,7 @@ style:
   | `search_illustrations`, `amount=3-5` | ~0.5-0.9k |
   | `get_illustration_svg` / `get_illustration_png_url` | ~150-200 |
 
-  The file tools are cheap because they return a URL, not the artwork: a 1-20 KB
+  The file tools are cheap because they return a URL, not the artwork: a 1-70 KB
   SVG never enters the conversation unless you open it, and there is no reason to
   open it. Budget goes on categories and wide searches instead: narrow the
   category call, keep `amount` at 5 for probing and 10 only for the slot you are

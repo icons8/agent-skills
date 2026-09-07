@@ -216,10 +216,10 @@ each rule earned in test runs rather than declared:
 - **Watermarked previews are for choosing; originals are fetched once, for the approved set.**
   Presigned URLs live an hour and never go into a page.
 
-**Server note:** `mcp.icons8.com` currently exposes the icon tools. The illustration tools
-(`search_illustrations`, `get_illustration_svg`, `get_illustration_png_url`,
-`list_illustrations_styles`, `list_illustrations_categories`) ship with an upcoming server
-release. Until they appear, the skill reports them as unavailable and stops, per its own rules.
+**Server note:** the illustration tools (`search_illustrations`, `get_illustration_svg`,
+`get_illustration_png_url`, `list_illustrations_styles`, `list_illustrations_categories`) are live
+on `mcp.icons8.com` since 2026-09-07. On a connection that does not expose them, the skill says so
+and stops, per its own rules.
 
 ## Requirements
 
