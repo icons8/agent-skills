@@ -1,7 +1,7 @@
 {
   "name": "icons8",
-  "version": "0.2.0",
-  "description": "Pick and fetch Icons8 icons so a project ends up with one consistent set instead of a pile of mismatched icons: locks the whole project to one pack, rejects wrong metaphors, previews with free PNG URLs and pulls SVG only for the final set. Bundles the Icons8 MCP server.",
+  "version": "0.3.0",
+  "description": "Pick and fetch Icons8 icons and Ouch! illustrations so a project ends up with one consistent visual set: locks the whole project to one icon pack and one illustration style, rejects wrong metaphors and generic art, previews free before downloading originals, and pulls SVG only for the final set. Bundles the Icons8 MCP server.",
   "author": {
     "name": "Icons8",
     "url": "https://icons8.com"
@@ -9,19 +9,20 @@
   "homepage": "https://icons8.com/mcp",
   "repository": "https://github.com/icons8/agent-skills",
   "license": "Apache-2.0",
-  "keywords": ["icons8", "icons", "icon-set", "svg", "png", "ui", "design", "mcp"],
+  "keywords": ["icons8", "icons", "icon-set", "illustrations", "ouch", "svg", "png", "ui", "design", "mcp"],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
   "interface": {
     "displayName": "Icons8",
-    "shortDescription": "One consistent icon set per project, from 420,000+ Icons8 icons",
-    "longDescription": "Turns the Icons8 MCP server into a workflow with taste. Lists every icon a screen needs before searching, picks one pack for the whole project and locks it in icons8.json, filters every search by that pack so results are 10 different metaphors instead of 10 styles of one, rejects brand logos and machine parts that search ranks first, previews on a free PNG contact sheet, and fetches SVG only for the approved final set.",
+    "shortDescription": "One consistent icon and illustration set per project, from Icons8",
+    "longDescription": "Turns the Icons8 MCP server into a workflow with taste. Lists every icon a screen needs before searching, picks one pack for the whole project and locks it in icons8.json, filters every search by that pack so results are 10 different metaphors instead of 10 styles of one, rejects brand logos and machine parts that search ranks first, previews on a free PNG contact sheet, and fetches SVG only for the approved final set. The ouch skill does the same for Ouch! illustrations: slots with the product's own subject, one style locked in ouch.json, free-tier filtering for public repos, and layout rules measured in real browsers.",
     "developerName": "Icons8",
     "category": "Productivity",
     "websiteURL": "https://icons8.com/mcp",
     "defaultPrompt": [
       "Add icons to this dashboard — one consistent Icons8 set, outlined, 24px.",
-      "Audit the icons in this project and replace the mismatched ones with a single Icons8 pack."
+      "Audit the icons in this project and replace the mismatched ones with a single Icons8 pack.",
+      "Illustrate the empty states of this app with one consistent Ouch! style."
     ]
   }
 }
