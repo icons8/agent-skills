@@ -27,7 +27,7 @@ rules.
   presigned original URLs live an hour and never go into a page.
 
 - **Bundled references** — `STYLES.md`: the 43-style first tier with counts verified against the
-  API on 2026-09-04, the free tier in full (15 styles, only two big enough for a whole page),
+  API on 2026-09-07, the free tier in full (15 styles, only two big enough for a whole page),
   styles by surface and tone; `SLOTS.md`: slot kits per project type and known-thin subjects;
   `VOCABULARY.md`: state → query translations with measured result counts (`login` returns
   padlocks, `welcome` returns lettering, `empty state` beats `empty`); `LAYOUT.md`: the browser
@@ -41,7 +41,8 @@ rules.
   `uv run` installs it) and named in a plain error when missing; finds Chrome or Edge on macOS,
   Linux and Windows, builds `file:` URIs that Windows Chrome accepts, expands `*` itself for
   cmd and PowerShell, and writes rasters to a temporary directory instead of next to the
-  sources. The skill calls it through `${CLAUDE_PLUGIN_ROOT}`.
+  sources. The skill calls it through `${CLAUDE_PLUGIN_ROOT}`, and writes the PowerShell and cmd
+  spellings of that variable next to it, because neither shell expands the POSIX one.
 
 - **Tested before landing.** Four test/rewrite cycles plus an independent review: the skill's
   factual claims checked against the live server (57 of 60 exact; the three stale ones were
