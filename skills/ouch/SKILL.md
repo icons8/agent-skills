@@ -162,7 +162,7 @@ actually carry the subject, and the shortlist starts from the intersection of
 that list with the tone.
 
 ```
-search_illustrations(query="bread loaf bakery", amount=6)   → 318 hits
+search_illustrations(query="bread loaf bakery", amount=6)   → 320 hits
 → styles seen: pablita, clip, burgundy, 3d-casual-life ×3
 ```
 

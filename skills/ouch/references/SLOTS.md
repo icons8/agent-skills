@@ -59,7 +59,7 @@ hero · problem · solution · three capabilities · security · integrations ·
 testimonial accent · footer call to action
 
 The shield metaphor is flagged as a gap subject in the catalog's own list,
-while the broad `security` query is well covered (2260). Check the specific
+while the broad `security` query is well covered (2290). Check the specific
 metaphor the slot needs before locking a style.
 
 ### Presentation deck (5-7 slots)

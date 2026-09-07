@@ -29,48 +29,48 @@ outside is allowed and sometimes right, but it needs a reason you can name: no
 first-tier style covers the slots, or the brief asks for a look none of them
 has. Write that reason in the run notes.
 
-Counts verified against the API on 2026-09-04; `pretty_id` is what
+Counts verified against the API on 2026-09-07; `pretty_id` is what
 `search_illustrations` expects.
 
 | `pretty_id` | Title | Count | Free | Animated flag |
 | --- | --- | --- | --- | --- |
 | `3d-casual-life` | 3D Casual life | 2653 | | yes |
-| `3d-business` | 3D Business | 1487 | | yes |
+| `3d-business` | 3D Business | 1497 | | yes |
 | `journal` | Journal | 1001 | | yes |
 | `transistor` | Transistor | 949 | | yes |
 | `3d-glassy` | 3D Glassy | 813 | | yes |
 | `beam` | Beam | 727 | | yes |
-| `notion-line-art` | Notion Line Art | 625 | | |
+| `notion-line-art` | Notion Line Art | 682 | | |
 | `kindy` | Kindy | 532 | | |
 | `3d-hygge` | 3D Hygge | 409 | | yes |
 | `airy` | Airy | 401 | | yes |
 | `mochi` | Mochi | 328 | | yes |
-| `3d-stickle` | 3D Stickle | 317 | | yes |
+| `3d-stickle` | 3D Stickle | 344 | | yes |
 | `burst` | Burst | 313 | | |
 | `company` | Company | 302 | | |
 | `marks` | Marks | 284 | | |
 | `weekday` | Weekday | 270 | | yes |
 | `concept` | Concept | 259 | | |
 | `sketchbook` | Sketchbook | 241 | | yes |
-| `organic` | Organic | 234 | | |
+| `organic` | Organic | 299 | | |
 | `network` | Network | 234 | | yes |
-| `anthropic-claude-hand-drawn` | Anthropic Claude Hand Drawn | 212 | | yes |
-| `ballpoint-pen` | Ballpoint Pen | 210 | | |
+| `anthropic-claude-hand-drawn` | Anthropic Claude Hand Drawn | 237 | | yes |
+| `ballpoint-pen` | Ballpoint Pen | 246 | | |
 | `twirl` | Twirl | 202 | | |
 | `willowy` | Willowy | 171 | | |
-| `bold-people` | Bold People | 148 | | |
-| `black-chalk` | Black Chalk | 123 | | |
+| `bold-people` | Bold People | 198 | | |
+| `black-chalk` | Black Chalk | 143 | | |
 | `flare` | Flare | 120 | | |
 | `grain` | Grain | 113 | | |
-| `tint` | Tint | 111 | | |
+| `tint` | Tint | 157 | | |
 | `scribbles` | Scribbles | 99 | **free** | yes |
 | `3d-plush-icons` | 3D Plush icons | 98 | | |
 | `3d-techny` | 3D Techny | 84 | | yes |
-| `rough-sketch` | Rough Sketch | 79 | | |
-| `watercolor-sketch` | Watercolor sketch | 79 | | |
+| `rough-sketch` | Rough Sketch | 99 | | |
+| `watercolor-sketch` | Watercolor sketch | 129 | | |
 | `3d-blueprint` | 3D Blueprint | 73 | | |
 | `3d-isometric-1` | 3D Isometric | 50 | | yes |
-| `3d-plastic` | 3D Plastic | 48 | | |
+| `3d-plastic` | 3D Plastic | 51 | | |
 | `3d-airy` | 3D Airy | 43 | | yes |
 | `open-doodles` | Open Doodles | 37 | **free** | yes |
 | `3d-kindy` | 3D Kindy | 35 | | |
@@ -125,10 +125,10 @@ what sells, the count says what you can actually pull.
 | `pretty_id` | Title | In MCP | Downloads | Trend | Use it for |
 | --- | --- | --- | --- | --- | --- |
 | `3d-casual-life` | 3D Casual life | 2653 | 10 491 | −33% | the safe default: people and objects, warm, broad coverage |
-| `3d-business` | 3D Business | 1487 | 4 110 | −32% | offices, finance, literal business scenes |
+| `3d-business` | 3D Business | 1497 | 4 110 | −32% | offices, finance, literal business scenes |
 | `3d-glassy` | 3D Glassy | 813 | 5 102 | −13% | premium feature blocks and pricing |
 | `3d-enterprise` | 3D Enterprise | 439 | 4 454 | **+349%** | B2B and corporate, the fastest growing paid style |
-| `3d-stickle` | 3D Stickle | 317 | 4 452 | +64% | playful 3D, onboarding and empty states |
+| `3d-stickle` | 3D Stickle | 344 | 4 452 | +64% | playful 3D, onboarding and empty states |
 | `journal` | Journal | 1001 | 3 434 | −27% | editorial, blog headers, long-form |
 | `neat` | Neat | 1059 | 1 555 | +10% | clean flat scenes for dense pages |
 | `isometric` | Isometric | 772 | 1 785 | −44% | dashboards and system diagrams |
@@ -149,9 +149,10 @@ Styles with large catalogs but no download history of their own to lean on:
 They are fine picks when the brief calls for their look; just verify coverage of
 your slot list before locking one.
 
-New arrivals worth knowing (small but current): `anthropic-claude-hand-drawn`
-(212, animated), `notion-line-art` (625), `3d-pro` (374), `watercolor-sketch`
-(79), `rough-sketch` (79), `ballpoint-pen` (210).
+New arrivals worth knowing (small but current, and filling fast — every one of
+these grew between 2026-09-03 and 2026-09-07): `anthropic-claude-hand-drawn`
+(237, animated), `notion-line-art` (682), `3d-pro` (374), `watercolor-sketch`
+(129), `rough-sketch` (99), `ballpoint-pen` (246).
 
 **Premium and corporate styles are thinner than their reputation.**
 `3d-glassy` (813) and `3d-enterprise` (439) look like the obvious answer for an
