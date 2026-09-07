@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A rapid string of pushes to the same branch/PR only needs the latest run: cancel a superseded
+# one instead of letting them queue and burn runner time on commits nobody will look at.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Packaging and documentation checks against tracked files: the manifests and the skill documents
+  # are the product, and this is the job that reads them. Linux only, because none of it depends on
+  # the operating system — everything that does is in `portability` below, which is where a
+  # per-platform verdict actually means something.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python .github/scripts/validate_plugin.py
+
+  # What the checkout on each operating system actually produced: line endings, the .mcp.json
+  # symlink, filename legality, the case of every cited reference path, and whether a shipped
+  # script loads under that runner's interpreter. Windows is the job that would catch a CRLF
+  # checkout or a citation whose case only resolves on a case-insensitive filesystem.
+  portability:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python .github/scripts/verify_portability.py

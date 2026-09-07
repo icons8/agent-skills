@@ -1,0 +1,9 @@
+# Everything this plugin ships is text an agent reads: Markdown skill documents, JSON manifests,
+# and (soon) a Python script. Pin the checkout to LF on every platform.
+#
+# Git for Windows sets core.autocrlf=true in its system configuration, so without this file a
+# Windows clone rewrites every LF as CRLF. That breaks two things quietly: a strict frontmatter
+# parser looks for "^---\n" and does not find it, and a script written to disk stops matching the
+# bytes it was committed as. `.github/scripts/verify_portability.py` fails on any tracked file that
+# carries CRLF, which is what keeps this file honest.
+* text=auto eol=lf
