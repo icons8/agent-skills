@@ -26,14 +26,10 @@
   "interface": {
     "displayName": "Icons8",
     "shortDescription": "One consistent icon and illustration set per project, from Icons8",
-    "longDescription": "Turns the Icons8 MCP server into a workflow with taste. Lists every icon a screen needs before searching, picks one pack for the whole project and locks it in icons8.json, filters every search by that pack so results are 10 different metaphors instead of 10 styles of one, rejects brand logos and machine parts that search ranks first, previews on a free PNG contact sheet, and fetches SVG only for the approved final set. The ouch skill does the same for Ouch! illustrations: slots with the product's own subject, one style locked in ouch.json, free-tier filtering for public repos, and layout rules measured in real browsers.",
+    "longDescription": "Turns the Icons8 MCP server into a workflow with taste, then checks what the agent built with it. Lists every icon a screen needs before searching, picks one pack for the whole project and locks it in icons8.json together with the illustration style, the sizes in use and the token names, filters every search by that pack so results are 10 different metaphors instead of 10 styles of one, rejects brand logos and mac-window screenshots where a plain symbol belongs, previews on free PNG and pulls SVG only for the set that survives. Illustrations follow the same discipline, animation included: one style per project, the video sources in an order that actually plays.\n\nSeven more skills look at the finished screen. One runs by itself after a build and answers four mechanical questions: an emoji standing in for an icon, a section that should carry a picture and carries none, a dead image URL, an icon import whose name no longer exists in the library. Five go deeper, one territory each: behaviour and the six states, interface copy, visual finish and contrast, motion, design tokens. A front door routes a request to the one that owns it, so a narrow question does not load them all, and several running together return one table with one verdict instead of five stacked lists.",
     "developerName": "Icons8",
     "category": "Productivity",
     "websiteURL": "https://icons8.com/mcp",
-    "defaultPrompt": [
-      "Add icons to this dashboard — one consistent Icons8 set, outlined, 24px.",
-      "Audit the icons in this project and replace the mismatched ones with a single Icons8 pack.",
-      "Illustrate the empty states of this app with one consistent Ouch! style."
-    ]
+    "defaultPrompt": "Build the screen with Icons8 assets, then check what you built: emoji standing in for icons, sections with no picture, dead image URLs, broken icon imports, keyboard reach and contrast."
   }
 }

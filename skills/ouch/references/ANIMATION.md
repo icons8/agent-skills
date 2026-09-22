@@ -63,7 +63,7 @@ die in an hour, so download at once.
 | --- | --- | --- |
 | `webm` | VP9, `alpha_mode=1`, transparent | yes, Chrome and Firefox |
 | `mp4-hevc` | HEVC `hvc1` with an `almo` alpha layer | yes, Safari |
-| `prores` | ProRes 4444, ~40 MB | no, editing master |
+| `prores` | ProRes 4444, ~55 MB | no, editing master |
 | `lottie` | vector JSON, transparent everywhere | yes, when it exists |
 | `gif-low` | small GIF, opaque white, the only format needing no account | last resort |
 | `gif` | full-size GIF | rarely |

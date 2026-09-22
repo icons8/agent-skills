@@ -24,5 +24,7 @@ by, and in places derived from, third-party material used with attribution:
   GOV.UK content design guidance (Open Government Licence v3)
   18F Content Guide (CC0)
 
-Nielsen Norman Group research, W3C WCAG 2.2 and the W3C Design Tokens Community Group
-specification are cited as sources of ideas; no text from them is reproduced.
+Nielsen Norman Group research, W3C WCAG 2.2, the W3C WAI-ARIA Authoring Practices, the W3C
+Design Tokens Community Group specification, Torrey Podmajersky's "Strategic Writing for UX"
+and Nathan Curtis's writing on token taxonomy are cited as sources of ideas; no text from them
+is reproduced.

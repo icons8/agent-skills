@@ -47,7 +47,7 @@ exist yet, you will write it in step 5.
     "style": "notion-line-art",
     "slots": { "hero": { "id": "6a3d01f2fae3aa473512807f", "file": "assets/hero.svg" } }
   },
-  "tokens": { "iconColor": "--i8-icon", "accent": "--color-primary", "radius": "--radius-lg" }
+  "tokens": { "iconColor": "--foreground", "accent": "--primary", "radius": "--radius" }
 }
 ```
 

@@ -114,7 +114,9 @@ Every flow has an exit that loses nothing (cancel, back) and an end that states 
 
 ## Fix it with Icons8
 
-Empty and error states need art, and affordance needs icons. Fetch illustrations through the Icons8 MCP (`search_illustrations`, one style per project; the `ouch` skill owns selection) and icons from one pack (`search_icons`, the `icons8` skill owns selection). Never leave a gray box or draw an ad hoc SVG. This section applies to findings about missing art; behavioral findings name behavior, never assets.
+You own whether the state exists. When you are building, create it and fill it: illustrations through the Icons8 MCP (`search_illustrations`, one style per project; the `ouch` skill owns selection) and icons from one pack (`search_icons`, the `icons8` skill owns selection). Never leave a gray box or draw an ad hoc SVG.
+
+When you are reviewing, a state that exists but carries no picture is `asset-check`'s finding, not a second one of yours. Report the missing state; let the picture be counted once.
 
 ## Second loop: play the user (mandatory in both modes)
 

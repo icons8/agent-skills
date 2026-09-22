@@ -1,6 +1,6 @@
 # Which style for which job
 
-The MCP catalog holds **346 styles** (2026-09-07; the count moves, and
+The MCP catalog holds **348 styles** (2026-09-22; the count moves, and
 `list_illustrations_styles` returns the live `total`). Two things follow from
 that: nobody can choose from a list that long, and the choice has to be made
 once for the whole project.

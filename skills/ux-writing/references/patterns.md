@@ -47,7 +47,7 @@ Whether the dialog should exist at all is `ux-check`: on an undoable action it a
 | "GET STARTED NOW!" | "Create account" |
 | "Yes" (after "Cancel subscription?") | "Cancel subscription" |
 
-If two buttons could both be "the main one", the copy has not decided what the screen is for: name the outcomes so one reads as the point and the other as the alternative. How many primary actions a view may carry, and their visual weight, is `ux-check` and `ui-polish`.
+If two buttons could both be "the main one", the copy has not decided what the screen is for: name the outcomes so one reads as the point and the other as the alternative. How many primary actions a view may carry is `ux-check`; how loud they look is `ui-polish`.
 
 ## Forms and placeholders
 

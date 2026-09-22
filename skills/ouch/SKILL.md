@@ -184,7 +184,7 @@ When they conflict, take the subject and say so in the run notes.
 ### 3. Shortlist styles, then resolve the exact id
 
 `references/STYLES.md` opens with the **first tier**: 43 styles the Icons8 side
-picked out of the catalog (346 styles on 2026-09-07) as the ones worth reaching
+picked out of the catalog (348 styles on 2026-09-22) as the ones worth reaching
 for first. Build the shortlist from
 there, take two or three, call `list_illustrations_styles` to get exact
 `pretty_id` values, and run one search per slot against each candidate. Count

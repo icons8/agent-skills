@@ -82,7 +82,7 @@ Dead hosts that models still write from memory, always a finding:
 - `source.unsplash.com` (returns 503 since mid-2024)
 - `placehold.it` (retired)
 
-Also a finding: `src` that resolves to nothing in the repo, an empty `src`, `alt` text describing an image that is not there, and a live placeholder service (`placehold.co`, `picsum.photos`, `dummyimage.com`) still sitting in code that is about to ship.
+Also a finding: `src` that resolves to nothing in the repo, an empty `src`, `alt` text left behind by an image the page no longer has (what `alt` says when the image is there is `ux-check`), and a live placeholder service (`placehold.co`, `picsum.photos`, `dummyimage.com`) still sitting in code that is about to ship.
 
 Check the dead ones by pattern, check local paths by resolving them on disk. Do not fetch remote URLs to test them: a 200 from a CDN says nothing about whether the picture belongs there.
 

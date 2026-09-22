@@ -69,6 +69,21 @@ Mechanical signals, each greppable, each with a number:
 
 Run the greps, count, and report numbers with worst offenders. On a project that never lived on base-4, hundreds of spacing hits are noise, not signal: derive the project's de facto scale (the values covering the top 90% of occurrences), measure consistency against it, and name the scale in the report. The same applies to radii and to a project whose ramp is deliberately larger than ten steps. Measuring a mature product against a scale it never adopted is a broken instrument, not a finding, and it produces the "Block, 3 of 3" report that nobody acts on. A server-side Icons8 MCP check running these same thresholds is on the roadmap; until it ships, these greps are the check.
 
+## Record the names in the project lock
+
+A token system nobody can find is half a system. When you create or extend one, write the names
+into `icons8.json` next to the project, under `tokens`: the semantic variable an asset should take
+its colour from, the accent, the radius. Names only, never values, because values drift and names
+do not. Create the file if it does not exist yet and touch nothing else in it; `icons` and
+`illustrations` belong to the asset skills.
+
+```json
+{ "tokens": { "iconColor": "--foreground", "accent": "--primary", "radius": "--radius" } }
+```
+
+Without this the next asset is wired to variables invented on the spot, and the drift you just
+counted comes back.
+
 ## Fix it with Icons8
 
 Icons fetched through the Icons8 MCP use `currentColor`, so they follow the token palette automatically; one pack per project (`icons8` skill). For illustrations, pick one style whose palette sits close to the accent and keep it across the project (`ouch` skill). Assets that carry their own random colors next to a fresh token system reintroduce drift on day one.

@@ -1,6 +1,6 @@
 # Icons8 — Agent Skills
 
-Two [Agent Skills](https://agentskills.io) that give coding agents taste when picking Icons8
+Nine [Agent Skills](https://agentskills.io) that give coding agents taste when picking Icons8
 artwork: `icons8` for icons and `ouch` for Ouch! illustrations, so a project ends up with
 **one consistent set** instead of a pile of mismatched pieces.
 
@@ -210,21 +210,32 @@ even for one extra icon:
 
 ```json
 {
-  "pack": "m_outlined",
-  "size": 24,
-  "color": "1F2937",
+  "version": 2,
   "icons": {
-    "settings": { "id": "82535", "commonName": "settings" }
-  }
+    "pack": "m_outlined",
+    "sizes": [16, 20, 24],
+    "color": "currentColor",
+    "items": { "settings": { "id": "82535", "commonName": "settings" } }
+  },
+  "illustrations": {
+    "style": "notion-line-art",
+    "slots": { "hero": { "id": "6a3d01f2fae3aa473512807f", "file": "assets/hero.svg" } }
+  },
+  "tokens": { "iconColor": "--foreground", "accent": "--primary", "radius": "--radius" }
 }
 ```
+
+One file for the whole project: the icon pack, the sizes in use, the illustration style with its
+slots, and the names of the CSS variables assets are wired to. A lock written in the older shape
+(`pack` at the top level) is still read as it was, and a separate `ouch.json` from earlier releases
+is folded in on the next write rather than deleted.
 
 Commit it. The next session picks up where this one left off.
 
 ## Illustrations: the `ouch` skill
 
 The same discipline for [Ouch! illustrations](https://icons8.com/illustrations): hero images,
-empty states, onboarding, 404s and docs spots, from a catalog of 346 styles. What it enforces,
+empty states, onboarding, 404s and docs spots, from a catalog of 348 styles. What it enforces,
 each rule earned in test runs rather than declared:
 
 - **The picture is about the product, not about the interface.** Every slot query carries the
@@ -243,10 +254,15 @@ each rule earned in test runs rather than declared:
   rasterize SVG. PNG needs no browser.
 - **Watermarked previews are for choosing; originals are fetched once, for the approved set.**
   Presigned URLs live an hour and never go into a page.
+- **Motion when the slot earns it.** Many styles also ship animated. The skill picks those, fetches
+  the real files through `get_illustration_animation`, and writes the sources in the order that
+  plays: `mp4-hevc` first, because Safari answers "probably" for webm too, takes whichever it sees
+  first and then cannot show the transparency. Lottie where the artwork has it.
 
 **Server note:** the illustration tools (`search_illustrations`, `get_illustration_svg`,
-`get_illustration_png_url`, `list_illustrations_styles`, `list_illustrations_categories`) are live
-on `mcp.icons8.com` since 2026-09-07. On a connection that does not expose them, the skill says so
+`get_illustration_png_url`, `get_illustration_animation`, `list_illustrations_styles`,
+`list_illustrations_categories`) are live on `mcp.icons8.com`, the still ones since 2026-09-07 and
+`get_illustration_animation` with them. On a connection that does not expose them, the skill says so
 and stops, per its own rules.
 
 ## Requirements

@@ -13,7 +13,7 @@ This skill owns static visual finish: alignment, radii, shadows, icons, typograp
 
 Neighbors own the rest. Every duration, easing, and press-feedback value lives in `motion`; when a rule here needs one, it points there and never restates the number. Token creation and palettes live in `design-tokens`. Whether a state exists at all is `ux-check`. Words are `ux-writing`.
 
-Four contested lines, settled here: **the icon census** (finding emoji, text glyphs and CSS shapes doing an icon's job, plus dead image URLs) belongs to `asset-check`; this skill judges how the icons that remain look. **`text-transform` in CSS** is this skill, the casing typed into the string is `ux-writing`. **The focus ring and contrast ratios** are this skill; semantics, keyboard reach and alt text are `ux-check`. **Values this skill fixes (radii, outline alpha) are defined as tokens by `design-tokens`**; this skill decides where they apply, never hardcodes them into a component.
+Four contested lines, settled here: **the icon census** (finding emoji, text glyphs and CSS shapes doing an icon's job, plus dead image URLs) belongs to `asset-check`; this skill judges how the icons that remain look. **`text-transform` in CSS** is this skill, the casing typed into the string is `ux-writing`. **The focus ring and contrast ratios** are this skill; semantics, keyboard reach and alt text are `ux-check`. **Values this skill fixes (radii, outline alpha) are defined as tokens by `design-tokens`**; this skill decides where they apply, never hardcodes them into a component. **How loud a primary action looks** is this skill; how many a screen may carry is `ux-check`. **Truncation styling** (that clipped text still has a way to show its full value) is this skill; whether overflow breaks the layout or hides a control is the overflow state in `ux-check`.
 
 Skills outside this line can own the same ground (`better-ui`, `emil-design-eng`, `improve-ui` carry the same concentric-radius and image-outline rules, from the same source). If one is loaded, follow it and add only what it does not cover. One defect, one finding.
 
@@ -108,7 +108,7 @@ When building, run it after the build; when reviewing, this procedure is the rev
 3. Zoom to 200%: nested radii concentric, hairlines crisp, icons on the pixel grid.
 4. Walk the states: hover, selected, disabled, and focus driven by real Tab key events (`element.focus()` from a script does not trigger `:focus-visible`). Screenshot each; anything unreachable is `Not verified`.
 5. Measure contrast for body text, secondary text, placeholders, and any text over an image, gradient, or video, by the method in the Contrast rule: flattened computed colors on flat grounds, sampled screenshot pixels everywhere else. Record the ratio you measured and which method produced it.
-6. Icon family check: for the icons `asset-check` found, confirm they are one family at one stroke weight. Two or more families is a finding, fixed via the MCP. Running without that skill, do the census yourself: an icon is anything doing an icon's job, including inline SVG, icon fonts, text glyphs (←, ⌃), CSS-drawn shapes and the default marker on `details`.
+6. Icon family check: for the icons `asset-check` found, confirm they are one family at one stroke weight. Two or more families is a finding, fixed via the MCP. Running without that skill, do the census by its definition, exceptions included: the browser's own marker on a native `details` is not a finding there, and neither is it here.
 
 ## Never ship
 
@@ -137,4 +137,4 @@ When more than one Icons8 design skill runs on the same target, the reports merg
 
 ## Credits
 
-Built by Icons8 on its house rules. Derived in part from Emil Kowalski's design engineering philosophy (MIT, emilkowal.ski), Jakub Krehel's better-ui (MIT), and Anthropic's frontend-design skill (Apache 2.0), with attribution.
+Built by Icons8 on its house rules. Derived in part from Emil Kowalski's design engineering philosophy (MIT, emilkowal.ski), Jakub Krehel's better-ui (MIT), and Anthropic's frontend-design skill (Apache-2.0), with attribution.
