@@ -36,9 +36,10 @@ projector is noise.
 - An illustration is animated when `media_types` includes `"animated"`.
   That is the only reliable signal.
 - **The `animated` flag on a style means nothing useful.** It says the style
-  has animated formats somewhere, not that its illustrations move. `3d-business`
-  carries the flag with 1497 works and 19 of them are animated. Filter with
-  `search_illustrations(animated=True)` instead.
+  has animated formats somewhere, not that its illustrations move, and nothing
+  in the API counts how many of them do: `search_illustrations` needs a query,
+  so every number you can get is per subject, not per style. Filter with
+  `search_illustrations(animated=True)` for the subject you need instead.
 - Style size does not predict animated coverage: `3d-casual-life` has 2653
   works and 2 animated for `work`; `juicy` has 1043 and 19.
 - `animation.lottie` in the search result is a boolean and it is honest. Read it

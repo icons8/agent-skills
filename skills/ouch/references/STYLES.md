@@ -89,9 +89,10 @@ will usually not be enough, and `cherry` or `fogg-5` come in from outside it.
 
 Half the tier carries `animated: true`. **Do not use that flag to find
 animations.** It means the style has animated formats somewhere, not that its
-illustrations move: `3d-business` carries it with 1497 works, 19 of which are
-animated. Filter with `search_illustrations(animated=True)` and trust
-`media_types` on the illustration. See `ANIMATION.md`.
+illustrations move. There is no call that counts the animated works in a style,
+so treat the flag as "worth checking" and nothing more: filter with
+`search_illustrations(animated=True)` for the subject you actually need, and
+trust `media_types` on the illustration. See `ANIMATION.md`.
 
 ## Start from the surface, not from the popularity list
 
