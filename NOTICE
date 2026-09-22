@@ -10,3 +10,19 @@ The Apache-2.0 license covers this repository (the skill and its packaging).
 It does not cover the icon artwork served by the Icons8 API, which is licensed
 separately — see https://icons8.com/license. Free icons require attribution;
 SVG delivery requires a paid plan.
+
+The design skills (icons8-design, asset-check, ux-check, ux-writing, ui-polish, motion,
+design-tokens) are written by Icons8 and carry their own Credits sections. They are informed
+by, and in places derived from, third-party material used with attribution:
+
+  Emil Kowalski, design engineering and animation skills (MIT,
+    Copyright (c) 2026 Emil Kowalski, https://emilkowal.ski)
+  Jakub Krehel, better-ui (MIT)
+  Anthropic, frontend-design skill (Apache-2.0)
+  shadcn/ui, the semantic token vocabulary (MIT)
+  Microsoft Writing Style Guide and Google Material 3 content design (CC BY 4.0)
+  GOV.UK content design guidance (Open Government Licence v3)
+  18F Content Guide (CC0)
+
+Nielsen Norman Group research, W3C WCAG 2.2 and the W3C Design Tokens Community Group
+specification are cited as sources of ideas; no text from them is reproduced.

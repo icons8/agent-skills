@@ -7,9 +7,31 @@ The plugin version lives in three manifests that have to agree: `plugin.json`,
 
 ## [0.4.0] — 2026-09-22
 
-Ouch illustrations that move, and one lock file for the whole project instead of two.
+The plugin stops at fetching assets and starts checking what the agent did with them: seven new
+skills. Plus Ouch illustrations that move, and one lock file for the whole project instead of two.
 
 ### Added
+
+- **A design pass over the finished screen, seven skills.** `asset-check` runs on its own once a UI
+  is built or changed and answers four mechanical questions: is an emoji standing in for an icon, is
+  there a section that should carry a picture and carries none, is an image URL dead, does an icon
+  import name still exist in the library. That last check works on projects that use no Icons8 asset
+  at all.
+
+  Five more go deeper, one territory each: `ux-check` (behaviour, the six states, flows, and the
+  accessibility floor of semantics, keyboard reach, labels and alt text), `ux-writing` (every string
+  a user reads), `ui-polish` (alignment, radii, icons, contrast, focus and state styling), `motion`
+  (whether a thing should animate at all, then every timing value) and `design-tokens` (bootstrap a
+  token system, then catch drift in counts rather than in adjectives). `icons8-design` is the front
+  door that routes a request to the one that owns it.
+
+  Two properties keep them from becoming noise. Every rule that two skills could raise has exactly
+  one named owner, so one defect yields one finding. And when several run on the same screen the
+  reports merge into a single table with a single verdict, instead of five stacked lists nobody
+  reads. Where a finding is about an icon or an illustration, the fix arrives already in place,
+  taken from the catalogue.
+
+  `icons8` and `ouch` do not reference any of this: asking for an icon stays a one-skill job.
 
 - **Animated illustrations in `ouch`** — the skill now handles artwork that has motion, not just
   stills: when a slot earns movement it finds the animated versions, ships the formats in the order

@@ -58,7 +58,7 @@ The lock holds everything the next screen needs to match this one:
 - `illustrations` is written by the `ouch` skill into this same file. Read it, never edit it.
 - `tokens` records the CSS variable **names** the project uses, not their values: the next
   asset is wired to the same variables. Values drift, names do not. Creating those variables
-  is the `design-tokens` skill's job, not yours.
+  is somebody else's job, not yours: read the names, never invent them.
 
 **Older locks.** A file with `pack` at the top level and no `version` is the first format
 (`{"pack": …, "size": 24, "color": …, "icons": {…}}`). Read it as if `pack` were

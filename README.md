@@ -168,12 +168,39 @@ skills/ouch/
 │   ├── VOCABULARY.md         # state → search query map, measured against the live server
 │   └── LAYOUT.md             # the browser measurements behind the layout rules
 └── scripts/measure.py        # ground line, mass offset, saturation: one source of the formulas
+skills/icons8-design/         # front door: routes a design request to the skill that owns it
+skills/asset-check/           # four mechanical checks on what is on the page
+skills/ux-check/              # behaviour, the six states, flows, the accessibility floor
+skills/ux-writing/            # every string a user reads, with before/after patterns
+skills/ui-polish/             # visual finish: radii, icons, contrast, focus, state styling
+skills/motion/                # whether it should animate at all, then every timing value
+skills/design-tokens/         # bootstrap a token system, then catch drift in counts
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
 
 The three manifests describe the same plugin for three packaging formats, so `version` and
 `description` have to move together. The server itself is declared once, in `mcp.json`.
+
+## Checking what the agent built
+
+Fetching the right icon is half the job. The other half is what happens to it on the page, and
+that is what the rest of the skills do.
+
+`asset-check` is the cheap one and runs on its own once a UI is built or changed: emoji standing in
+for icons, sections that should carry a picture and carry none, dead placeholder images, and icon
+imports whose names no longer exist in the library (that last one works on projects that use no
+Icons8 asset at all). Five more go deeper, one territory each, and `icons8-design` is the front door
+that picks between them so a narrow question does not load all of them.
+
+Two properties make them usable rather than noisy. Every rule two skills could raise has exactly one
+named owner, so one defect produces one finding. And when several run together the reports merge
+into a single table with one verdict instead of five stacked lists.
+
+They fix as well as report: where a finding is about an icon or an illustration, the replacement
+comes from the catalogue through the MCP, already in place.
+
+`icons8` and `ouch` do not reference any of this. Asking for an icon stays a one-skill job.
 
 ## The lock file
 
