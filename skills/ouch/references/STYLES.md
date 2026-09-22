@@ -87,9 +87,11 @@ outside the tier.
 Only two of these are free-tier, and both are small: for a public repo the tier
 will usually not be enough, and `cherry` or `fogg-5` come in from outside it.
 
-Half the tier carries `animated: true`. That flag means the style has animated
-versions somewhere in Ouch; the MCP returns static files only, so it changes
-nothing about what you can ship.
+Half the tier carries `animated: true`. **Do not use that flag to find
+animations.** It means the style has animated formats somewhere, not that its
+illustrations move: `3d-business` carries it with 1497 works, 19 of which are
+animated. Filter with `search_illustrations(animated=True)` and trust
+`media_types` on the illustration. See `ANIMATION.md`.
 
 ## Start from the surface, not from the popularity list
 
@@ -200,8 +202,8 @@ to a free style the brief did not ask for.
 ## Rules that come out of the numbers
 
 **One style per project.** Mixing is more visible than with icons: palette, line
-weight and level of detail change at once. Write the choice into `ouch.json` and
-keep to it.
+weight and level of detail change at once. Write the choice into `icons8.json` under
+`illustrations` and keep to it.
 
 **Check coverage before locking.** A style's headline count says nothing about
 your slots: `3d-casual-life` holds 2653 illustrations but only 30 answer
@@ -230,5 +232,8 @@ sketch styles, all of them small: check coverage first.
   share a shape, or the feature row will look broken even in one style.
 - Below ~200 px a scene turns to mud. A simple single object still reads down
   to ~64 px (docs spots, per the surface table); below that use an icon.
-- `animated: true` exists on styles and as a search filter, but no tool returns
-  an animated file. Do not promise animation.
+- `animated: true` on a style is not a count and not a promise; only
+  `media_types` on the illustration is. Animated coverage does not follow style
+  size: `3d-casual-life` has 2653 works and 2 animated for `work`, `juicy` has
+  1043 and 19. Animated illustrations ship through
+  `get_illustration_animation`; `ANIMATION.md` has the rules.

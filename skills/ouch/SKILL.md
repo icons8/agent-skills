@@ -1,6 +1,6 @@
 ---
 name: ouch
-description: Choose and ship Icons8 illustrations (Ouch!) through the Icons8 MCP so a deliverable ends up with pictures that are about the product, read as one set, and can legally and technically be published. Use when a landing page, app screen, empty state, onboarding, 404, docs page, slide deck or project site needs illustrations, when the user mentions Ouch, Icons8 illustrations or a style by name, and when extending or auditing illustrations already in a file. For small symbols in buttons, menus, toolbars and tables use the `icons8` skill instead.
+description: Choose and ship Icons8 illustrations (Ouch!) through the Icons8 MCP so a deliverable ends up with pictures that are about the product, read as one set, and can legally and technically be published. Use when a landing page, app screen, empty state, onboarding, 404, docs page, slide deck or project site needs illustrations, when the user mentions Ouch, Icons8 illustrations or a style by name, and when extending or auditing illustrations already in a file. Covers animated illustrations too (video and Lottie): use it when a brief asks for motion, an animated hero or a moving illustration. For small symbols in buttons, menus, toolbars and tables use the `icons8` skill instead.
 ---
 
 # Icons8 illustrations
@@ -152,6 +152,10 @@ the list.
 
 Style choice depends on covering this whole list. A style that nails the hero
 and has nothing for the failure states is the wrong style.
+
+**Mark at most one slot as the one that may move**, normally the hero, and only if
+the brief wants motion at all. Everything else is static. Empty states are static
+always. `references/ANIMATION.md` has the rest.
 
 ### 2b. If the product has a specific noun, find out who draws it first
 
@@ -343,17 +347,34 @@ files.
 | A real hero | `get_illustration_png_url(size="hd")` | largest source; size varies per artwork (2048-3000 px seen), read the returned `width`/`height`, resize before shipping. Needs an account whose plan covers the illustration, the same as SVG |
 | 3D styles | PNG only | 3D artwork has no SVG at all |
 
-Then write `ouch.json` next to the project so the next session stays on the
-style:
+Then record the style in the project lock so the next session stays on it. The lock is
+`icons8.json` next to the project, one file for every Icons8 asset; your half of it is the
+`illustrations` key:
 
 ```json
-{ "style": "notion-line-art", "target_ratio": 1.0,
-  "slots": { "hero": { "id": "6a3d01f2fae3aa473512807f",
-                       "heading": "Hotline assistant answering customer inquiry",
-                       "file": "assets/illustrations/hero.svg",
-                       "width": 1000, "height": 1000,
-                       "free_distribution": false } } }
+{
+  "version": 2,
+  "illustrations": {
+    "style": "notion-line-art",
+    "target_ratio": 1.0,
+    "slots": { "hero": { "id": "6a3d01f2fae3aa473512807f",
+                         "heading": "Hotline assistant answering customer inquiry",
+                         "file": "assets/illustrations/hero.svg",
+                         "width": 1000, "height": 1000,
+                         "free_distribution": false } } }
+}
 ```
+
+Rules for writing it:
+
+- Write only `illustrations`. `icons` belongs to the `icons8` skill and `tokens` records the
+  variable names the project already uses; both stay exactly as you found them.
+- No `icons8.json` yet: create it with `version: 2` and your `illustrations` key alone.
+- An older `ouch.json` next to the project is the previous format, the same object without
+  the wrapper. Read it, carry every value into `illustrations`, leave the old file on disk
+  and say in your report that it is superseded.
+- Two locks that disagree mean the project changed style at some point. Ask which one holds
+  instead of picking the newer file by timestamp.
 
 ## Reject these
 
@@ -366,7 +387,8 @@ style:
 | Lettering where a scene belongs | you get the word, not the picture | `welcome` returns the word WELCOME at 456×86 |
 | Dark artwork on a dark ground | invisible from two metres | dark grey phone on a `#12151a` slide |
 | A style with 20-60 works as a project base | runs out after a few slots | most of the free tier |
-| Promising animation | `animated: true` filters, no tool returns an animated file | a style marked animated still hands you a static webp |
+| More than one thing moving on a screen | motion is attention; spread across a page it reads as a cheap template | four looping cards in one feature row |
+| An animated preview link shipped as the asset | 368px, opaque, watermarked without a plan | `animation.webm` embedded straight into a landing page |
 
 ## Gotchas, all measured
 
@@ -431,5 +453,7 @@ tools are unavailable, say so and stop.
 - `references/SLOTS.md`: slot lists per project type, and thin subjects.
 - `references/VOCABULARY.md`: slot to subject map, phrases that work.
 - `references/LAYOUT.md`: the browser measurements behind steps 5 and 6.
+- `references/ANIMATION.md`: animated illustrations - when a slot earns motion,
+  which format ships, the `<video>` source order, budget and playback.
 - `scripts/measure.py`: ground line, mass offset and saturation for steps 5-6;
   the single source of those formulas. Python 3 + Pillow; Chrome or Edge for SVG.

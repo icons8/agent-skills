@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "icons8",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Pick and fetch Icons8 icons and Ouch! illustrations so a project ends up with one consistent visual set: locks the whole project to one icon pack and one illustration style, rejects wrong metaphors and generic art, previews free before downloading originals, and pulls SVG only for the final set. Bundles the Icons8 MCP server.",
   "author": {
     "name": "Icons8",

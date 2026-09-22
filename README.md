@@ -203,7 +203,7 @@ each rule earned in test runs rather than declared:
 - **The picture is about the product, not about the interface.** Every slot query carries the
   product's own noun. Empty states show the missing container (an empty pot for a plant app),
   never a happy owner of the thing the heading says is absent.
-- **One style per project**, locked in `ouch.json`, with named escapes: an existing page's style
+- **One style per project**, locked in `icons8.json` under `illustrations`, with named escapes: an existing page's style
   always wins, and a public repo filters to `free_distribution: true`.
 - **A first-tier shortlist of 43 styles** picked by the Icons8 side: a preference with named
   exits, not a fence. Subject coverage outranks tone, and the skill's priority ladder says in
