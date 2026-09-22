@@ -43,8 +43,10 @@ SOFTWARE.
 
 ## Jakub Krehel, skills (better-ui)
 
-Used in `skills/ui-polish`: one sentence on image outlines, and the concentric radius rule.
-Source: https://github.com/jakubkrehel/skills
+Used in `skills/ui-polish`: the sentence on how icons take their states, that they are drawn with
+`currentColor` and that outline is the default variant while fill marks the active one. The
+concentric radius rule and the image outline rule are the same idea in our own words, not the same
+text. Source: https://github.com/jakubkrehel/skills
 
 ```
 MIT License

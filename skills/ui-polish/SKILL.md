@@ -137,4 +137,4 @@ When more than one Icons8 design skill runs on the same target, the reports merg
 
 ## Credits
 
-Built by Icons8 on its house rules. The image outline rule and the concentric radius rule are derived from Jakub Krehel's skills (MIT, Copyright (c) 2026 Jakub Krehel, https://github.com/jakubkrehel/skills); the full permission notice is in THIRD_PARTY_NOTICES.md at the repository root. Informed by Emil Kowalski's design engineering philosophy (MIT, https://emilkowal.ski) and Anthropic's frontend-design skill (Apache-2.0), with attribution.
+Built by Icons8 on its house rules. The sentence on how icons carry their states, drawn with `currentColor` and switching between outline and fill, is derived from Jakub Krehel's skills (MIT, Copyright (c) 2026 Jakub Krehel, https://github.com/jakubkrehel/skills); the full permission notice is in THIRD_PARTY_NOTICES.md at the repository root. Informed by Emil Kowalski's design engineering philosophy (MIT, https://emilkowal.ski) and Anthropic's frontend-design skill (Apache-2.0), with attribution.
