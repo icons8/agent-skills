@@ -30,6 +30,10 @@
     "developerName": "Icons8",
     "category": "Productivity",
     "websiteURL": "https://icons8.com/mcp",
-    "defaultPrompt": "Build the screen with Icons8 assets, then check what you built: emoji standing in for icons, sections with no picture, dead image URLs, broken icon imports, keyboard reach and contrast."
+    "defaultPrompt": [
+      "Add icons to this dashboard, one consistent Icons8 set, 24px.",
+      "Illustrate the empty states with one Ouch! style.",
+      "Check this screen: emoji icons, missing images, contrast."
+    ]
   }
 }

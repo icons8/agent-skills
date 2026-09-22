@@ -1,8 +1,9 @@
 # Icons8 — Agent Skills
 
-Nine [Agent Skills](https://agentskills.io) that give coding agents taste when picking Icons8
-artwork: `icons8` for icons and `ouch` for Ouch! illustrations, so a project ends up with
-**one consistent set** instead of a pile of mismatched pieces.
+Nine [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
+Icons8 artwork and then when looking at what they built with it. `icons8` and `ouch` keep a project
+on **one consistent set** instead of a pile of mismatched pieces; the seven that follow check the
+finished screen and fix what they find from the same catalogue.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
 (420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser

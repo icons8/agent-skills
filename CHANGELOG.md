@@ -53,6 +53,11 @@ skills. Plus Ouch illustrations that move, and one lock file for the whole proje
   folded in on the next write, and neither file is deleted: the skills say the old one is superseded
   and leave it on disk for you to remove.
 
+- **Third-party notices.** Parts of two design skills are derived from MIT-licensed material and
+  stay under their authors' copyright. `THIRD_PARTY_NOTICES.md` carries the full permission notices
+  (Emil Kowalski, Jakub Krehel) and the links that the adapted CC BY 4.0 and Open Government Licence
+  sources require. The repository itself stays Apache-2.0.
+
 - **`icons8` says what to do when nobody is watching.** Two steps assumed a human at the other end:
   opening the contact sheet, and waiting for a prototype to be approved before fetching SVG. In a
   subagent or a batch run there is nobody to open the sheet for and nobody to approve anything, so

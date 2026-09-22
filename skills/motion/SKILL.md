@@ -142,4 +142,4 @@ When more than one Icons8 design skill runs on the same target, the reports merg
 
 ## Credits
 
-Derived from Emil Kowalski's animation philosophy and skills (MIT, Copyright (c) 2026 Emil Kowalski, emilkowal.ski). Additional guidance from Jakub Krehel's skills (MIT) and Anthropic's frontend-design skill (Apache 2.0), with attribution. Built and maintained by Icons8.
+Built and maintained by Icons8. The duration and easing tables, the spring defaults and parts of the prose around them are derived from Emil Kowalski's skills (MIT, Copyright (c) 2026 Emil Kowalski, https://github.com/emilkowalski/skills); the full permission notice is in THIRD_PARTY_NOTICES.md at the repository root. Informed by Jakub Krehel's skills (MIT) and Anthropic's frontend-design skill (Apache-2.0), with attribution.

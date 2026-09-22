@@ -15,16 +15,22 @@ The design skills (icons8-design, asset-check, ux-check, ux-writing, ui-polish, 
 design-tokens) are written by Icons8 and carry their own Credits sections. They are informed
 by, and in places derived from, third-party material used with attribution:
 
-  Emil Kowalski, design engineering and animation skills (MIT,
-    Copyright (c) 2026 Emil Kowalski, https://emilkowal.ski)
-  Jakub Krehel, better-ui (MIT)
-  Anthropic, frontend-design skill (Apache-2.0)
-  shadcn/ui, the semantic token vocabulary (MIT)
-  Microsoft Writing Style Guide and Google Material 3 content design (CC BY 4.0)
-  GOV.UK content design guidance (Open Government Licence v3)
-  18F Content Guide (CC0)
+  Emil Kowalski, skills (MIT, Copyright (c) 2026 Emil Kowalski,
+    https://github.com/emilkowalski/skills) — text used in skills/motion
+  Jakub Krehel, skills (MIT, Copyright (c) 2026 Jakub Krehel,
+    https://github.com/jakubkrehel/skills) — text used in skills/ui-polish
+  Microsoft Writing Style Guide and Material 3 content design, Google (CC BY 4.0,
+    https://creativecommons.org/licenses/by/4.0/) — adapted in skills/ux-writing
+  GOV.UK content design guidance (Open Government Licence v3.0) — adapted in
+    skills/ux-writing. Contains public sector information licensed under the Open
+    Government Licence v3.0, https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  18F Content Guide — released with no copyright
+  shadcn/ui, the semantic token vocabulary (MIT) — names followed, no text taken
+
+The full MIT permission notices for Emil Kowalski and Jakub Krehel, and the links each
+adapted source requires, are in THIRD_PARTY_NOTICES.md.
 
 Nielsen Norman Group research, W3C WCAG 2.2, the W3C WAI-ARIA Authoring Practices, the W3C
-Design Tokens Community Group specification, Torrey Podmajersky's "Strategic Writing for UX"
-and Nathan Curtis's writing on token taxonomy are cited as sources of ideas; no text from them
-is reproduced.
+Design Tokens Community Group specification, Anthropic's frontend-design skill (Apache-2.0),
+Torrey Podmajersky's "Strategic Writing for UX" and Nathan Curtis's writing on token taxonomy
+are cited as sources of ideas; no text from them is reproduced.
