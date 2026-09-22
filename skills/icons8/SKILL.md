@@ -1,13 +1,12 @@
 ---
 name: icons8
-description: "Use when a screen, page, deck, doc, README, or component needs visual symbols — icons, glyphs, status markers, step indicators, section-header art, feature-list bullets, or anything replacing emoji/placeholder text with real graphics. Covers one icon or forty, at 16px or 128px. Fetches real icons from Icons8 via MCP and keeps a project on a single coherent family: one pack locked for the whole project, plain metaphors instead of brand logos or literal machinery, free PNG URLs for previewing and prototyping, SVG only for the approved final set. Use it when building or filling in UI (nav, toolbars, cards, tables, checklists, empty states), when making text-only rows or slides read visually, when swapping emoji for icons, when auditing icons already in a file for consistency, or when Icons8 is mentioned. Not for logo design, illustration, CSS/rendering bugs, accessibility labeling, or billing questions."
+description: Pick and fetch icons through the Icons8 MCP so a project ends up with one consistent set instead of a pile of mismatched icons. Locks the whole project to one pack, rejects wrong metaphors (settings is a plain gear, not an Apple logo), previews with free PNG URLs and pulls SVG only for the final set. Use whenever a UI, prototype, landing page, slide deck or doc needs icons, when the user mentions Icons8, an icon set or a specific icon, and when replacing or auditing icons already in a file.
 ---
 
 # Icons8 icons
 
 The MCP is a thin wrapper over the Icons8 search API. It gives you 5 tools and no taste:
 `search_icons`, `list_categories`, `list_platforms`, `get_icon_svg`, `get_icon_png_url`.
-You will often see only 4 of them: `get_icon_svg` appears solely on a paid plan, see step 6.
 Default behaviour is bad in three specific ways, and this skill exists to fix them.
 
 **1. Unfiltered search returns one metaphor in ten styles.** `search_icons("delete")` with
@@ -23,6 +22,12 @@ a settings screen.
 the payload runs from 600 characters (Flat Color) to 46,000 (Color Hand Drawn, about 11k
 tokens for a single icon). PNG previews are free, instant and need no MCP call at all.
 
+
+**There are no animated icons in this MCP.** All 133 platforms are static, and
+`search_icons` has neither an `animated` filter nor a download tool for one
+(measured 2026-09-21). Do not promise one. Ouch illustrations do have animated
+versions; that is a different catalog and a different skill.
+
 ## The loop
 
 **0. Read the lock.** Look for `icons8.json` next to the project you are working in. If it
@@ -30,9 +35,37 @@ exists, that pack is the only pack, no exceptions, even for one extra icon. If i
 exist yet, you will write it in step 5.
 
 ```json
-{ "pack": "m_outlined", "size": 24, "color": "1F2937",
-  "icons": { "settings": { "id": "82535", "commonName": "settings" } } }
+{
+  "version": 2,
+  "icons": {
+    "pack": "m_outlined",
+    "sizes": [16, 20, 24],
+    "color": "currentColor",
+    "items": { "settings": { "id": "82535", "commonName": "settings" } }
+  },
+  "illustrations": {
+    "style": "notion-line-art",
+    "slots": { "hero": { "id": "6a3d01f2fae3aa473512807f", "file": "assets/hero.svg" } }
+  },
+  "tokens": { "iconColor": "--foreground", "accent": "--primary", "radius": "--radius" }
+}
 ```
+
+The lock holds everything the next screen needs to match this one:
+
+- `icons.pack` is binding. `icons.sizes` lists the sizes this project actually uses, so the
+  next icon is exported at one of them instead of a new number nobody chose.
+- `illustrations` is written by the `ouch` skill into this same file. Read it, never edit it.
+- `tokens` records the CSS variable **names** the project uses, not their values: the next
+  asset is wired to the same variables. Values drift, names do not. Creating those variables
+  is somebody else's job, not yours: read the names, never invent them.
+
+**Older locks.** A file with `pack` at the top level and no `version` is the first format
+(`{"pack": …, "size": 24, "color": …, "icons": {…}}`). Read it as if `pack` were
+`icons.pack`, `size` were the only entry in `icons.sizes` and `icons` were `icons.items`.
+Leave it alone until you have something new to write; when you do write, save it in the
+shape above and carry every old value over. Never silently drop a field you did not
+understand.
 
 **1. List every concept before searching.** Write the full list of icons the screen needs
 (nav, actions, states, empty states). Pack choice depends on coverage of the whole list, not
@@ -59,69 +92,29 @@ sheet and open it, no MCP calls needed:
 `open sheet.html` for the user. For any pick you are unsure about, download the PNG and read
 it yourself, that is a real check and it costs one Read.
 
+**When nobody is watching.** In a subagent, a batch job or any run with no human at the other
+end, opening the sheet is theatre: nobody sees it. Build it anyway and read it yourself, then
+say in your report which picks you were unsure about. A silent pick nobody can question is
+worse than a named doubt.
+
 **5. Prototype with PNG, write the lock.** In HTML/JSX use the URL directly:
 `https://img.icons8.com/?id=82535&format=png&size=24`. Add `&color=1F2937` to recolor any
 monochrome icon (ignored by color packs). Zero MCP calls, zero latency, works for free and
 paid icons alike. Then write `icons8.json` so the next session and the next agent stay on
-the same pack.
+the same pack. Write `icons.pack`, `icons.sizes`, `icons.color` and `icons.items`; leave
+`illustrations` and `tokens` exactly as you found them. If a separate `ouch.json` sits next
+to the project, fold its content into `illustrations` here, leave the old file on disk and
+say in your report that it is now superseded: deleting someone's file without asking is not
+your call.
 
 **6. Fetch SVG last, only for the approved set.** When the prototype is agreed, call
-`get_icon_svg` for those icons and inline them. Set `fill="currentColor"` on monochrome
+`get_icon_svg` for those icons and inline them. Building the thing yourself in one pass, with
+no round of approval in between? Then "approved" means "the set you just used on the screen":
+finish the layout on PNG, look at it, and only then fetch SVG for the icons that stayed. The
+rule exists to stop you pulling forty SVGs while still choosing, not to make you ship PNG
+where the project wants vectors. Set `fill="currentColor"` on monochrome
 icons so CSS drives the color. Skip this step entirely for color, 3D and hand-drawn packs:
 their SVG is huge and a PNG at 2x is the better asset.
-
-SVG is the one paid part of this workflow, and the gate is the plan the connection carries, not the
-icon. The connection is authenticated either by the account signed in through the browser or by an
-`Authorization: Bearer <key>` header, and the plan rides on whichever of the two is in use. Three
-states, read them correctly:
-
-- **`get_icon_svg` is missing from your tool list.** The connection has no SVG plan. The tool still
-  exists on the server and still answers if you call it; the server just stops advertising it to a
-  free connection. Its absence is not a broken server, not proof the server is PNG-only, and not a
-  reason to rewrite this skill.
-- **It answers `{"error": "You don't have access to this tool. Use get_icon_png_url instead."}`.**
-  The usual case, and the clearest one: the connection is on the free plan. One call is enough to
-  confirm it, so you never have to guess.
-- **It answers `{"error": "Icons8 API: ..."}`.** The connection is authenticated but the API refused
-  the call, and the server hands you the API's own message: `Authentication data is invalid or
-  missing (HTTP 401)` for credentials it does not accept. Read the message before blaming the plan —
-  `Icon not found (HTTP 404)` means the id is wrong, not the subscription.
-
-A fourth state is not about the plan at all: if the client reports the whole server as needing
-authentication, nobody is signed in yet. Say so and let the user sign in — no tool call diagnoses it,
-because none of them get through.
-
-In the three plan states, say it in one line and keep moving: SVG needs a plan from
-https://icons8.com/icons/pricing. There is no second server to add — the subscribed account carries
-the plan, and signing in again picks it up (`/mcp` in Claude Code, `codex mcp login icons8mcp` in
-Codex). A client that cannot do OAuth sends an API key in the `Authorization` header instead;
-per-client setup is at https://icons8.com/mcp. Then ship the PNG version at 2x. The design does not
-wait on a subscription.
-
-**If the requirement is `currentColor`, PNG still gets you there.** This is the one thing inline SVG
-buys in product UI, and a plain `<img>` cannot do it — but the same PNG used as an alpha mask can,
-because the browser paints `background-color` through the icon's transparency:
-
-```css
-.icon { width: 24px; height: 24px; background-color: currentColor;
-        mask: url("https://img.icons8.com/?id=82535&format=png&size=48") center / contain no-repeat;
-        -webkit-mask: url("https://img.icons8.com/?id=82535&format=png&size=48") center / contain no-repeat; }
-```
-
-Ask for the PNG at 2x the CSS size, and keep the `-webkit-` prefix for Safari before 15.4. The icon
-now inherits the theme token exactly as `fill="currentColor"` would. It is a raster mask, so it has a
-ceiling inline SVG doesn't — say that rather than implying parity. This is a real technique, not a
-workaround: the asset is still the genuine Icons8 drawing.
-
-Do not go looking for another way in. These all cost turns and produce something worse:
-
-| Detour | What you actually get |
-| --- | --- |
-| `img.icons8.com` with `format=svg` | 403 `PAID_FORMAT` — the same paywall, a different door |
-| Tracing or vectorising the PNG | a path that is not the Icons8 drawing, usually visibly worse at 24px |
-| `<svg><image href="data:image/png…">` | a raster in an SVG wrapper: no `currentColor`, no clean scaling. The CSS mask above is the honest version of this idea and actually inherits the color |
-| Writing the path by hand | an invented icon, which breaks the one-pack rule harder than a wrong pack |
-| Substituting Lucide, Heroicons, Font Awesome | a second icon set, the one thing this skill exists to prevent |
 
 ## Reject these
 
@@ -159,26 +152,22 @@ both of them away.
 
 ## Gotchas that will cost you time
 
-- `get_icon_svg` never answers with an empty string. Every failure comes back as `{"error": ...}`,
-  a bad id as `{"error": "Icons8 API: Icon not found (HTTP 404)"}`. Test for the `error` key before
-  writing a file; a test for an empty `svg` never fires.
-- `img.icons8.com` with `format=svg` returns 403 `PAID_FORMAT`. SVG only comes through
-  `get_icon_svg`, which the server offers only when the connection carries a paid plan (step 6).
-  There is no shortcut.
-- `list_platforms` returns 132 packs, `fluent` and `fluent-systems-regular` among them. If a code
-  you know works is still absent from the list, trust the search result: a missing code is not
-  proof the pack is gone.
+- `get_icon_svg` with a bad id returns `{"svg": ""}` and no error. Always check the string is
+  non-empty before writing a file.
+- `img.icons8.com` with `format=svg` returns 403 `PAID_FORMAT`. SVG only comes through the MCP,
+  which uses the account's key. There is no shortcut.
+- `list_platforms` returns 98 packs and still misses live ones (`fluent` and
+  `fluent-systems-regular` work in search but are not in the list). A missing code is not proof
+  the pack is gone.
 - The `category` filter takes an `apiCode` (`user-interface`), not a display name (`Logos`
   returns 0). `category="free-icons"` is a working free-only filter.
 - Platform codes are case sensitive: `FLUENT` returns 0.
 - `commonName` is shared across packs only where the pack has that icon (`filled-trash` exists
   in 12 packs, `ios7` calls its trash `full-trash`). To move a set to another pack, re-run the
   searches, do not translate ids.
-- `isFree: true` marks the free set (attribution required). Paid icons **omit the field entirely**
-  rather than setting it to `false`, so read absence as paid: a test for `isFree == false` never
-  matches, and indexing the key blindly raises on every paid icon. It does not affect PNG previews,
-  both work. If the assets ship in a product, confirm the license before handing over paid icons —
-  a set that looks free because nothing said otherwise is the easy way to get this wrong.
+- `isFree: true` marks the free set (attribution required). Everything else needs a license.
+  It does not affect PNG previews, both work. If the assets ship in a product, confirm the
+  license before handing over paid icons.
 
 ## Recovering from a bad search
 
@@ -207,11 +196,4 @@ If `countAll` is 1-2 and the single hit is a logo, treat it as a miss and reword
 ## What to hand back
 
 Per icon: `commonName`, id, pack, and the preview URL. Never invent or construct an id, they
-come from `search_icons` only.
-
-If `search_icons` is not in your tool list, the server is not connected for you, and that is the
-finding to report: say it plainly and tell the user to connect it, because they can fix it and you
-cannot. What you must not do is paper over it — an id you remember from a previous session or from
-this skill's own examples is unverified, and shipping one is worse than shipping a gap. Leave the icon
-out with a note on what it needs, hand over whatever else is genuinely verified, and be explicit that
-this part of the task is unfinished.
+come from `search_icons` only. If the MCP tools are unavailable, say so and stop.

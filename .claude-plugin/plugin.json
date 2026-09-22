@@ -1,7 +1,7 @@
 {
   "name": "icons8",
-  "description": "Pick and fetch Icons8 icons and Ouch! illustrations so a project ends up with one consistent visual set: locks the whole project to one icon pack and one illustration style, rejects wrong metaphors and generic art, previews free before downloading originals, and pulls SVG only for the final set. Bundles the Icons8 MCP server.",
-  "version": "0.3.0",
+  "description": "Icons8 icons and Ouch! illustrations for coding agents, plus a design pass over what the agent built with them. Locks a project to one icon pack and one illustration style, rejects wrong metaphors and generic art, and checks the finished screen for emoji standing in for icons, missing images, dead placeholders, broken icon imports, keyboard reach, contrast and token drift, fixing what it finds from the catalogue. Bundles the Icons8 MCP server.",
+  "version": "0.4.0",
   "license": "Apache-2.0",
   "author": {
     "name": "Icons8",
@@ -9,6 +9,17 @@
   },
   "homepage": "https://icons8.com/mcp",
   "repository": "https://github.com/icons8/agent-skills",
-  "keywords": ["icons8", "icons", "icon-set", "illustrations", "ouch", "svg", "png", "ui", "design", "mcp"],
+  "keywords": [
+    "icons8",
+    "icons",
+    "icon-set",
+    "illustrations",
+    "ouch",
+    "svg",
+    "png",
+    "ui",
+    "design",
+    "mcp"
+  ],
   "mcpServers": "./mcp.json"
 }

@@ -1,8 +1,9 @@
 # Icons8 — Agent Skills
 
-Two [Agent Skills](https://agentskills.io) that give coding agents taste when picking Icons8
-artwork: `icons8` for icons and `ouch` for Ouch! illustrations, so a project ends up with
-**one consistent set** instead of a pile of mismatched pieces.
+Nine [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
+Icons8 artwork and then when looking at what they built with it. `icons8` and `ouch` keep a project
+on **one consistent set** instead of a pile of mismatched pieces; the seven that follow check the
+finished screen and fix what they find from the same catalogue.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
 (420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser
@@ -168,12 +169,39 @@ skills/ouch/
 │   ├── VOCABULARY.md         # state → search query map, measured against the live server
 │   └── LAYOUT.md             # the browser measurements behind the layout rules
 └── scripts/measure.py        # ground line, mass offset, saturation: one source of the formulas
+skills/icons8-design/         # front door: routes a design request to the skill that owns it
+skills/asset-check/           # four mechanical checks on what is on the page
+skills/ux-check/              # behaviour, the six states, flows, the accessibility floor
+skills/ux-writing/            # every string a user reads, with before/after patterns
+skills/ui-polish/             # visual finish: radii, icons, contrast, focus, state styling
+skills/motion/                # whether it should animate at all, then every timing value
+skills/design-tokens/         # bootstrap a token system, then catch drift in counts
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
 
 The three manifests describe the same plugin for three packaging formats, so `version` and
 `description` have to move together. The server itself is declared once, in `mcp.json`.
+
+## Checking what the agent built
+
+Fetching the right icon is half the job. The other half is what happens to it on the page, and
+that is what the rest of the skills do.
+
+`asset-check` is the cheap one and runs on its own once a UI is built or changed: emoji standing in
+for icons, sections that should carry a picture and carry none, dead placeholder images, and icon
+imports whose names no longer exist in the library (that last one works on projects that use no
+Icons8 asset at all). Five more go deeper, one territory each, and `icons8-design` is the front door
+that picks between them so a narrow question does not load all of them.
+
+Two properties make them usable rather than noisy. Every rule two skills could raise has exactly one
+named owner, so one defect produces one finding. And when several run together the reports merge
+into a single table with one verdict instead of five stacked lists.
+
+They fix as well as report: where a finding is about an icon or an illustration, the replacement
+comes from the catalogue through the MCP, already in place.
+
+`icons8` and `ouch` do not reference any of this. Asking for an icon stays a one-skill job.
 
 ## The lock file
 
@@ -183,27 +211,38 @@ even for one extra icon:
 
 ```json
 {
-  "pack": "m_outlined",
-  "size": 24,
-  "color": "1F2937",
+  "version": 2,
   "icons": {
-    "settings": { "id": "82535", "commonName": "settings" }
-  }
+    "pack": "m_outlined",
+    "sizes": [16, 20, 24],
+    "color": "currentColor",
+    "items": { "settings": { "id": "82535", "commonName": "settings" } }
+  },
+  "illustrations": {
+    "style": "notion-line-art",
+    "slots": { "hero": { "id": "6a3d01f2fae3aa473512807f", "file": "assets/hero.svg" } }
+  },
+  "tokens": { "iconColor": "--foreground", "accent": "--primary", "radius": "--radius" }
 }
 ```
+
+One file for the whole project: the icon pack, the sizes in use, the illustration style with its
+slots, and the names of the CSS variables assets are wired to. A lock written in the older shape
+(`pack` at the top level) is still read as it was, and a separate `ouch.json` from earlier releases
+is folded in on the next write rather than deleted.
 
 Commit it. The next session picks up where this one left off.
 
 ## Illustrations: the `ouch` skill
 
 The same discipline for [Ouch! illustrations](https://icons8.com/illustrations): hero images,
-empty states, onboarding, 404s and docs spots, from a catalog of 346 styles. What it enforces,
+empty states, onboarding, 404s and docs spots, from a catalog of 348 styles. What it enforces,
 each rule earned in test runs rather than declared:
 
 - **The picture is about the product, not about the interface.** Every slot query carries the
   product's own noun. Empty states show the missing container (an empty pot for a plant app),
   never a happy owner of the thing the heading says is absent.
-- **One style per project**, locked in `ouch.json`, with named escapes: an existing page's style
+- **One style per project**, locked in `icons8.json` under `illustrations`, with named escapes: an existing page's style
   always wins, and a public repo filters to `free_distribution: true`.
 - **A first-tier shortlist of 43 styles** picked by the Icons8 side: a preference with named
   exits, not a fence. Subject coverage outranks tone, and the skill's priority ladder says in
@@ -216,10 +255,15 @@ each rule earned in test runs rather than declared:
   rasterize SVG. PNG needs no browser.
 - **Watermarked previews are for choosing; originals are fetched once, for the approved set.**
   Presigned URLs live an hour and never go into a page.
+- **Motion when the slot earns it.** Many styles also ship animated. The skill picks those, fetches
+  the real files through `get_illustration_animation`, and writes the sources in the order that
+  plays: `mp4-hevc` first, because Safari answers "probably" for webm too, takes whichever it sees
+  first and then cannot show the transparency. Lottie where the artwork has it.
 
 **Server note:** the illustration tools (`search_illustrations`, `get_illustration_svg`,
-`get_illustration_png_url`, `list_illustrations_styles`, `list_illustrations_categories`) are live
-on `mcp.icons8.com` since 2026-09-07. On a connection that does not expose them, the skill says so
+`get_illustration_png_url`, `get_illustration_animation`, `list_illustrations_styles`,
+`list_illustrations_categories`) are live on `mcp.icons8.com`, the still ones since 2026-09-07 and
+`get_illustration_animation` with them. On a connection that does not expose them, the skill says so
 and stops, per its own rules.
 
 ## Requirements

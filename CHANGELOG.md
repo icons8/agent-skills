@@ -5,6 +5,66 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
+## [0.4.0] — 2026-09-22
+
+The plugin stops at fetching assets and starts checking what the agent did with them: seven new
+skills. Plus Ouch illustrations that move, and one lock file for the whole project instead of two.
+
+### Added
+
+- **A design pass over the finished screen, seven skills.** `asset-check` runs on its own once a UI
+  is built or changed and answers four mechanical questions: is an emoji standing in for an icon, is
+  there a section that should carry a picture and carries none, is an image URL dead, does an icon
+  import name still exist in the library. That last check works on projects that use no Icons8 asset
+  at all.
+
+  Five more go deeper, one territory each: `ux-check` (behaviour, the six states, flows, and the
+  accessibility floor of semantics, keyboard reach, labels and alt text), `ux-writing` (every string
+  a user reads), `ui-polish` (alignment, radii, icons, contrast, focus and state styling), `motion`
+  (whether a thing should animate at all, then every timing value) and `design-tokens` (bootstrap a
+  token system, then catch drift in counts rather than in adjectives). `icons8-design` is the front
+  door that routes a request to the one that owns it.
+
+  Two properties keep them from becoming noise. Every rule that two skills could raise has exactly
+  one named owner, so one defect yields one finding. And when several run on the same screen the
+  reports merge into a single table with a single verdict, instead of five stacked lists nobody
+  reads. Where a finding is about an icon or an illustration, the fix arrives already in place,
+  taken from the catalogue.
+
+  `icons8` and `ouch` do not reference any of this: asking for an icon stays a one-skill job.
+
+- **Animated illustrations in `ouch`** — the skill now handles artwork that has motion, not just
+  stills: when a slot earns movement it finds the animated versions, ships the formats in the order
+  that actually plays (the `mp4-hevc` source goes first, because Safari answers "probably" to webm
+  too, takes whichever it sees first and then cannot show the transparency), and falls back to the
+  still when motion is not wanted. The preview links that come back from search are watermarked and
+  368 px wide; they are for choosing, never for shipping. The rules live in
+  `skills/ouch/references/ANIMATION.md`, with the budget, the playback and the layout math.
+
+### Changed
+
+- **One lock file per project.** `icons8.json` now holds everything the next screen needs to match
+  this one: the icon pack, the sizes the project actually uses, the illustration style with its
+  slots, and the names of the CSS variables assets should be wired to. Illustrations used to live in
+  a separate `ouch.json`, which meant two files, two sources of truth and an agent that read one and
+  forgot the other.
+
+  Nothing breaks. A lock in the old shape is read as before, a separate `ouch.json` is picked up and
+  folded in on the next write, and neither file is deleted: the skills say the old one is superseded
+  and leave it on disk for you to remove.
+
+- **Third-party notices.** Parts of two design skills are derived from MIT-licensed material and
+  stay under their authors' copyright. `THIRD_PARTY_NOTICES.md` carries the full permission notices
+  (Emil Kowalski, Jakub Krehel) and the links that the adapted CC BY 4.0 and Open Government Licence
+  sources require. The repository itself stays Apache-2.0.
+
+- **`icons8` says what to do when nobody is watching.** Two steps assumed a human at the other end:
+  opening the contact sheet, and waiting for a prototype to be approved before fetching SVG. In a
+  subagent or a batch run there is nobody to open the sheet for and nobody to approve anything, so
+  the skill now reads the sheet itself and names the picks it was unsure about, and treats "approved"
+  as "the set that survived to the end of the layout" instead of shipping PNG where the project wants
+  vectors.
+
 ## [0.3.0] — 2026-09-07
 
 The plugin's second skill: illustrations. `ouch` brings to Ouch! artwork the discipline `icons8`
