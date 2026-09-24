@@ -146,6 +146,14 @@ for skill_dir in sorted((REPO / "skills").iterdir()):
           f"frontmatter says {fields.get('name')!r}")
     check(f"{name}: frontmatter carries a description", bool(fields.get("description", "").strip()),
           "an empty description means the skill never triggers")
+    # A strict YAML parser (`npx skills` is one) rejects ": " and " #" inside an unquoted value, and
+    # the tool skips the whole skill; Claude Code's lenient loader still shows it, so nobody
+    # notices. The regex above cannot see this, so check the plain-scalar rule itself.
+    for key, value in fields.items():
+        plain = not value.startswith(("'", '"', "|", ">"))
+        check(f"{name}: frontmatter {key} parses as strict YAML",
+              not plain or (": " not in value and " #" not in value),
+              "an unquoted value carries ': ' or ' #'; rephrase it or quote the whole value")
 
 tracked_json = tracked("*.json")
 # This only guards against git ls-files coming back empty (wrong cwd, a git failure, or a repo with
