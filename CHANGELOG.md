@@ -5,6 +5,21 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
+## [0.4.1] — 2026-09-24
+
+The `ouch` frontmatter was not valid YAML. A tool that parses frontmatter strictly skipped the skill.
+
+### Fixed
+
+- **`ouch` loads in every tool that reads skill frontmatter as strict YAML.** Since 0.4.0 its
+  description contained `(video and Lottie): use it`. A colon followed by a space is not allowed in
+  an unquoted YAML value. A strict parser rejects the frontmatter, and the tool drops the skill
+  without an error in the agent. One confirmed case is `npx skills`: it printed `YAML parse error`
+  and listed eight skills instead of nine. Claude Code reads frontmatter less strictly and still
+  showed the skill. The sentence now ends with a full stop, and the description text is otherwise
+  the same. CI now rejects `: ` and ` #` in an unquoted `name` or `description`, so the same mistake
+  fails the build.
+
 ## [0.4.0] — 2026-09-22
 
 The plugin stops at fetching assets and starts checking what the agent did with them: seven new

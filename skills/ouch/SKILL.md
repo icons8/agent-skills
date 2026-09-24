@@ -1,6 +1,6 @@
 ---
 name: ouch
-description: Choose and ship Icons8 illustrations (Ouch!) through the Icons8 MCP so a deliverable ends up with pictures that are about the product, read as one set, and can legally and technically be published. Use when a landing page, app screen, empty state, onboarding, 404, docs page, slide deck or project site needs illustrations, when the user mentions Ouch, Icons8 illustrations or a style by name, and when extending or auditing illustrations already in a file. Covers animated illustrations too (video and Lottie): use it when a brief asks for motion, an animated hero or a moving illustration. For small symbols in buttons, menus, toolbars and tables use the `icons8` skill instead.
+description: Choose and ship Icons8 illustrations (Ouch!) through the Icons8 MCP so a deliverable ends up with pictures that are about the product, read as one set, and can legally and technically be published. Use when a landing page, app screen, empty state, onboarding, 404, docs page, slide deck or project site needs illustrations, when the user mentions Ouch, Icons8 illustrations or a style by name, and when extending or auditing illustrations already in a file. Covers animated illustrations too (video and Lottie). Use it when a brief asks for motion, an animated hero or a moving illustration. For small symbols in buttons, menus, toolbars and tables use the `icons8` skill instead.
 ---
 
 # Icons8 illustrations

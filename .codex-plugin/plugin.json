@@ -1,6 +1,6 @@
 {
   "name": "icons8",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Icons8 icons and Ouch! illustrations for coding agents, plus a design pass over what the agent built with them. Locks a project to one icon pack and one illustration style, rejects wrong metaphors and generic art, and checks the finished screen for emoji standing in for icons, missing images, dead placeholders, broken icon imports, keyboard reach, contrast and token drift, fixing what it finds from the catalogue. Bundles the Icons8 MCP server.",
   "author": {
     "name": "Icons8",
