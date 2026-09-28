@@ -110,6 +110,10 @@ skill needs to choose a pack, build the contact sheet, and prototype straight fr
 `https://img.icons8.com/?id=…&format=png&size=24`. Free icon usage requires attribution — see the
 [Icons8 license](https://icons8.com/license).
 
+**Animated icons** come through `get_icon_animation`: gif and apng are free, Lottie counts as a paid
+download. The skill keeps icons static by default and lets one play once on a click, a hover or while
+something loads, never on a loop, with motion that matches the action.
+
 **Full SVG access** — [subscribe for $15](https://icons8.com/icons/pricing). There is no second
 setup: the account you already signed in with carries the plan, and a fifth tool, `get_icon_svg`,
 appears alongside the other four. The skill's final step then inlines real SVG for the approved set.
@@ -160,14 +164,16 @@ skills/icons8/
 └── references/
     ├── PACKS.md              # which pack for which job, outline+filled pairs, coverage numbers
     ├── VOCABULARY.md         # concept → commonName map, verified visually, plus the traps
-    └── KITS.md               # ready concept lists: SaaS UI, landing, ecommerce, dev docs, analytics
+    ├── KITS.md               # ready concept lists: SaaS UI, landing, ecommerce, dev docs, analytics
+    └── ANIMATION.md          # when an icon may move, motion that matches the action, play-once Lottie
 skills/ouch/
 ├── SKILL.md                  # the sequence, hard rules, the priority ladder, gotchas
 ├── references/
 │   ├── STYLES.md             # the 43-style first tier, the free tier in full, styles by surface
 │   ├── SLOTS.md              # slot kits per project type, thin subjects
 │   ├── VOCABULARY.md         # state → search query map, measured against the live server
-│   └── LAYOUT.md             # the browser measurements behind the layout rules
+│   ├── LAYOUT.md             # the browser measurements behind the layout rules
+│   └── ANIMATION.md          # when a slot earns motion, formats, the source order that plays
 └── scripts/measure.py        # ground line, mass offset, saturation: one source of the formulas
 skills/icons8-design/         # front door: routes a design request to the skill that owns it
 skills/asset-check/           # four mechanical checks on what is on the page

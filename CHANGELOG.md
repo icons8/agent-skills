@@ -5,6 +5,32 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
+## [0.5.0] — 2026-09-28
+
+Icons that move, without an interface that flickers.
+
+### Added
+
+- **Animated icons in `icons8`.** The server now finds icons that move (`search_icons(animated=True)`)
+  and serves them as Lottie, gif or apng (`get_icon_animation`). The skill's rule is that motion
+  answers the user and never starts on its own: an icon plays one cycle on a click that changes
+  state, on hover or focus of a standalone control, or for as long as a loading process runs, then
+  stops on its first frame, which is the static icon. Navigation, lists, empty and error states stay
+  static, and nothing loops on hover or click. Hover and click take Lottie only, because gif and
+  apng loop forever by construction, cannot be recolored and exist in one size per pack; gif is
+  also opaque white. `references/ANIMATION.md` carries the formats, a play-once snippet run in
+  Chrome, CSS tinting that follows the icon's `color`, and two new lock fields (`motion`, `format`).
+  The motion also has to say what the action says: positive actions take motion that fills or
+  joins, negative ones motion that empties or breaks, checked by the Lottie's layer names and by
+  looking at frames. Found in a test build where the only animated link in `m_outlined` breaks
+  apart, which suits Unlink and contradicts Copy link. Toggles (like, bookmark) play half a cycle
+  on and half off.
+
+### Changed
+
+- `icons8` no longer says the MCP has no animated icons.
+- `motion` names an animated icon played once as the alternative to cross-fading paired variants.
+
 ## [0.4.1] — 2026-09-24
 
 The `ouch` frontmatter was not valid YAML. A tool that parses frontmatter strictly skipped the skill.

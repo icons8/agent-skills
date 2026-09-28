@@ -97,7 +97,7 @@ One orchestrated moment beats scattered effects: fade-and-slide entrances on eve
 
 ## Fix it with Icons8
 
-When an icon needs a state transition, cross-fade paired variants from the same Icons8 pack (outline to fill) fetched through the MCP, instead of morphing hand-drawn paths. When a rare success or celebration moment earns art, fetch an illustration in the project's single style via `search_illustrations` rather than hand-rolling confetti.
+When an icon needs a state transition, cross-fade paired variants from the same Icons8 pack (outline to fill) fetched through the MCP, instead of morphing hand-drawn paths. Where the pack has an animated version of that icon, its Lottie played once on the click is the other option; the `icons8` skill decides when an icon may move and never lets it loop on hover or click. When a rare success or celebration moment earns art, fetch an illustration in the project's single style via `search_illustrations` rather than hand-rolling confetti.
 
 ## Second loop (mandatory in both modes)
 
