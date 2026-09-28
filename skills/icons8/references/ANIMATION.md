@@ -2,9 +2,11 @@
 
 About one icon in fifty also moves. It is still an icon from the project's
 pack, so everything in `SKILL.md` applies. This file covers only what motion
-adds. The timing is baked into the file (28 frames at 24 fps, about 1.2 s) and
-is not adjustable; every other motion rule and value belongs to `motion`,
-including reduced motion and hover gating, which the snippet below implements.
+adds. The timing is the animator's: 28 frames at 24 fps, about 1.2 s. It is
+the icon's own motion, not a UI transition, so the durations in `motion` do not
+apply to it; lottie-web's `setSpeed()` exists, leave it at 1 unless asked.
+Everything else about motion belongs to `motion`, including reduced motion and
+hover gating, which the snippet below implements.
 
 Measured 2026-09-25/28; the snippet was run in Chrome.
 
@@ -17,12 +19,14 @@ prevents.
 
 | Trigger | Plays | Example |
 | --- | --- | --- |
-| Click or tap that changes state | once per click | like, bookmark, save, send, add to cart |
-| Hover or keyboard focus on a standalone element | once on enter | an icon button |
+| Click or tap that changes state | once per click | save, send, add to cart |
+| A toggle | half a cycle on, half off | like, bookmark |
+| Mouse hover on a standalone element | once on enter | an icon button |
 | A process the user started and is waiting for | while it runs, then gone | loading, syncing, uploading |
 
-**Never loop on hover or click.** Only the third row repeats, because there
-the motion itself means "still working".
+**Never loop on hover or click.** Only the loading row repeats, because there
+the motion itself means "still working". Keyboard focus never starts motion
+(`motion`: keyboard-initiated actions are a disqualifier).
 
 **Static, always:** navigation, sidebars, tabs, menus, list and table rows
 (high-frequency hover, see `motion`); anything moving at rest, landing grids
@@ -40,8 +44,8 @@ the counter) happens without it too.
   `home--v4`). For them the `--vN` rejection rule in `SKILL.md` does not apply,
   but look at the still: it can be a different drawing from the plain icon.
 - Use the animated id for both states. Its frame 0 is pixel-identical to its
-  own SVG and PNG, so rest on `get_icon_svg(<animated id>)` and nothing jumps
-  when it starts.
+  own SVG and PNG, and a player with `autoplay: false` already shows frame 0,
+  so the resting icon is the player itself: no separate SVG to fetch.
 - A plain search ranks animated variants high (`home` in `ios7`: three of the
   top five). Pass `animated=False` when they crowd out the plain icon.
 
@@ -101,11 +105,13 @@ Read the story before you take the icon:
 **string** under `"lottie"`: save it as a `.json` file or `JSON.parse` it. It
 is usually 10 to 30 thousand characters. A refusal (over 100,000 characters, no
 credential, limit spent) means the icon stays static. Never fall back to a
-looping gif on a hover or click state.
+looping gif on a hover or click state. Every Lottie counts as a paid download,
+so fetch each one once, save it to the file named in the lock (section 7) and
+read that file on every later screen.
 
 ## 6. Wire it
 
-The player rests on frame 0 (the static icon), plays on the trigger and stops.
+Each icon gets its own player on its own copy of its JSON, resting on frame 0.
 Inline the JSON when the page may open from disk: the player loads files by
 XHR and `file://` blocks it silently. If the project allows no external
 scripts, inline `lottie_light.min.js` too (about 170 KB).
@@ -113,60 +119,91 @@ scripts, inline `lottie_light.min.js` too (about 170 KB).
 ```html
 <style>
   /* Monochrome packs: the Lottie follows `color`, like every other icon. */
+  .i8-anim { display: block; width: 24px; height: 24px; }
   .i8-anim path[fill^="rgb"]   { fill: currentColor; }
   .i8-anim path[stroke^="rgb"] { stroke: currentColor; }
 </style>
 
-<button class="icon-btn" aria-label="Send">
-  <span class="i8-anim" data-trigger="click" style="display:block;width:24px;height:24px"></span>
+<button aria-label="Send"><span class="i8-anim" data-icon="send" data-trigger="click"></span></button>
+<button aria-label="Like" aria-pressed="false">
+  <span class="i8-anim" data-icon="like" data-trigger="toggle" data-on="14"></span>
 </button>
+<button aria-label="Settings"><span class="i8-anim" data-icon="settings" data-trigger="hover"></span></button>
+<span class="i8-anim" data-icon="loading" data-trigger="loading" hidden></span>
 
 <script src="https://cdn.jsdelivr.net/npm/lottie-web@5/build/player/lottie_light.min.js"></script>
 <script>
-  const SEND = /* the string from get_icon_animation, parsed */ {};
+  // One entry per icon: the string from get_icon_animation (or its saved file), parsed.
+  const ICONS = { send: {}, like: {}, settings: {}, loading: {} };
   const still = matchMedia("(prefers-reduced-motion: reduce)");
   const canHover = matchMedia("(hover: hover) and (pointer: fine)");
+  const players = new Map();
+  const frame = (a) => a.firstFrame + a.currentFrame; // absolute, also inside a segment
 
   document.querySelectorAll(".i8-anim").forEach((el) => {
+    const trigger = el.dataset.trigger;
     const anim = lottie.loadAnimation({
-      container: el, renderer: "svg", loop: false, autoplay: false, animationData: SEND,
+      container: el, renderer: "svg", autoplay: false, loop: trigger === "loading",
+      animationData: structuredClone(ICONS[el.dataset.icon]), // the player mutates its data
     });
-    anim.addEventListener("complete", () => anim.goToAndStop(0, true));
-    const play = () => { if (!still.matches) anim.goToAndPlay(0, true); };
+    players.set(el, anim);
     const control = el.closest("button, a") || el;
-    if (el.dataset.trigger === "click") control.addEventListener("click", play);
-    else {
-      control.addEventListener("focus", play);
-      control.addEventListener("mouseenter", () => { if (canHover.matches) play(); });
+
+    if (trigger === "click" || trigger === "hover") {
+      anim.addEventListener("complete", () => anim.goToAndStop(0, true));
+      const play = () => { if (!still.matches && anim.isPaused) anim.goToAndPlay(0, true); };
+      if (trigger === "click") control.addEventListener("click", play);
+      else control.addEventListener("mouseenter", () => { if (canHover.matches) play(); });
+    }
+
+    if (trigger === "toggle") {
+      const on = Number(el.dataset.on);
+      const isOn = () => control.getAttribute("aria-pressed") === "true";
+      anim.addEventListener("DOMLoaded", () => anim.goToAndStop(isOn() ? on : 0, true));
+      anim.addEventListener("complete", () => anim.goToAndStop(isOn() ? on : 0, true)); // exact rest frames
+      control.addEventListener("click", () => {
+        const next = !isOn();
+        control.setAttribute("aria-pressed", String(next)); // or let the app own it
+        if (still.matches) return anim.goToAndStop(next ? on : 0, true);
+        const f = frame(anim);
+        if (next) anim.playSegments([f, on], true);            // fill, or undo a half-emptied heart
+        else anim.playSegments([f, f < on ? 0 : anim.totalFrames], true); // reverse, or empty
+      });
     }
   });
+
+  // Loading: show and spin while the work runs, then hide.
+  function startLoading(el) { el.hidden = false; if (!still.matches) players.get(el).play(); }
+  function stopLoading(el) { players.get(el).goToAndStop(0, true); el.hidden = true; }
 </script>
 ```
 
-- `loop: false` and `autoplay: false` are required: with either default the
-  icon moves on its own. `goToAndStop(0)` on `complete` returns it to the exact
-  still, so a held hover never replays.
+- `autoplay: false` is required everywhere, `loop: false` everywhere except the
+  loader. A click or hover icon ignores a second trigger while it is still
+  playing, so nothing restarts from frame 0 mid-cycle.
+- A toggle plays from wherever it is: a second click mid-fill reverses to empty
+  instead of jumping, and an item that is already on when the page loads rests
+  on the "on" frame. Find that frame by rendering a few frames (the
+  `m_outlined` heart: 14 of 28) and record it in the lock.
+- Under reduced motion nothing moves: a toggle jumps to its end frame, the
+  loader shows its first frame next to its label.
 - The CSS tint is for monochrome packs (`isColor: false`) only; color packs keep
   their palette. State colors (a red liked heart, an accent active item) then
   come from `color` for free. Look at the result: a black mask layer follows
   `currentColor` too. Outside the web (SwiftUI, Android, Rive) there is no CSS:
   repaint in the JSON instead, setting `c.k` to `[r, g, b, 1]` (0 to 1) on
   every `fl` and `st` shape whose `c.a` is 0.
-- Load each JSON once and keep one player per icon; never refetch on hover.
-- **A toggle is two half cycles.** Like and bookmark fill in and empty again
-  within one cycle, so the snippet above would erase the liked state. Find the
-  frame where "on" is complete (the `m_outlined` heart: 14 of 28), play
-  `playSegments([0, 14], true)` on and hold, `playSegments([14, 28], true)` off.
-  No `complete` handler on a toggle; under reduced motion jump to the half's
-  end frame.
 
 ## 7. Record it in the lock
 
-An animated icon is an ordinary `icons.items` entry with two more fields, so the
-next screen reuses the same id and trigger:
+An animated icon is an ordinary `icons.items` entry with a few more fields, so
+the next screen reuses the same id, trigger and file instead of paying for the
+download again:
 
 ```json
-"like": { "id": "p7MI4JnqXYvv", "commonName": "like--v2", "motion": "click", "format": "lottie" }
+"like": { "id": "p7MI4JnqXYvv", "commonName": "like--v2", "motion": "toggle",
+          "format": "lottie", "file": "assets/icons/like.json", "on": 14 }
 ```
 
-`motion` is `click`, `hover` or `loading`. An item without it is static.
+`motion` is `click`, `toggle`, `hover` or `loading`; `on` only for a toggle.
+An item without `motion` is static.

@@ -13,6 +13,8 @@ This skill owns all timing: durations, easings, springs, stagger, press feedback
 
 One exception on the other side: the response-time budgets in `ux-check` (feedback within 100 ms, progress past a second) are perception thresholds for whether the interface answered at all, not animation values, and they stay there.
 
+Animation authored inside an Icons8 asset (an animated icon, an Ouch video or Lottie) keeps the animator's timing: `icons8` and `ouch` decide when it may play, and no duration here applies to it. The press feedback on the control around it is still yours.
+
 Motion tokens (`--ease-*`, durations) are defined here and may live in their own file. `design-tokens` exempts that file from its parallel-palette count; it does not own these values and does not rename them.
 
 Skills outside this line can own the same ground (`animate`, `review-animations`, `improve-animations`, `emil-design-eng` carry the same duration tables, from the same source). If one is loaded, follow it and add only what it does not cover. One defect, one finding.
@@ -97,7 +99,7 @@ One orchestrated moment beats scattered effects: fade-and-slide entrances on eve
 
 ## Fix it with Icons8
 
-When an icon needs a state transition, cross-fade paired variants from the same Icons8 pack (outline to fill) fetched through the MCP, instead of morphing hand-drawn paths. Where the pack has an animated version of that icon, its Lottie played once on the click is the other option; the `icons8` skill decides when an icon may move and never lets it loop on hover or click. When a rare success or celebration moment earns art, fetch an illustration in the project's single style via `search_illustrations` rather than hand-rolling confetti.
+When an icon needs a state transition, cross-fade paired variants from the same Icons8 pack (outline to fill) fetched through the MCP, instead of morphing hand-drawn paths. Where the pack has an animated version of that icon, its Lottie is the other option; the `icons8` skill decides when and how an icon may move (a toggle plays half a cycle each way) and never lets it loop on hover or click. When a rare success or celebration moment earns art, fetch an illustration in the project's single style via `search_illustrations` rather than hand-rolling confetti.
 
 ## Second loop (mandatory in both modes)
 

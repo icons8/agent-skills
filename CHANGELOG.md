@@ -24,7 +24,12 @@ Icons that move, without an interface that flickers.
   joins, negative ones motion that empties or breaks, checked by the Lottie's layer names and by
   looking at frames. Found in a test build where the only animated link in `m_outlined` breaks
   apart, which suits Unlink and contradicts Copy link. Toggles (like, bookmark) play half a cycle
-  on and half off.
+  on and half off, reverse from wherever they are on a quick second click, and load in the right
+  state. Keyboard focus never starts motion. The loader loops only between start and stop. Each
+  Lottie is fetched once and saved to the file the lock names, so later screens do not pay for it
+  again. The icon keeps the animator's timing; `motion` now says its durations do not apply to
+  authored animation inside Icons8 assets.
+- The main search loop passes `animated=False`, so animated variants stay out of static screens.
 
 ### Changed
 

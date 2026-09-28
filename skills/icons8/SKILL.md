@@ -76,10 +76,12 @@ to `Dusk_Wired`, `material` to `androidL` (Material Filled), `office` to `office
 `forma`, `glyph`, `sf` and `tiny` return zero results.
 
 **3. One search per concept, always with `platform`.**
-`search_icons(query="settings", platform="m_outlined", amount=10)`
+`search_icons(query="settings", platform="m_outlined", animated=False, amount=10)`
 The filter is what makes search useful: those 10 results are now 10 different metaphors
 instead of 10 styles of one. Cost is about 1k tokens at `amount=10`, 2.6k at 30 (max 100).
 Do not search the same concept twice, and do not re-search to "double check" a pick.
+`animated=False` keeps animated `--vN` variants, which rank high, out of a static screen;
+drop it only for the icons you mean to animate.
 
 **4. Score the candidates** with the rules below, then **look at them**. Build one contact
 sheet and open it, no MCP calls needed:

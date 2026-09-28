@@ -11,7 +11,7 @@ once on first use, and search and high-res PNG are free from there. No API key t
 
 ## Why
 
-The MCP server is a thin wrapper over the Icons8 search API. It gives an agent five tools and no
+The MCP server is a thin wrapper over the Icons8 search API. It gives an agent a handful of tools and no
 judgement, and the default behaviour fails in three specific ways:
 
 1. **Unfiltered search returns one metaphor in ten styles.** Asking for `delete` twelve times
@@ -105,7 +105,7 @@ has nothing to search and will say so.
 ## Pick your plan
 
 **Free high-res PNG** — what the plugin bundles, once you sign in. The server exposes
-`search_icons`, `list_categories`, `list_platforms` and `get_icon_png_url`, which is everything the
+`search_icons`, `list_categories`, `list_platforms`, `get_icon_png_url` and `get_icon_animation`, which is everything the
 skill needs to choose a pack, build the contact sheet, and prototype straight from
 `https://img.icons8.com/?id=…&format=png&size=24`. Free icon usage requires attribution — see the
 [Icons8 license](https://icons8.com/license).
@@ -115,8 +115,8 @@ download. The skill keeps icons static by default and lets one play once on a cl
 something loads, never on a loop, with motion that matches the action.
 
 **Full SVG access** — [subscribe for $15](https://icons8.com/icons/pricing). There is no second
-setup: the account you already signed in with carries the plan, and a fifth tool, `get_icon_svg`,
-appears alongside the other four. The skill's final step then inlines real SVG for the approved set.
+setup: the account you already signed in with carries the plan, and `get_icon_svg` appears alongside
+the others. The skill's final step then inlines real SVG for the approved set.
 If the agent still hands back PNG, sign in again so it picks up the new plan — `/mcp` in Claude Code,
 `codex mcp login icons8mcp` in Codex, **Connect** in Cursor.
 
