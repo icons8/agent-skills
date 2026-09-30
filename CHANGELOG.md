@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
-## [0.5.0] — 2026-09-28
+## [0.5.0] — 2026-09-30
 
 Icons that move, without an interface that flickers.
 
