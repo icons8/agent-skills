@@ -1,13 +1,14 @@
 ---
 name: icons8
-description: Pick and fetch icons through the Icons8 MCP so a project ends up with one consistent set instead of a pile of mismatched icons. Locks the whole project to one pack, rejects wrong metaphors (settings is a plain gear, not an Apple logo), previews with free PNG URLs and pulls SVG only for the final set. Use whenever a UI, prototype, landing page, slide deck or doc needs icons, when the user mentions Icons8, an icon set or a specific icon, and when replacing or auditing icons already in a file.
+description: Pick and fetch icons through the Icons8 MCP so a project ends up with one consistent set instead of a pile of mismatched icons. Locks the whole project to one pack, rejects wrong metaphors (settings is a plain gear, not an Apple logo), previews with free PNG URLs and pulls SVG only for the final set. Use whenever a UI, prototype, landing page, slide deck or doc needs icons, when the user mentions Icons8, an icon set or a specific icon, when replacing or auditing icons already in a file, and when an icon should move on hover, click or while loading.
 ---
 
 # Icons8 icons
 
-The MCP is a thin wrapper over the Icons8 search API. It gives you 5 tools and no taste:
-`search_icons`, `list_categories`, `list_platforms`, `get_icon_svg`, `get_icon_png_url`.
-Default behaviour is bad in three specific ways, and this skill exists to fix them.
+The MCP is a thin wrapper over the Icons8 search API. It gives you these icon tools and no taste:
+`search_icons`, `list_categories`, `list_platforms`, `get_icon_png_url`, `get_icon_animation`,
+and `get_icon_svg` on a paid plan.
+Default behaviour is bad in four specific ways, and this skill exists to fix them.
 
 **1. Unfiltered search returns one metaphor in ten styles.** `search_icons("delete")` with
 `amount=12` returns the same trash can in 12 different packs. You see one idea and no
@@ -22,11 +23,9 @@ a settings screen.
 the payload runs from 600 characters (Flat Color) to 46,000 (Color Hand Drawn, about 11k
 tokens for a single icon). PNG previews are free, instant and need no MCP call at all.
 
-
-**There are no animated icons in this MCP.** All 133 platforms are static, and
-`search_icons` has neither an `animated` filter nor a download tool for one
-(measured 2026-09-21). Do not promise one. Ouch illustrations do have animated
-versions; that is a different catalog and a different skill.
+**4. Animated icons are a trap by default.** About one icon in fifty moves, and swapping
+static icons for their animated twins makes the whole interface flicker. The rules are in
+[Animated icons](#animated-icons) below.
 
 ## The loop
 
@@ -77,10 +76,12 @@ to `Dusk_Wired`, `material` to `androidL` (Material Filled), `office` to `office
 `forma`, `glyph`, `sf` and `tiny` return zero results.
 
 **3. One search per concept, always with `platform`.**
-`search_icons(query="settings", platform="m_outlined", amount=10)`
+`search_icons(query="settings", platform="m_outlined", animated=False, amount=10)`
 The filter is what makes search useful: those 10 results are now 10 different metaphors
 instead of 10 styles of one. Cost is about 1k tokens at `amount=10`, 2.6k at 30 (max 100).
 Do not search the same concept twice, and do not re-search to "double check" a pick.
+`animated=False` keeps animated `--vN` variants, which rank high, out of a static screen;
+drop it only for the icons you mean to animate.
 
 **4. Score the candidates** with the rules below, then **look at them**. Build one contact
 sheet and open it, no MCP calls needed:
@@ -125,7 +126,7 @@ The user's complaint is "settings should be a plain gear, not a gear with extra 
 | `Logos` as the only category, or a name ending in `-logo` | brand icon, not a UI icon | `settings` → `apple-settings` (top 4 results) |
 | `Industry`, `Transport`, `Household` for a UI action | literal machine part, reads wrong in a toolbar | `settings` → `gear`, `gears`, `automatic`, `settings-3`; `dashboard` → car gauge |
 | Compound icons when a plain one exists | extra objects add meaning you did not ask for | `laptop-settings`, `sync-settings`, `api-settings` for a plain settings item |
-| `--v2` / `--v3` when the plain `commonName` exists and looks right | suffixed variants are alternates, often decorated | `star--v2` and `star--v3` in `m_outlined` are a star inside a star; `filled-star` is the clean one |
+| `--v2` / `--v3` when the plain `commonName` exists and looks right (not for an icon you animate: those ids carry the suffix) | suffixed variants are alternates, often decorated | `star--v2` and `star--v3` in `m_outlined` are a star inside a star; `filled-star` is the clean one |
 | Any icon whose display name does not match the concept | search matched a substring, not the idea | `webhook` → `webtoon-logo`; `dark mode` → `do-not-disturb`, `film-noir` |
 | Color or 3D packs at 16-24px | detail turns to mud | `plasticine`, `isometric`, `badges` in product UI |
 | 1px-stroke mono packs at 96px+ | looks thin and unfinished | `p1em`, `tiny-glyph` on a landing hero |
@@ -169,6 +170,17 @@ both of them away.
   It does not affect PNG previews, both work. If the assets ship in a product, confirm the
   license before handing over paid icons.
 
+## Animated icons
+
+Default is static. An animated icon plays **once, in answer to the user**: a click that
+changes state (save, send), a mouse hover on a standalone element, or a loading process for
+exactly as long as it runs. A toggle (like, bookmark) plays half a cycle on and half off.
+Keyboard focus never starts motion. It never loops on hover or click, and navigation,
+list rows, empty and error states never move. Hover and click take Lottie only: gif and apng
+loop forever by construction. The motion has to say what the action says (the only animated
+link in `m_outlined` breaks apart: right for Unlink, wrong for Copy link); in doubt, static.
+Read `references/ANIMATION.md` before animating anything.
+
 ## Recovering from a bad search
 
 Zero results or junk means the wording is wrong, not that the icon is missing. Search matches
@@ -190,6 +202,8 @@ If `countAll` is 1-2 and the single hit is a logo, treat it as a miss and reword
 
 - `references/PACKS.md`: which pack for which job, outline plus filled pairs, coverage numbers.
 - `references/VOCABULARY.md`: concept to `commonName` map, verified visually, plus the traps.
+- `references/ANIMATION.md`: when an icon may move, matching motion to the action, the
+  three formats, the play-once Lottie snippet, toggles, the lock fields.
 - `references/KITS.md`: ready concept lists for SaaS UI, landing, ecommerce, dev docs,
   analytics, empty states. Start from a kit instead of inventing the list.
 
