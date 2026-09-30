@@ -120,6 +120,7 @@ scripts, inline `lottie_light.min.js` too (about 170 KB).
 <style>
   /* Monochrome packs: the Lottie follows `color`, like every other icon. */
   .i8-anim { display: block; width: 24px; height: 24px; }
+  .i8-anim[hidden] { display: none; } /* the rule above would beat `hidden` */
   .i8-anim path[fill^="rgb"]   { fill: currentColor; }
   .i8-anim path[stroke^="rgb"] { stroke: currentColor; }
 </style>
@@ -160,14 +161,17 @@ scripts, inline `lottie_light.min.js` too (about 170 KB).
       const on = Number(el.dataset.on);
       const isOn = () => control.getAttribute("aria-pressed") === "true";
       anim.addEventListener("DOMLoaded", () => anim.goToAndStop(isOn() ? on : 0, true));
-      anim.addEventListener("complete", () => anim.goToAndStop(isOn() ? on : 0, true)); // exact rest frames
+      anim.addEventListener("complete", () => {
+        anim.resetSegments(true); // back to whole-file frame numbers, or goToAndStop counts inside the segment
+        anim.goToAndStop(isOn() ? on : 0, true);
+      });
       control.addEventListener("click", () => {
         const next = !isOn();
         control.setAttribute("aria-pressed", String(next)); // or let the app own it
         if (still.matches) return anim.goToAndStop(next ? on : 0, true);
         const f = frame(anim);
         if (next) anim.playSegments([f, on], true);            // fill, or undo a half-emptied heart
-        else anim.playSegments([f, f < on ? 0 : anim.totalFrames], true); // reverse, or empty
+        else anim.playSegments([f, f < on ? 0 : anim.animationData.op], true); // reverse, or empty
       });
     }
   });

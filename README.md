@@ -111,8 +111,9 @@ skill needs to choose a pack, build the contact sheet, and prototype straight fr
 [Icons8 license](https://icons8.com/license).
 
 **Animated icons** come through `get_icon_animation`: gif and apng are free, Lottie counts as a paid
-download. The skill keeps icons static by default and lets one play once on a click, a hover or while
-something loads, never on a loop, with motion that matches the action.
+download. The skill keeps icons static by default and lets one play once on a click or a hover, half a
+cycle each way on a toggle such as like, or while something loads; never on a loop, and with motion
+that matches the action.
 
 **Full SVG access** — [subscribe for $15](https://icons8.com/icons/pricing). There is no second
 setup: the account you already signed in with carries the plan, and `get_icon_svg` appears alongside

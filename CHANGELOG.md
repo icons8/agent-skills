@@ -14,8 +14,8 @@ Icons that move, without an interface that flickers.
 - **Animated icons in `icons8`.** The server now finds icons that move (`search_icons(animated=True)`)
   and serves them as Lottie, gif or apng (`get_icon_animation`). The skill's rule is that motion
   answers the user and never starts on its own: an icon plays one cycle on a click that changes
-  state, on hover or focus of a standalone control, or for as long as a loading process runs, then
-  stops on its first frame, which is the static icon. Navigation, lists, empty and error states stay
+  state or on a mouse hover over a standalone element, half a cycle each way on a toggle, or for
+  as long as a loading process runs, then stops on its rest frame. Navigation, lists, empty and error states stay
   static, and nothing loops on hover or click. Hover and click take Lottie only, because gif and
   apng loop forever by construction, cannot be recolored and exist in one size per pack; gif is
   also opaque white. `references/ANIMATION.md` carries the formats, a play-once snippet run in

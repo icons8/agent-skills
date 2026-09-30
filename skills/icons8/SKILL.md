@@ -173,8 +173,9 @@ both of them away.
 ## Animated icons
 
 Default is static. An animated icon plays **once, in answer to the user**: a click that
-changes state (like, save, send), hover or focus on a standalone element, or a loading
-process for exactly as long as it runs. It never loops on hover or click, and navigation,
+changes state (save, send), a mouse hover on a standalone element, or a loading process for
+exactly as long as it runs. A toggle (like, bookmark) plays half a cycle on and half off.
+Keyboard focus never starts motion. It never loops on hover or click, and navigation,
 list rows, empty and error states never move. Hover and click take Lottie only: gif and apng
 loop forever by construction. The motion has to say what the action says (the only animated
 link in `m_outlined` breaks apart: right for Unlink, wrong for Copy link); in doubt, static.
