@@ -14,8 +14,9 @@ denominator), so they are not copied anymore.
     uv run measure.py <files...>         # any OS; installs Pillow on the fly
 
 Needs Python 3 with Pillow (python3 -m pip install pillow). SVG files are
-rasterized through headless Chrome or Edge; override the browser binary with
-$CHROME. PNG and WebP need no browser.
+rasterized through headless Chrome or Edge, found in its standard install
+locations or on PATH; name another binary with `--chrome PATH`. PNG and WebP
+need no browser. The script reads no environment variables.
 
 Prints per file: the ground-line offset as % of the frame (for subjects that
 stand), the mass offset as % of the frame (for subjects that float), and the
@@ -46,13 +47,16 @@ def _image_module():
     return Image
 
 
+# The browser named with --chrome. Paths are fixed rather than read from the environment:
+# a plugin that reads environment variables is held for review in the Claude directory.
+chrome_override = None
+
+
 def _chrome_candidates():
-    env = os.environ.get("CHROME", "")
-    local = os.environ.get("LOCALAPPDATA", "")
-    pf = os.environ.get("PROGRAMFILES", r"C:\Program Files")
-    pf86 = os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)")
+    local = str(Path.home() / "AppData" / "Local")
+    pf, pf86 = r"C:\Program Files", r"C:\Program Files (x86)"
     paths = [
-        env,
+        chrome_override or "",
         # macOS
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         "/Applications/Chromium.app/Contents/MacOS/Chromium",
@@ -67,7 +71,7 @@ def _chrome_candidates():
         # Windows
         os.path.join(pf, "Google", "Chrome", "Application", "chrome.exe"),
         os.path.join(pf86, "Google", "Chrome", "Application", "chrome.exe"),
-        os.path.join(local, "Google", "Chrome", "Application", "chrome.exe") if local else "",
+        os.path.join(local, "Google", "Chrome", "Application", "chrome.exe"),
         os.path.join(pf86, "Microsoft", "Edge", "Application", "msedge.exe"),
         os.path.join(pf, "Microsoft", "Edge", "Application", "msedge.exe"),
     ]
@@ -166,8 +170,8 @@ def rasterize(path, out=None):
         return out
     c = chrome_path()
     if c is None:
-        raise RuntimeError("no Chrome or Edge to rasterize SVG with; set $CHROME "
-                           "to the browser binary")
+        raise RuntimeError("no Chrome or Edge to rasterize SVG with; pass "
+                           "--chrome PATH to the browser binary")
     aspect = _svg_aspect(path)
     w, h = 300, max(20, min(1200, round(300 * aspect)))
     wrapper = out + ".wrap.html"
@@ -258,7 +262,28 @@ def expand_args(args):
     return files
 
 
+def take_chrome(argv):
+    """Remove `--chrome PATH` or `--chrome=PATH` from argv and return (path or None, the rest)."""
+    rest, path, i = [], None, 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == "--chrome" and i + 1 < len(argv):
+            path, i = argv[i + 1], i + 2
+            continue
+        if arg.startswith("--chrome="):
+            path = arg.split("=", 1)[1]
+        else:
+            rest.append(arg)
+        i += 1
+    return path, rest
+
+
 def main(argv):
+    global chrome_override
+    chrome_override, argv = take_chrome(argv)
+    if chrome_override and not os.path.isfile(chrome_override):
+        print(f"--chrome: no such file: {chrome_override}", file=sys.stderr)
+        return 2
     files = expand_args(argv)
     if not files or any(a in ("-h", "--help") for a in argv):
         print(__doc__)

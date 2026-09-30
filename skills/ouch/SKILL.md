@@ -269,7 +269,9 @@ The script expands `*` itself, so the pattern works in both.
 The script ships with this skill; installed as a bare skill rather than a
 plugin, it sits in this skill's own `scripts/` folder. It needs Python 3 with
 Pillow (`python3 -m pip install pillow`, or `uv run` the script) and Chrome or
-Edge to rasterize SVG; PNG needs no browser. Do not re-derive the formulas
+Edge to rasterize SVG; PNG needs no browser. It finds a browser in the standard
+install locations and on `PATH`; for one installed elsewhere, add
+`--chrome <path to the binary>`. Do not re-derive the formulas
 inline: two hand-copied versions have already drifted apart once, and the eval
 gates import the same functions.
 

@@ -10,11 +10,9 @@ which is the point of the matrix. Windows is where it earns its keep:
   1. Git for Windows sets `core.autocrlf=true` in its system configuration, so without a
      `.gitattributes` every checked-out file arrives with CRLF. A strict frontmatter parser looks
      for "^---\\n" and does not find it.
-  2. A Windows clone keeps `.mcp.json` as a symlink only where git is allowed to create one —
-     Developer Mode or an elevated shell. GitHub's windows-latest image qualifies and does keep it;
-     a developer's own machine routinely does not, and there git writes a regular file whose content
-     is the link target. Both are accepted, and a third state is not: the plugin must reach its
-     server either way, and a copy of mcp.json would be a second definition to keep in sync.
+  2. Claude reads its MCP server from `.mcp.json` and nowhere else, so that file has to arrive as
+     parseable JSON on every platform. It used to be a symlink, and a Windows clone without
+     Developer Mode wrote it as a text file holding the link target instead.
   3. NTFS and APFS are case-insensitive, so `references/packs.md` opens the real `PACKS.md` on a
      developer's machine and 404s for a Linux user. Case is checked against the directory listing,
      not with `is_file()`.
@@ -25,6 +23,7 @@ which is the point of the matrix. Windows is where it earns its keep:
 Needs no network, no credentials, and no packages outside the standard library.
 """
 
+import json
 import os
 import re
 import subprocess
@@ -108,30 +107,17 @@ crlf = sorted(rel for rel, raw in contents.items() if b"\r\n" in raw)
 check(f"no tracked file carries CRLF on {sys.platform} ({len(contents)} file(s) read as bytes)",
       not crlf, f"{crlf}; this platform's checkout rewrote the line endings")
 
-# --- 3. the MCP server resolves whatever the checkout did to the symlink -------
-check(".mcp.json is a symlink in the index (mode 120000)", INDEX.get(".mcp.json") == "120000",
-      f"index reports mode {INDEX.get('.mcp.json')!r}; a copy reintroduces two definitions")
+# --- 3. the checkout produced a .mcp.json that Claude can read ------------------
+check(".mcp.json is a regular file in the index (mode 100644)", INDEX.get(".mcp.json") == "100644",
+      f"index reports mode {INDEX.get('.mcp.json')!r}; a symlink is refused by the Claude directory "
+      "and arrives as a text file on a Windows checkout without symlink support")
 
-link = REPO / ".mcp.json"
-if link.is_symlink():
-    state = f"a symlink to {os.readlink(link)!r}"
-    resolved = os.readlink(link) == "mcp.json"
-else:
-    # A clone that could not create the symlink wrote a regular file whose content is the link
-    # target. Any third state — a copy of mcp.json, an empty file — means the symlink was replaced
-    # in the repository and two server definitions now drift apart.
-    body = link.read_bytes().decode("utf-8", "replace").strip()
-    state = f"a regular file containing {body[:40]!r}"
-    resolved = body == "mcp.json"
-check(f".mcp.json is {state}", resolved,
-      "expected either a symlink to mcp.json or, on a checkout without symlink support, a file "
-      "whose content is the link target")
-
-for manifest in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json"):
-    text = (REPO / manifest).read_text(encoding="utf-8")
-    check(f"{manifest} reaches the server without .mcp.json", '"./mcp.json"' in text,
-          "on a checkout with no symlink support .mcp.json is unreadable, so the client manifests "
-          "are the only path left to the declaration")
+try:
+    server = json.loads(contents.get(".mcp.json", b"").decode("utf-8"))["mcpServers"]["icons8mcp"]
+    ok, detail = server.get("type") == "http", f"type is {server.get('type')!r}"
+except (ValueError, KeyError, TypeError) as e:
+    ok, detail = False, f"does not parse into mcpServers.icons8mcp: {e}"
+check(f".mcp.json on {sys.platform} declares icons8mcp as http", ok, detail)
 
 # --- 4. cited reference paths match the case on disk ---------------------------
 # is_file() is case-insensitive on NTFS and APFS, so it would pass a citation that only a Linux
