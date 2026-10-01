@@ -5,6 +5,44 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in three manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
+## [0.5.1] — 2026-10-01
+
+The plugin is ready for Anthropic's plugin directory. The Icons8 server is now declared with the
+`http` type, the one that claude.ai chat and Cowork load, as well as Claude Code.
+
+### Added
+
+- **A listing for the Claude directory.** `.claude-plugin/plugin.json` carries a display name, the
+  Icons8 logo as its icon, and links to the
+  [privacy policy](https://intercom.help/icons8-7fb7577e8170/en/articles/7228039-privacy-policy),
+  the [terms and conditions](https://icons8.com/terms-and-conditions), the
+  [contact page](https://icons8.com/contact) for support and the README as documentation. Without
+  the icon the directory would show the publisher's GitHub avatar.
+
+- **The README says what the plugin connects to.** A new section lists every host the skills reach,
+  what each request carries, what the skills write into a project, and what runs on the user's
+  machine. The README also gains example prompts and a support section.
+
+### Changed
+
+- **`.mcp.json` is a regular file with `"type": "http"`.** Since 0.2.0 it was a symlink to
+  `mcp.json`. The directory refuses a symlink where the plugin loader reads, and it accepts a remote
+  server only as `http`, `sse` or `ws`. Chat and Cowork load only `http` and `sse`, so they skipped
+  the server that Claude Code accepted under the `streamable-http` alias. `mcp.json` stays as it
+  was, in the Agent Plugins v1 format that Codex and v1 clients read. The server is now declared in
+  two files, one per format, and CI fails if the two URLs differ.
+
+- **The Claude manifest no longer names an MCP file.** Claude Code loads `.mcp.json` by itself and
+  then loads whatever `mcpServers` names on top of it. Pointing `mcpServers` at `mcp.json` would
+  replace the `http` entry with the `streamable-http` one again.
+
+- **`measure.py` takes `--chrome PATH` instead of `$CHROME`.** The script now reads no
+  environment variables. It looks for Chrome and Edge in their standard install locations, on
+  Windows `C:\Program Files`, `C:\Program Files (x86)` and the user's `AppData\Local`, and then on
+  `PATH`. A browser installed anywhere else is named with `--chrome`. The Claude directory holds
+  for manual review every version of a plugin that reads environment variables and also sends data
+  to a server, and that hold would stop automatic publishing.
+
 ## [0.5.0] — 2026-09-30
 
 Icons that move, without an interface that flickers.
@@ -45,7 +83,7 @@ The `ouch` frontmatter was not valid YAML. A tool that parses frontmatter strict
 - **`ouch` loads in every tool that reads skill frontmatter as strict YAML.** Since 0.4.0 its
   description contained `(video and Lottie): use it`. A colon followed by a space is not allowed in
   an unquoted YAML value. A strict parser rejects the frontmatter, and the tool drops the skill
-  without an error in the agent. One confirmed case is `npx skills`: it printed `YAML parse error`
+  without an error in the agent. One confirmed case is the `skills` installer from npm: it printed `YAML parse error`
   and listed eight skills instead of nine. Claude Code reads frontmatter less strictly and still
   showed the skill. The sentence now ends with a full stop, and the description text is otherwise
   the same. CI now rejects `: ` and ` #` in an unquoted `name` or `description`, so the same mistake
@@ -111,245 +149,7 @@ skills. Plus Ouch illustrations that move, and one lock file for the whole proje
   as "the set that survived to the end of the layout" instead of shipping PNG where the project wants
   vectors.
 
-## [0.3.0] — 2026-09-07
+## Earlier releases
 
-The plugin's second skill: illustrations. `ouch` brings to Ouch! artwork the discipline `icons8`
-brought to icons. The five illustration tools it relies on went live on `mcp.icons8.com` on
-2026-09-07; on a connection that does not expose them, the skill says so and stops, per its own
-rules.
-
-### Added
-
-- **`ouch` skill** — choose and ship Icons8 illustrations (Ouch!) so a deliverable ends up with
-  pictures that are about the product, read as one set, and can legally and technically be
-  published. The rules that survived four test/rewrite cycles plus an independent review: every
-  slot query carries the product's own noun, and absence states show the missing container, never
-  the inhabitant; one style per project, locked in `ouch.json`, with two named escapes (an
-  existing page's style always wins; public repos filter to `free_distribution: true`); a
-  priority ladder that settles collisions (licence → existing style → subject coverage →
-  surface and contrast → tone → the first tier); a contrast gate for non-white backgrounds; and
-  layout rules measured in real browsers, including "`max-height` never upscales a small SVG"
-  and ground-line alignment for 3D artwork. Watermarked previews are for choosing only;
-  presigned original URLs live an hour and never go into a page.
-
-- **Bundled references** — `STYLES.md`: the 43-style first tier with counts verified against the
-  API on 2026-09-07, the free tier in full (15 styles, only two big enough for a whole page),
-  styles by surface and tone; `SLOTS.md`: slot kits per project type and known-thin subjects;
-  `VOCABULARY.md`: state → query translations with measured result counts (`login` returns
-  padlocks, `welcome` returns lettering, `empty state` beats `empty`); `LAYOUT.md`: the browser
-  measurements behind the layout rules, kept out of `SKILL.md` so the skill itself stays short.
-
-- **`scripts/measure.py`** — ground-line offset, mass offset and mean saturation in one script:
-  the single source of those formulas for both the skill and its gates, after two hand-copied
-  versions drifted apart. Rasterizes SVG through headless Chrome at the artwork's own aspect
-  ratio (a fixed 300×300 window parked small files in a corner and skewed geometry by 60
-  percentage points). Needs Python 3 with Pillow, declared in the script (PEP 723 metadata, so
-  `uv run` installs it) and named in a plain error when missing; finds Chrome or Edge on macOS,
-  Linux and Windows, builds `file:` URIs that Windows Chrome accepts, expands `*` itself for
-  cmd and PowerShell, and writes rasters to a temporary directory instead of next to the
-  sources. The skill calls it through `${CLAUDE_PLUGIN_ROOT}`, and writes the PowerShell and cmd
-  spellings of that variable next to it, because neither shell expands the POSIX one.
-
-- **Tested before landing.** Four test/rewrite cycles plus an independent review: the skill's
-  factual claims checked against the live server (57 of 60 exact; the three stale ones were
-  format constants, replaced with "read the response"), and a fresh composite case (public
-  licence × dark hero × a thin free-tier subject) passing 18 of 18 deterministic gates. The eval
-  suite itself — four `claude plugin eval` cases and the gates runner — lives in the development
-  workspace; the repository's `.gitignore` keeps `evals/` out of the shipped plugin, same as for
-  the icon skill.
-
-### Changed
-
-- **Manifests now describe both skills.** `description` and `keywords` in the three plugin
-  manifests, `description` in the Claude marketplace entry (the Agent Plugins marketplace entry
-  carries neither field and is unchanged); the Codex `interface` gains an illustrations default
-  prompt. Version moves to 0.3.0 everywhere it lives.
-
-- **README** — the intro names both skills, "What's inside" maps `skills/ouch/`, and a new
-  "Illustrations: the `ouch` skill" section states the rules and the server status.
-
-## [0.2.0] — 2026-09-03
-
-Two things land together here. The plugin now ships as a conforming
-[Agent Plugins v1](https://agent-plugins.org/specification) package, so clients that implement the
-standard install it from the repository root instead of needing a Claude Code or Codex specific
-path. And the Icons8 server moved to OAuth, so signing in replaces pasting a key — which changes how
-the skill reads the SVG paywall, and what the README tells you to do about it. The way the skill
-picks icons is untouched.
-
-### Added
-
-- **`plugin.json` at the repository root** — the portable manifest, `$schema` pinned to
-  `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`. Its schema is closed, so the fields
-  the client-specific manifests carry outside that set (`skills`, `mcpServers`, `interface`) are not
-  repeated here: `skills/` is already the location the spec fixes for discovery, and MCP
-  configuration belongs in its own file.
-
-- **`mcp.json` at the repository root** — the MCP configuration, at the path the specification fixes
-  for it and with `$schema` pinned to `https://agent-plugins.org/schemas/1.0.0/mcp.schema.json`. A
-  conforming client reads the server from here and from nowhere else, so this is where the Icons8
-  server is now declared — once, rather than once per packaging format, with both client manifests
-  pointing `mcpServers` at it.
-
-### Changed
-
-- **The bundled server connects over HTTP instead of through `npx mcp-remote`.** `mcp.icons8.com`
-  speaks the MCP Streamable HTTP transport directly, so the entry is now
-  `"type": "streamable-http"` with a `url`. That removes the bridge process and the Node.js
-  requirement from every client that reads this file — Claude Code accepts `streamable-http` as an
-  alias for its own `http` type. `npx mcp-remote` is gone from the documentation entirely: the
-  older-Codex fallback is now `codex mcp add icons8mcp --url …`, so no path through these docs still
-  needs the bridge or a Node.js runtime.
-
-- **The Codex manifest's `description` now matches the other three.** It had been missing the closing
-  "Bundles the Icons8 MCP server." since 0.1.0 — true then and truer now, since that manifest points
-  at the same `mcp.json` as everything else.
-
-- **The server authenticates with OAuth, so the README's plan section is rewritten.** Signing in
-  through the browser is now the whole setup, and search and high-res PNG follow from it — the old
-  "no account and no API key required" no longer describes what happens on first use. SVG needs no
-  separate server either: the subscribed account carries the plan and `get_icon_svg` joins the other
-  four tools. An API key in an `Authorization` header remains the path for a client that cannot do
-  OAuth, and for CI, where nobody is around to sign in.
-
-- **The skill reads the SVG gate as a plan, not as a key.** Step 6 used to tell the agent that the
-  gate was "the connection's API key", so a signed-in paid user with no key in sight read as
-  keyless — the wrong diagnosis, and the wrong advice to hand back. It now names the plan the
-  connection carries, whether that comes from the signed-in account or from a bearer header, and
-  adds the state no tool call can diagnose: when the client reports the whole server as needing
-  authentication, nobody has signed in yet.
-
-- **README names the install path per client.** VS Code takes a repository URL through
-  `Chat: Install Plugin From Source` with no marketplace; Copilot CLI uses `copilot plugin install`;
-  Cursor installs from marketplaces only. The section used to say "whatever install path that client
-  documents", which is where the reader's actual question starts.
-
-- **`.claude-plugin/` and `.codex-plugin/` keep their own manifests.** Claude Code is not on the
-  [compatible clients](https://agent-plugins.org/compatible-clients) list and Codex still documents
-  `.codex-plugin/plugin.json`, so the portable files are additive rather than a replacement — which
-  is what the spec's own migration guidance calls for. What they no longer keep is their own copy of
-  the server definition.
-
-### Fixed
-
-- **Codex found no plugin in the marketplace.** `codex plugin marketplace add icons8/agent-skills` —
-  the command the README gives — added the marketplace and then listed nothing in the plugin browser,
-  so the documented install path dead-ended. It had been broken since 0.1.0. The entry in
-  `.agents/plugins/marketplace.json` declared a `git-subdir` source with `"path": "."`, and Codex
-  resolves that source only for a real subdirectory: `"."`, `"./"` and `""` all yield an empty
-  listing, while a genuine subdirectory resolves. The source is now `local` with `"path": "./"`,
-  which resolves against the marketplace root and so covers a clone, a fork and a local checkout
-  alike. Nothing else about the entry changes, and both `.codex-plugin/plugin.json` and the skill
-  were always fine — only the marketplace index pointed into the void.
-
-- **`claude plugin details` counted no MCP servers.** It reported `MCP servers (0)` while
-  `claude mcp list` showed the server connected. Claude Code builds that inventory by reading a file
-  named `.mcp.json` at the plugin root and does not resolve the path a manifest's `mcpServers`
-  declares, so a manifest pointing at `mcp.json` left the count empty. The Agent Plugins
-  specification fixes the configuration filename as `mcp.json` and forbids any alternative path, so
-  `.mcp.json` is a symlink to it rather than a second file: one definition, reachable under both
-  names. Where a checkout cannot create symlinks the count falls back to `0` and the server still
-  loads, which is the behaviour before this change.
-
-## [0.1.1] — 2026-08-11
-
-Two facts the skill stated about the MCP server no longer held. Re-checked against the live API and
-corrected; no behaviour of the skill's workflow changes.
-
-### Fixed
-
-- **`get_icon_svg` never answers with an empty string.** Every failure comes back as
-  `{"error": ...}` — a bad id as `{"error": "Icons8 API: Icon not found (HTTP 404)"}` — so the two
-  places that told the reader to test the `svg` string for emptiness were guarding a state that
-  cannot occur. Both now test for the `error` key. Step 6's third state is rewritten the same way and
-  says to read the message before blaming the plan: `Icon not found` is a wrong id, `Authentication
-  data is invalid or missing (HTTP 401)` is the key.
-
-- **`list_platforms` returns 130 packs, not 98, and `fluent` and `fluent-systems-regular` are both in
-  it.** Three places said otherwise. `fluent-systems-regular` reports 9,186 icons, which puts it in
-  the high-coverage group beside `win10` (9,196) — the old "not listed" cell in `PACKS.md` had kept it
-  out of consideration for Windows work. The caution is kept without the stale example: a code
-  missing from the list is still not proof the pack is gone.
-
-## [0.1.0] — 2026-07-30
-
-First release. Packages the `icons8` skill to the
-[Agent Skills standard](https://agentskills.io/specification) and ships it as a self-hosted plugin
-marketplace, with the [Icons8 MCP server](https://github.com/icons8/icons8-mcp) bundled so a fresh
-install needs no configuration and no subscription.
-
-### Added
-
-- **`icons8` skill** — one consistent icon set per project instead of a pile of mismatched ones: list
-  every concept before searching, pick one pack and lock it in `icons8.json`, filter every search by
-  that pack so results are different metaphors rather than ten styles of one, reject brand logos and
-  literal machinery, preview on a free PNG contact sheet, and fetch SVG only for the approved final
-  set. Bundled references: `PACKS.md` (pack selection, outline+filled pairs, coverage), `VOCABULARY.md`
-  (concept → `commonName`, verified visually), `KITS.md` (ready concept lists per project type).
-
-- **SVG paywall handling that an agent can act on.** Step 6 separates the three states that actually
-  occur. `get_icon_svg` missing from the tool list means the account has no SVG plan — the tool exists
-  server-side and answers when called, the server simply stops advertising it without a key. An
-  explicit `{"error": "You don't have access to this tool. Use get_icon_png_url instead."}` is the
-  common case and settles the question in one call. A quiet `{"svg": ""}` means a key that does not
-  cover SVG. All three route to the same answer: the plan is at
-  <https://icons8.com/icons/pricing>, the key goes into the MCP config as an
-  `Authorization: Bearer <key>` header, and PNG at 2x ships meanwhile. Written because an agent read a
-  four-tool list as "this server has no SVG at all" and proposed rewriting the skill to PNG-only.
-
-- **A real free-tier answer to `currentColor`.** Colour inheritance is the one thing inline SVG buys
-  in product UI, and a plain `<img>` cannot do it — but the same PNG used as a CSS alpha mask over
-  `background-color: currentColor` can, keeping the genuine Icons8 drawing. Documented with the
-  `-webkit-` prefix for Safari before 15.4 and with its raster ceiling stated, so it is not sold as
-  parity with SVG. Explicitly separated from the `<svg><image>` wrapper it superficially resembles.
-  Two independent eval runs invented this technique unprompted, which is why it is in the skill rather
-  than rediscovered each session.
-
-- **Discipline about unverified ids.** Ids come from `search_icons` and nowhere else. When
-  `search_icons` is absent, the skill treats that as the finding to report — the user can connect the
-  server, the agent cannot — then hands over whatever is genuinely verified and marks the rest
-  unfinished. What it forbids is substituting an id remembered from a previous session or from the
-  skill's own examples, which ships a wrong drawing under a right-looking name.
-
-- **A detour table for the paywall**, naming what each shortcut actually produces: `format=svg`
-  returns 403 `PAID_FORMAT`, tracing the PNG yields a path that is not the Icons8 drawing,
-  `<svg><image href="data:image/png…">` is a raster in an SVG wrapper, a hand-written path is an
-  invented icon, and swapping in Lucide or Heroicons introduces the second icon set this skill exists
-  to prevent.
-
-- **Correct licensing signal.** Paid icons omit `isFree` rather than setting it to `false`, so absence
-  is the paid signal: a test for `isFree == false` never matches and indexing the key raises on every
-  paid icon. Measured across 534 unique icons from seven searches — 228 with `isFree: true`, 306 with
-  no such key, zero with `isFree: false`.
-
-- **Trigger-tuned description.** The shipped wording was selected by a 20-query A/B run (10
-  should-trigger, 10 should-not, 60/40 train/held-out split): it fires on 5 of 10 real-world phrasings
-  against 0 of 10 for the first draft, with no false triggers on either — including the deliberate
-  traps of an Icons8 billing question and a `mask-image` Safari bug. It names the carriers (screen,
-  page, deck, doc, README, component), both extremes of scale, and explicit negative boundaries: not
-  logo design, illustration, CSS bugs, accessibility labelling or billing.
-
-- **Bundled Icons8 MCP server.** Installing the plugin registers `icons8mcp`
-  (`npx mcp-remote https://mcp.icons8.com/mcp/`, exactly as the
-  [MCP README](https://github.com/icons8/icons8-mcp#pick-your-plan) documents it) — check it with
-  `/mcp` in Claude Code or `codex mcp list` in Codex. Keyless, so a fresh install works on the free
-  PNG tier with nothing to configure and no sign-in step. Claude Code takes the server inline in
-  `.claude-plugin/plugin.json`; Codex takes a path, so `.codex-plugin/plugin.json` points `mcpServers`
-  at `./.codex-plugin/mcp.json`. Clients without plugin support get the skill on its own — the server
-  is added per client, see README. Requires Node.js.
-
-- **Plugin marketplace** — `.claude-plugin/marketplace.json`, installable with
-  `/plugin marketplace add icons8/agent-skills` then `/plugin install icons8@icons8`.
-  `.codex-plugin/plugin.json` carries `interface` metadata and default prompts for the Codex plugin
-  browser; `.agents/plugins/marketplace.json` exposes the same plugin over a `git-subdir` source.
-
-- **Apache-2.0 licensing** — `LICENSE` plus a `NOTICE` that separates the repository license from the
-  [Icons8 icon license](https://icons8.com/license).
-
-### Notes
-
-- **SVG needs a key by design.** The MCP server only advertises `get_icon_svg` when the connection
-  carries a non-empty bearer token. The bundled server is keyless, so subscribers add their own
-  authenticated server entry (see README) — it sits alongside the bundled one, which means the PNG
-  tools appear twice. Without a key the skill stays on free PNG URLs, its recommended path for
-  prototyping regardless of plan.
+Release notes for 0.1.0 to 0.3.0 are on
+[GitHub Releases](https://github.com/icons8/agent-skills/releases).

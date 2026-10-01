@@ -1,1 +1,8 @@
-mcp.json
+{
+  "mcpServers": {
+    "icons8mcp": {
+      "type": "http",
+      "url": "https://mcp.icons8.com/mcp/"
+    }
+  }
+}

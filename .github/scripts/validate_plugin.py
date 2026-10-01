@@ -6,9 +6,9 @@
 Runs on Linux in CI and needs no network, no credentials, and no packages outside the standard
 library. Every check here covers a defect that has shipped or nearly shipped in a plugin of this
 shape: a version that drifted between manifests, a bump without release notes, a marketplace source
-that hides the plugin from a client, an `.mcp.json` that stopped being a symlink and became a second
-server definition to keep in sync, a skill whose frontmatter stops loading, a reference file renamed
-out from under the document that tells the agent to read it.
+that hides the plugin from a client, a server entry that one client format accepts and another
+rejects, two server files that drift to different endpoints, a skill whose frontmatter stops
+loading, a reference file renamed out from under the document that tells the agent to read it.
 
 This plugin ships no executable scripts, so there is nothing to smoke-test: the product is the
 manifests and the skill documents, and that is exactly what this checks.
@@ -89,32 +89,87 @@ changelog = (REPO / "CHANGELOG.md").read_text(encoding="utf-8")
 check(f"CHANGELOG.md documents {version}", f"## [{version}]" in changelog,
       "the bump and its release notes have to land together")
 
-# --- 2. the MCP server is declared exactly once --------------------------------
+# The Claude directory reads the whole plugin folder, and this plugin's folder is the repository
+# root, so CHANGELOG.md is in it. The directory lint shows an install or run command in its body to
+# reviewers and users as a download-and-run risk. The same command in a README code block is not
+# flagged, so CHANGELOG.md describes what changed and leaves the commands to the README.
+COMMAND = re.compile(r"\b(?:npx|uvx|pipx|uv run|pip install|npm install|mcp-remote|mcp add|"
+                     r"plugin install|marketplace add|curl|wget)\b", re.I)
+commands = sorted({m.group(0) for m in COMMAND.finditer(changelog)})
+check("CHANGELOG.md names no install or run command", not commands,
+      f"found {commands}; describe the change in prose and keep the command in README.md")
+
+# --- 2. one server, in the two formats that read it ---------------------------
+# Claude reads only `.mcp.json`, and the directory accepts a remote server there only as `http`,
+# `sse` or `ws`; claude.ai chat and Cowork load only `http` and `sse`. Agent Plugins v1 fixes the
+# name `mcp.json` and the type `streamable-http`. No single file satisfies both, so each format gets
+# its own file and the checks below keep them pointing at the same endpoint. A symlink between the
+# two is not an option: the directory refuses a symlink anywhere its plugin loader reads.
 index = subprocess.run(["git", "ls-files", "-s", ".mcp.json"], cwd=REPO,
                        capture_output=True, text=True, encoding="utf-8").stdout
-check(".mcp.json is a symlink in the index (mode 120000)", index.startswith("120000 "),
-      f"git ls-files reported {index.strip() or 'nothing'!r}; a copy reintroduces two definitions")
+check(".mcp.json is a regular file in the index (mode 100644)", index.startswith("100644 "),
+      f"git ls-files reported {index.strip() or 'nothing'!r}; the directory rejects a symlink here")
 
-link = REPO / ".mcp.json"
-check(".mcp.json points at mcp.json",
-      link.is_symlink() and os.readlink(link) == "mcp.json",
-      f"resolves to {os.readlink(link) if link.is_symlink() else 'a regular file'!r}")
 
-servers = read_json("mcp.json").get("mcpServers", {})
-check("mcp.json declares exactly one server, named icons8mcp", list(servers) == ["icons8mcp"],
-      f"declares {list(servers)}")
-check("the icons8mcp server is streamable-http",
-      servers.get("icons8mcp", {}).get("type") == "streamable-http",
-      f"type is {servers.get('icons8mcp', {}).get('type')!r}")
+def only_server(rel):
+    servers = read_json(rel).get("mcpServers", {})
+    check(f"{rel} declares exactly one server, named icons8mcp", list(servers) == ["icons8mcp"],
+          f"declares {list(servers)}")
+    return servers.get("icons8mcp", {})
 
-for manifest in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json"):
-    declared = read_json(manifest).get("mcpServers")
-    check(f"{manifest} points at ./mcp.json by path", declared == "./mcp.json",
-          f"got {declared!r}; an inline object is a second declaration to keep in sync")
 
+claude_server = only_server(".mcp.json")
+portable_server = only_server("mcp.json")
+check(".mcp.json declares the server as http", claude_server.get("type") == "http",
+      f"type is {claude_server.get('type')!r}; the directory accepts http, sse or ws, and chat and "
+      "Cowork load only http and sse")
+check("mcp.json declares the server as streamable-http",
+      portable_server.get("type") == "streamable-http",
+      f"type is {portable_server.get('type')!r}; the Agent Plugins v1 schema accepts no other name")
+check(".mcp.json and mcp.json name the same endpoint",
+      claude_server.get("url") and claude_server.get("url") == portable_server.get("url"),
+      f".mcp.json={claude_server.get('url')!r}, mcp.json={portable_server.get('url')!r}")
+
+# Claude Code loads `.mcp.json` first and then whatever `mcpServers` names, and a later entry with
+# the same name replaces the earlier one. Pointing the Claude manifest at mcp.json would put
+# streamable-http back on top of the http entry.
+check(".claude-plugin/plugin.json leaves the server to .mcp.json",
+      "mcpServers" not in read_json(".claude-plugin/plugin.json"),
+      "a manifest mcpServers entry loads after .mcp.json and replaces it")
+declared = read_json(".codex-plugin/plugin.json").get("mcpServers")
+check(".codex-plugin/plugin.json points at ./mcp.json by path", declared == "./mcp.json",
+      f"got {declared!r}; an inline object is a third declaration to keep in sync")
 check("the portable manifest adds no second declaration", "mcpServers" not in read_json("plugin.json"),
       "plugin.json must leave the declaration to mcp.json; the v1 plugin schema is closed and "
       "rejects the key outright")
+
+# --- 2b. what the Claude directory listing reads --------------------------------
+# The directory portal flags these at validation; checking them here keeps a release from dropping
+# one without anybody opening the portal.
+symlinks = [line.split("\t", 1)[1] for line in subprocess.run(
+    ["git", "ls-files", "-s"], cwd=REPO, capture_output=True, text=True,
+    encoding="utf-8").stdout.splitlines() if line.startswith("120000 ")]
+check("no tracked file is a symlink", not symlinks,
+      f"{symlinks}; the directory blocks a symlink where the plugin loader reads and warns elsewhere")
+
+# The listing links. Claude Code strips these keys at load time; the directory reads them, and
+# requires the privacy policy for a plugin that connects to a remote server.
+claude_manifest = read_json(".claude-plugin/plugin.json")
+for key in ("privacyPolicyUrl", "termsOfServiceUrl", "supportUrl", "documentationUrl"):
+    url = claude_manifest.get(key, "")
+    check(f".claude-plugin/plugin.json sets {key} to an https URL", url.startswith("https://"),
+          f"got {url!r}; the directory listing links to it")
+
+icon = REPO / ".claude-plugin" / "icon.svg"
+icon_svg = icon.read_text(encoding="utf-8") if icon.is_file() else ""
+box = re.search(r'viewBox="\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*"', icon_svg)
+check(".claude-plugin/icon.svg is square and at least 128 units wide",
+      box is not None and box.group(1) == box.group(2) and float(box.group(1)) >= 128,
+      f"viewBox is {box.groups() if box else 'missing'}; without an icon the listing shows the "
+      "publisher's GitHub avatar")
+check(".claude-plugin/icon.svg carries no script and no external reference",
+      icon_svg and not re.search(r"<script|href=|url\(|on\w+=", icon_svg, re.I),
+      "an icon the listing renders must be self-contained")
 
 # --- 3. both marketplaces resolve to this repository ---------------------------
 codex_entry = first_plugin(".agents/plugins/marketplace.json")
@@ -236,6 +291,13 @@ else:
                 ok, detail = False, str(e)
         check(f"{rel} byte-compiles", ok, detail)
 
+        # The Claude directory holds every version of a plugin whose code reads an environment
+        # variable and that also talks to a remote server, so auto-publish stops. Take paths and
+        # overrides as arguments instead.
+        env_reads = re.findall(r"os\.environ|getenv\(|os\.path\.expandvars", source)
+        check(f"{rel} reads no environment variables", not env_reads,
+              f"found {sorted(set(env_reads))}; the directory holds the plugin for review")
+
         # text=True alone decodes with the platform locale, which is the ANSI code page on Windows:
         # cp1252 raises UnicodeDecodeError on a Cyrillic byte and cp1251 produces mojibake.
         run_calls = calls(source, r"subprocess\.run")
@@ -271,7 +333,7 @@ else:
               f"({len(kept)} of {len(writes)} write call(s) inspected, "
               f"{len(throwaway)} deleted by the script itself)",
               all("newline=" in c for c in kept),
-              'Windows text mode otherwise rewrites every LF as CRLF; pass newline="\\n"')
+              'Windows text mode otherwise rewrites every LF as CRLF; write with newline="\\n"')
 
 # --- 7. every documented invocation is one an agent can actually run ----------
 # One line, one invocation. \S* eats whatever precedes the filename — "./", a full relative path, a

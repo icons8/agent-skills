@@ -29,6 +29,16 @@ ten different metaphors instead of ten styles of one, rejects the brand logos an
 search ranks first, previews on a free PNG contact sheet, and fetches SVG only for the approved
 final set.
 
+## Examples
+
+Ask in plain words. The skills trigger by intent, so you do not have to name them.
+
+- "Add icons to this dashboard, one consistent Icons8 set, 24px."
+- "Illustrate the empty states with one Ouch! style."
+- "Put an animated illustration in the hero of this landing page."
+- "Check this screen: emoji icons, missing images, contrast."
+- "Review the button labels and error messages on this signup form."
+
 ## Install
 
 ### Claude Code
@@ -52,8 +62,8 @@ The skill triggers by intent — just ask for icons; slash commands are Claude C
 
 The plugin **bundles the MCP server here too**, so installing it registers `icons8mcp` — check with
 `codex mcp list`, and sign in with `codex mcp login icons8mcp`. `.codex-plugin/plugin.json` points
-`mcpServers` at the root `./mcp.json`, the same file Claude Code and every Agent Plugins v1 client
-read, so there is one server definition rather than one per format.
+`mcpServers` at the root `./mcp.json`, the file every Agent Plugins v1 client reads. Claude reads its
+own `.mcp.json` instead. Both files declare the same server, and CI fails if their URLs differ.
 
 On an older Codex that doesn't read `mcpServers` from a plugin manifest, add it yourself:
 
@@ -85,8 +95,9 @@ installs also shows up in VS Code. **Cursor** installs from marketplaces only, s
 listed in one — either Cursor's registry or a team marketplace imported from a repo.
 
 `.claude-plugin/` and `.codex-plugin/` keep their manifests, because Claude Code isn't on the
-compatible-clients list yet and Codex still reads its own. They no longer keep their own copy of the
-server, though: both point `mcpServers` at the root `mcp.json`.
+compatible-clients list yet and Codex still reads its own. Codex points `mcpServers` at the root
+`mcp.json`. Claude reads `.mcp.json`, which declares the same server as `http`: the Claude directory,
+chat and Cowork accept `http` and reject the `streamable-http` name that Agent Plugins v1 requires.
 
 ### Any agent via npx
 
@@ -155,9 +166,9 @@ regardless of plan.
 
 ```
 plugin.json                   # Agent Plugins v1 manifest — the portable one
-mcp.json                      # the only MCP config; all three manifests point here
-.mcp.json                     # symlink to it — the name Claude Code's inventory looks for
-.claude-plugin/               # Claude Code manifest + marketplace
+mcp.json                      # the server in Agent Plugins v1 format (streamable-http): Codex, v1 clients
+.mcp.json                     # the same server in Claude's format (http): Claude Code, chat, Cowork
+.claude-plugin/               # Claude manifest, marketplace, and the directory listing icon
 .codex-plugin/                # Codex manifest
 .agents/plugins/              # Agent Plugins marketplace entry
 skills/icons8/
@@ -188,7 +199,8 @@ skills/design-tokens/         # bootstrap a token system, then catch drift in co
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
 
 The three manifests describe the same plugin for three packaging formats, so `version` and
-`description` have to move together. The server itself is declared once, in `mcp.json`.
+`description` have to move together. The server is declared in `mcp.json` and in `.mcp.json`, one
+file per format, and the two URLs have to match.
 
 ## Checking what the agent built
 
@@ -273,12 +285,44 @@ each rule earned in test runs rather than declared:
 `get_illustration_animation` with them. On a connection that does not expose them, the skill says so
 and stops, per its own rules.
 
+## What the plugin connects to
+
+The plugin has no hooks and starts no background process. Everything below happens when a skill runs.
+
+| Host | What goes there | What comes back |
+|---|---|---|
+| `mcp.icons8.com` | MCP tool calls: search words that describe the screen (for example "empty pot"), style and category filters, asset ids. Your Icons8 sign-in, through OAuth in the browser, or an API key if you set one. | Search results, icon SVG, links to files |
+| `img.icons8.com` | An icon id, a format and a size, in the URL of a PNG, gif or apng file | The file |
+| `ouch-prod-var-cdn.icons8.com`, `ouch-prod-src-cdn.icons8.com` | The address of an illustration preview or animation preview | The preview file |
+| `*.r2.cloudflarestorage.com` | A presigned link that the MCP server issued, valid for one hour | The original illustration file |
+
+The skills do not send your source code, your files or your conversation to any of these hosts.
+Icons8 operates all of them; the last one is the Cloudflare R2 storage that holds Icons8 originals.
+The [Icons8 privacy policy](https://intercom.help/icons8-7fb7577e8170/en/articles/7228039-privacy-policy) covers what the server keeps.
+
+In your project, the skills write `icons8.json` (the lock file), the asset files you approve, and a
+`sheet.html` contact sheet to choose from. They edit your UI code where you ask them to. When a
+screen gets an animated icon, the page loads the lottie-web player from `cdn.jsdelivr.net` in the
+visitor's browser; the plugin itself sends nothing there.
+
+On your machine, the `ouch` skill can run `scripts/measure.py`. It reads image files, rasterizes SVG
+with headless Chrome or Edge, writes rasters to a temporary directory and deletes them on exit. It
+makes no network request. If you start it with `uv run`, uv downloads Pillow from PyPI first.
+
 ## Requirements
 
 - A client that supports the Agent Skills standard (Claude Code, Codex, VS Code + Copilot, Cursor, …)
 - Network access to `https://mcp.icons8.com/mcp/`
 - An Icons8 account, signed in through the browser on first use
 - An Icons8 API key **only** where the client cannot do OAuth, or on CI
+
+## Support
+
+Report a bug or a wrong icon choice in
+[GitHub Issues](https://github.com/icons8/agent-skills/issues). Report a security issue privately
+through the [Icons8 contact page](https://icons8.com/contact), not in a public issue. For your Icons8 account, plan or
+billing, use the [Icons8 Help Center](https://intercom.help/icons8-7fb7577e8170). The Help Center
+also explains [what the Icons8 MCP server is](https://intercom.help/icons8-7fb7577e8170/en/articles/13569445-what-s-the-icons8-mcp-server).
 
 ## License
 
