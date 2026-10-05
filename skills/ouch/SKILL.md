@@ -252,22 +252,25 @@ in `references/LAYOUT.md`.
 Measure, do not eyeball:
 
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/ouch/scripts/measure.py" assets/illustrations/*
+python3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" assets/illustrations/*
 # per file: ground-line offset %, mass offset %, saturation
 ```
 
-On Windows the interpreter and the variable are both spelled differently, and
-`${CLAUDE_PLUGIN_ROOT}` expands in neither shell:
+`${CLAUDE_SKILL_DIR}` is the folder that holds this SKILL.md. Claude Code
+fills it in. Other clients leave it as is, and no shell can resolve it, so
+replace it with that folder's absolute path before you run the command. The
+shell starts in the user's project, not in this folder.
+
+On Windows the interpreter is spelled differently. The path stays the same,
+forward slashes included:
 
 ```
-py -3 "$env:CLAUDE_PLUGIN_ROOT\skills\ouch\scripts\measure.py" assets\illustrations\*   # PowerShell
-py -3 "%CLAUDE_PLUGIN_ROOT%\skills\ouch\scripts\measure.py" assets\illustrations\*      # cmd
+py -3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" assets/illustrations/*
 ```
 
-The script expands `*` itself, so the pattern works in both.
+The script expands `*` itself, so the pattern works in cmd and PowerShell.
 
-The script ships with this skill; installed as a bare skill rather than a
-plugin, it sits in this skill's own `scripts/` folder. It needs Python 3 with
+The script ships in this skill's `scripts/` folder. It needs Python 3 with
 Pillow (`python3 -m pip install pillow`, or `uv run` the script) and Chrome or
 Edge to rasterize SVG; PNG needs no browser. It finds a browser in the standard
 install locations and on `PATH`; for one installed elsewhere, add
@@ -312,8 +315,8 @@ rather than eyeball: near-grey and low-saturation colour look the same on a
 contact sheet and different on the page.
 
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/ouch/scripts/measure.py" <files>   # same tool as step 5; saturation column
-# Windows: the `py -3` lines in step 5 apply here too
+python3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" <files>   # same tool as step 5; saturation column
+# Windows: the `py -3` line in step 5 applies here too
 ```
 
 A truly colourless work (under 0.10) next to a colourful one (over 0.35) is a

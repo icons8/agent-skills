@@ -81,6 +81,27 @@ url = "https://mcp.icons8.com/mcp/"
 Either way the server has to be there: icon ids come from `search_icons` and nowhere else, so without
 it the skill reports that it isn't connected rather than guessing an id.
 
+### Cursor
+
+Cursor installs plugins from marketplaces. `.cursor-plugin/plugin.json` is the Cursor manifest, and
+`.cursor-plugin/marketplace.json` lists the plugin from the repository root. A team can import this
+repository as a team marketplace and install **icons8** from it.
+
+Cursor finds the skills in `skills/`. It reads the Icons8 server from both `mcp.json` and
+`.mcp.json`; both files name it `icons8mcp`, so Cursor lists one server. Sign in with **Connect** on
+the server when Cursor asks.
+
+### GitHub Copilot CLI
+
+```
+copilot plugin marketplace add icons8/agent-skills
+copilot plugin install icons8@icons8
+```
+
+Copilot CLI reads the marketplace from `.claude-plugin/marketplace.json` and installs the plugin in
+the Agent Plugins v1 format: the nine skills and the Icons8 server. `copilot mcp list` shows
+`icons8mcp` under the plugin servers.
+
 ### Any Agent Plugins v1 client
 
 The repository root is a conforming [Agent Plugins v1](https://agent-plugins.org/specification)
@@ -90,14 +111,13 @@ is the location the spec fixes for skill discovery. Clients on the
 the server from those files.
 
 In **VS Code**, no marketplace is needed — run `Chat: Install Plugin From Source` from the Command
-Palette and paste the repository URL. In **GitHub Copilot CLI**, `copilot plugin install`; what it
-installs also shows up in VS Code. **Cursor** installs from marketplaces only, so it needs the plugin
-listed in one — either Cursor's registry or a team marketplace imported from a repo.
+Palette and paste the repository URL. What Copilot CLI installs also shows up in VS Code.
 
-`.claude-plugin/` and `.codex-plugin/` keep their manifests, because Claude Code isn't on the
-compatible-clients list yet and Codex still reads its own. Codex points `mcpServers` at the root
-`mcp.json`. Claude reads `.mcp.json`, which declares the same server as `http`: the Claude directory,
-chat and Cowork accept `http` and reject the `streamable-http` name that Agent Plugins v1 requires.
+`.claude-plugin/`, `.codex-plugin/` and `.cursor-plugin/` keep their manifests, because Claude Code
+isn't on the compatible-clients list yet, and Codex and Cursor read their own. Codex
+points `mcpServers` at the root `mcp.json`. Claude reads `.mcp.json`, which declares the same server
+as `http`: the Claude directory, chat and Cowork accept `http` and reject the `streamable-http` name
+that Agent Plugins v1 requires.
 
 ### Any agent via npx
 
@@ -170,6 +190,7 @@ mcp.json                      # the server in Agent Plugins v1 format (streamabl
 .mcp.json                     # the same server in Claude's format (http): Claude Code, chat, Cowork
 .claude-plugin/               # Claude manifest, marketplace, and the directory listing icon
 .codex-plugin/                # Codex manifest
+.cursor-plugin/               # Cursor manifest and marketplace
 .agents/plugins/              # Agent Plugins marketplace entry
 skills/icons8/
 ├── SKILL.md                  # the loop, the rejection rules, criteria by context, gotchas
@@ -198,7 +219,7 @@ skills/design-tokens/         # bootstrap a token system, then catch drift in co
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
 
-The three manifests describe the same plugin for three packaging formats, so `version` and
+The four manifests describe the same plugin for four packaging formats, so `version` and
 `description` have to move together. The server is declared in `mcp.json` and in `.mcp.json`, one
 file per format, and the two URLs have to match.
 
