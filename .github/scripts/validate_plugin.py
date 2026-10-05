@@ -10,8 +10,9 @@ that hides the plugin from a client, a server entry that one client format accep
 rejects, two server files that drift to different endpoints, a skill whose frontmatter stops
 loading, a reference file renamed out from under the document that tells the agent to read it.
 
-This plugin ships no executable scripts, so there is nothing to smoke-test: the product is the
-manifests and the skill documents, and that is exactly what this checks.
+The product is the manifests and the skill documents, and that is mostly what this checks. The one
+shipped script, `skills/ouch/scripts/measure.py`, is checked statically: it byte-compiles, reads no
+environment variables and names its encodings. Nothing here runs it.
 
 `evals/`, `docs/` and `.claude/` are gitignored and stay local release steps — nothing here reads
 them.
@@ -79,10 +80,21 @@ def first_plugin(rel):
 
 
 # --- 1. one version, and release notes to go with it ---------------------------
-MANIFESTS = ("plugin.json", ".claude-plugin/plugin.json", ".codex-plugin/plugin.json")
+MANIFESTS = ("plugin.json", ".claude-plugin/plugin.json", ".codex-plugin/plugin.json",
+             ".cursor-plugin/plugin.json")
 versions = {m: read_json(m).get("version") for m in MANIFESTS}
-check("the three manifests declare one version",
+check("the four manifests declare one version",
       len(set(versions.values())) == 1 and all(versions.values()), f"{versions}")
+
+# The description is shown by every listing, so it lives in six places: the four manifests and the
+# plugin entries of the Claude and Cursor marketplaces. Each client shows its own copy, so a drift
+# shows up as two different plugins depending on where the user looks.
+descriptions = {m: read_json(m).get("description") for m in MANIFESTS}
+for market in (".claude-plugin/marketplace.json", ".cursor-plugin/marketplace.json"):
+    descriptions[market] = first_plugin(market).get("description")
+check("the manifests and the marketplace entries carry one description",
+      len(set(descriptions.values())) == 1 and all(descriptions.values()),
+      f"differs in {[k for k, v in descriptions.items() if v != descriptions['plugin.json']]}")
 
 version = versions["plugin.json"]
 changelog = (REPO / "CHANGELOG.md").read_text(encoding="utf-8")
@@ -142,6 +154,13 @@ check(".codex-plugin/plugin.json points at ./mcp.json by path", declared == "./m
 check("the portable manifest adds no second declaration", "mcpServers" not in read_json("plugin.json"),
       "plugin.json must leave the declaration to mcp.json; the v1 plugin schema is closed and "
       "rejects the key outright")
+# Cursor reads both `mcp.json` and `.mcp.json` at the plugin root when its manifest names no
+# `mcpServers`, and it accepts `streamable-http` and `http` alike. Both files name the server
+# icons8mcp, so Cursor lists one server. A path or an inline object in the manifest would become one
+# more declaration to keep in sync.
+check(".cursor-plugin/plugin.json leaves the server to mcp.json",
+      "mcpServers" not in read_json(".cursor-plugin/plugin.json"),
+      "Cursor discovers mcp.json by itself; a manifest entry replaces that discovery")
 
 # --- 2b. what the Claude directory listing reads --------------------------------
 # The directory portal flags these at validation; checking them here keeps a release from dropping
@@ -171,7 +190,14 @@ check(".claude-plugin/icon.svg carries no script and no external reference",
       icon_svg and not re.search(r"<script|href=|url\(|on\w+=", icon_svg, re.I),
       "an icon the listing renders must be self-contained")
 
-# --- 3. both marketplaces resolve to this repository ---------------------------
+# The Cursor listing shows the same icon. Cursor resolves a relative logo path against the
+# repository, so pointing at the Claude icon keeps one file instead of two copies that can drift.
+cursor_logo = read_json(".cursor-plugin/plugin.json").get("logo", "")
+check(".cursor-plugin/plugin.json points logo at .claude-plugin/icon.svg",
+      cursor_logo == ".claude-plugin/icon.svg" and icon.is_file(),
+      f"logo is {cursor_logo!r}; the Cursor listing renders it")
+
+# --- 3. every marketplace resolves to this repository ---------------------------
 codex_entry = first_plugin(".agents/plugins/marketplace.json")
 check("the Codex marketplace uses a local source",
       codex_entry.get("source") == {"source": "local", "path": "./"},
@@ -181,9 +207,13 @@ check("the Codex marketplace uses a local source",
 claude_entry = first_plugin(".claude-plugin/marketplace.json")
 check("the Claude marketplace source is the repository root",
       claude_entry.get("source") == "./", f"got {claude_entry.get('source')!r}")
-check("both marketplaces name the icons8 plugin",
-      codex_entry.get("name") == "icons8" and claude_entry.get("name") == "icons8",
-      f"codex={codex_entry.get('name')!r}, claude={claude_entry.get('name')!r}")
+cursor_entry = first_plugin(".cursor-plugin/marketplace.json")
+check("the Cursor marketplace source is the repository root",
+      cursor_entry.get("source") == "./", f"got {cursor_entry.get('source')!r}")
+entries = {"codex": codex_entry, "claude": claude_entry, "cursor": cursor_entry}
+check("every marketplace names the icons8 plugin",
+      all(entry.get("name") == "icons8" for entry in entries.values()),
+      f"{ {client: entry.get('name') for client, entry in entries.items()} }")
 
 # --- 4. every skill is loadable and every tracked JSON file parses -------------
 for skill_dir in sorted((REPO / "skills").iterdir()):
@@ -257,10 +287,10 @@ check("the skill documents cite at least one reference file (the loop above isn'
       "reworded and this check now proves nothing, or the reference files are no longer referenced")
 
 # --- 6. any shipped Python script, whenever one lands -------------------------
-# The plugin ships no script today. These checks are written now, discover scripts by glob, and
-# start covering the first one the moment it is committed — no edit to this file required. They are
-# brila's, and each one is a defect that shipped there: a locale-dependent decode that crashed every
-# run with a non-ASCII argument on Windows, and an export written through Windows text mode.
+# These checks discover scripts by glob, so a new script under skills/ is covered the moment it is
+# committed — no edit to this file required. They are brila's, and each one is a defect that shipped
+# there: a locale-dependent decode that crashed every run with a non-ASCII argument on Windows, and
+# an export written through Windows text mode.
 SHIPPED_SCRIPTS = [p for p in tracked("*.py") if p.startswith("skills/")]
 
 
@@ -337,10 +367,18 @@ else:
 
 # --- 7. every documented invocation is one an agent can actually run ----------
 # One line, one invocation. \S* eats whatever precedes the filename — "./", a full relative path, a
-# quote, or $CLAUDE_PLUGIN_ROOT — so the captured group is the whole path token to classify.
+# quote, or ${CLAUDE_SKILL_DIR} — so the captured group is the whole path token to classify.
 INVOCATION = re.compile(r"(?:python3?|py(?:\s+-3)?)\s+(\S*\.py)")
-ROOTED_PREFIXES = ("/", "$CLAUDE_PLUGIN_ROOT", "${CLAUDE_PLUGIN_ROOT}",
-                   "$env:CLAUDE_PLUGIN_ROOT", "%CLAUDE_PLUGIN_ROOT%")
+# Claude Code replaces ${CLAUDE_SKILL_DIR} in the skill text with the skill's folder, for a plugin
+# skill and a bare skill alike, so the shell receives a plain path on every OS. Neither Claude Code
+# nor Copilot CLI exports it as an environment variable, which is why $env: and %VAR% spellings are
+# not accepted here.
+ROOTED_PREFIXES = ("/", "${CLAUDE_SKILL_DIR}")
+# Cursor, Codex and Copilot substitute nothing in SKILL.md, so the model there has to resolve the
+# variable itself, and the document has to say what it means. Whitespace in the pattern is \s+ so
+# a hard wrap anywhere inside the sentence still matches.
+SKILL_DIR_DEFINITION = re.compile(
+    r"`\$\{CLAUDE_SKILL_DIR\}`\s+is\s+the\s+folder\s+that\s+holds\s+this\s+SKILL\.md")
 DOCS = [rel for rel in tracked("*.md")
         if rel.startswith(("skills/", "commands/")) or rel == "README.md"]
 invocations_found = 0
@@ -348,6 +386,18 @@ invocations_found = 0
 for rel in DOCS:
     text = (REPO / rel).read_text(encoding="utf-8")
     lines = text.splitlines()
+    if rel.startswith("skills/"):
+        # Claude Code substitutes ${CLAUDE_PLUGIN_ROOT} only in a plugin skill, and no other client
+        # substitutes it at all. Run as written anywhere else, the command gets an empty root:
+        # Copilot CLI did exactly that and ran "/skills/...", and Claude Code refused a bare skill's
+        # unresolved variable outright.
+        check(f"{rel}: names no CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_ROOT" not in text,
+              "use ${CLAUDE_SKILL_DIR}, which Claude Code fills in for bare skills too")
+    if "${CLAUDE_SKILL_DIR}" in text:
+        check(f"{rel}: says what ${{CLAUDE_SKILL_DIR}} is for clients that do not fill it in",
+              SKILL_DIR_DEFINITION.search(text) is not None,
+              "Cursor, Codex and Copilot leave the variable as is; without the definition the "
+              "model has nothing to resolve it from")
     # Bind each check to the SPECIFIC line it is about, not to the whole file — a whole-file
     # substring check is satisfied by any one matching line, so quoting stripped from one of
     # several invocations still passes as long as another invocation stays quoted.
@@ -357,16 +407,14 @@ for rel in DOCS:
             continue
         invocations_found += 1
         path_token = match.group(1).strip("\"'`")
-        # A document that tells a Windows reader what to type has to spell the variable that
-        # shell's way: `${VAR}` is POSIX, `$env:VAR` is PowerShell and `%VAR%` is cmd. All three
-        # name the same plugin root, so all three count as rooted — a check that knew only the
-        # POSIX form would report the correct Windows line as a defect.
         rooted = path_token.startswith(ROOTED_PREFIXES)
         check(f"{rel}:{lineno}: no relative script path", rooted,
               f"line {lineno}: {line.strip()!r}; the agent's working directory is the user's "
-              "project, not this plugin")
+              "project, not this skill; start the path with ${CLAUDE_SKILL_DIR}")
+        # The captured token keeps its opening quote, so the check reads the path itself rather
+        # than searching the line, where any other quoted text would satisfy it.
         check(f"{rel}:{lineno}: the script path is quoted against spaces",
-              any(f'"{prefix}' in line for prefix in ROOTED_PREFIXES if prefix != "/"),
+              match.group(1).startswith(('"', "'")),
               f"line {lineno}: {line.strip()!r}; Windows profile directories routinely contain a space")
     if re.search(r"(?<![\w-])python3(?![\w-])", text):
         # File-scoped on purpose: the Windows fallback is documented once, in prose, for the whole

@@ -2,8 +2,36 @@
 
 All notable changes to the **icons8** plugin are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](https://semver.org).
-The plugin version lives in three manifests that have to agree: `plugin.json`,
-`.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
+The plugin version lives in four manifests that have to agree: `plugin.json`,
+`.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
+
+## [0.5.2] — 2026-10-05
+
+A Cursor marketplace can now list the plugin, and Cursor installs it from there with its skills and
+the Icons8 server.
+
+### Added
+
+- **A Cursor manifest.** `.cursor-plugin/plugin.json` names the plugin, its display name, version,
+  author, license and keywords, and gives the listing the Icons8 logo. Cursor finds the nine
+  skills in `skills/` and the Icons8 server in the two server files without extra configuration.
+
+- **A Cursor marketplace.** `.cursor-plugin/marketplace.json` lists the plugin from the repository
+  root, so a team can import this repository as a marketplace in Cursor.
+
+- **Install steps for GitHub Copilot CLI.** The README shows how to add this repository as a
+  marketplace in Copilot CLI and install the plugin from it. Copilot CLI reads the existing Claude
+  marketplace file, so no new file was needed.
+
+### Fixed
+
+- **`measure.py` runs after a bare-skill install in Claude Code.** The `ouch` skill located the
+  script through `${CLAUDE_PLUGIN_ROOT}`, which Claude Code fills in only for a plugin, so a bare
+  skill could not run the command. The skill now uses `${CLAUDE_SKILL_DIR}`, which Claude Code fills
+  in for a plugin and a bare skill alike. Cursor, Codex and GitHub Copilot fill in neither variable,
+  and the skill now tells them to replace it with the folder that holds the skill instead of leaving
+  the path to a guess. Windows uses the same path, so the separate PowerShell and cmd lines are
+  gone.
 
 ## [0.5.1] — 2026-10-01
 
