@@ -21,9 +21,9 @@ Draw only when one of these is true:
   pack, reworded it once (the `icons8` skill has the vocabulary map), and nothing fits: zero
   results, only logos, only metaphors its rejection rules throw out, or only neighbours. A
   neighbour is an object from the same field that is not the concept: a stethoscope for
-  "patient intake", a plain padlock for "two-factor login", a generic camera for "face scan". An icon fits
-  when people already read that drawing as the concept (a bell for notifications), not when it
-  merely sits near it.
+  "patient intake", a plain padlock for "two-factor login", a generic camera for "face scan".
+  An icon fits when people already read that drawing as the concept (a bell for notifications),
+  not when it merely sits near it.
 - **The user asks for it**: "draw an icon for…", "generate an icon in the Icons8 style".
 
 Do not draw:
