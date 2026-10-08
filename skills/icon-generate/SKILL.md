@@ -19,7 +19,11 @@ Draw only when one of these is true:
 
 - **The pack has no icon for the concept.** You searched it once with `platform` set to the locked
   pack, reworded it once (the `icons8` skill has the vocabulary map), and nothing fits: zero
-  results, only logos, or only metaphors its rejection rules throw out.
+  results, only logos, only metaphors its rejection rules throw out, or only neighbours. A
+  neighbour is an object from the same field that is not the concept: a stethoscope for
+  "patient intake", a plain padlock for "two-factor login", a generic camera for "face scan". An icon fits
+  when people already read that drawing as the concept (a bell for notifications), not when it
+  merely sits near it.
 - **The user asks for it**: "draw an icon for…", "generate an icon in the Icons8 style".
 
 Do not draw:
@@ -88,7 +92,9 @@ beats a scene; two objects is the limit (a person plus a badge, a document plus 
 
 The file is one `<svg xmlns="http://www.w3.org/2000/svg" viewBox="…">` with paths and basic shapes.
 No `<text>`, no letters unless the concept is a letterform, no `<image>` or embedded raster, no
-comments, no `<script>`, no external references, no fixed `width` and `height`.
+comments, no `<script>`, no external references, no fixed `width` and `height`. A `<mask>`,
+`<clipPath>` or gradient gets an id prefixed with the concept (`headcount-cut`, not `m`): two
+inlined icons with the same id break each other.
 
 **4. Look at it next to the references.** If `rsvg-convert`, `magick` or a browser is available,
 render it and compare on one sheet:
@@ -108,7 +114,7 @@ the project already keeps its icon files. Then add the item to `icons8.json`:
 ```json
 "items": {
   "settings": { "id": "82535", "commonName": "settings" },
-  "triage": { "generated": true, "file": "assets/icons/triage.svg", "pack": "ios7" }
+  "heat-pump": { "generated": true, "file": "assets/icons/heat-pump.svg", "pack": "ios7" }
 }
 ```
 
@@ -117,7 +123,9 @@ No `id` and no `commonName`: there is no catalogue icon behind it, and an id is 
 Leave every other field of the lock as you found it.
 
 **6. Use it like any icon of the set.** Inline the SVG or reference the file at one of the sizes in
-`icons.sizes`. A generated icon never animates: there is no Lottie for it.
+`icons.sizes`. A screen still on PNG previews renders them black, while an inlined monochrome SVG
+takes the text color: give the PNG URLs the same color with `&color=<hex>`, or set `color` on the
+SVG to match them. A generated icon never animates: there is no Lottie for it.
 
 ## What to hand back
 
@@ -125,7 +133,7 @@ Name every drawn icon, apart from the catalogue picks:
 
 | Concept | File | Pack | Source |
 | --- | --- | --- | --- |
-| triage | `assets/icons/triage.svg` | `ios7` | drawn by the agent, not from the Icons8 catalogue |
+| heat pump | `assets/icons/heat-pump.svg` | `ios7` | drawn by the agent, not from the Icons8 catalogue |
 
 Add what you could not check (no renderer, no image viewing), and offer to swap each one for the
 catalogue icon once the pack has it. The next session that touches the screen searches the concept

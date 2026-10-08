@@ -284,7 +284,7 @@ padding, corners and palette (`currentColor` only in a monochrome pack), renders
 references to compare, and records it in the lock as drawn:
 
 ```json
-"triage": { "generated": true, "file": "assets/icons/triage.svg", "pack": "ios7" }
+"heat-pump": { "generated": true, "file": "assets/icons/heat-pump.svg", "pack": "ios7" }
 ```
 
 There is no id, because there is no catalogue icon behind it, and the report names every drawn icon

@@ -201,7 +201,10 @@ If `countAll` is 1-2 and the single hit is a logo, treat it as a miss and reword
 `references/VOCABULARY.md`.
 
 One reworded search and still nothing that passes [Reject these](#reject-these)? Then the
-concept is missing from this pack. Do not take it from another pack and do not put an emoji in
+concept is missing from this pack. So is a concept whose only hits are its neighbours: an icon
+fits when it is the drawing people already read as that concept (a bell for notifications, a gear
+for settings), not an object from the same field. A stethoscope for "patient intake", a plain padlock for
+"two-factor login", a generic camera for "face scan" are misses. Do not take it from another pack and do not put an emoji in
 its place: the `icon-generate` skill draws it in this pack's style, from the pack's own icons,
 and marks it `generated` in the lock. Brand logos and characters are never drawn.
 

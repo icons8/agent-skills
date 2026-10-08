@@ -28,6 +28,8 @@ style instead of borrowing it from another pack or putting an emoji in its place
 - **`icons8` hands a missing concept to `icon-generate`.** The skill and its vocabulary map used
   to end at "tell the user the concept is missing". They now send it to `icon-generate` and never
   to a second pack, and the hand-back says which icons in the lock were drawn rather than picked.
+  A search whose only hits are neighbours of the concept, such as a stethoscope for "patient
+  intake", now counts as a miss too: in test runs the agent otherwise settled for the neighbour.
 
 - **`asset-check` and `icons8-design` allow that one drawn icon.** Both forbade any drawn SVG.
   They still do, except for a concept the locked pack lacks, drawn by `icon-generate` and marked
