@@ -1,9 +1,10 @@
 # Icons8 — Agent Skills
 
-Nine [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
+Ten [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
 Icons8 artwork and then when looking at what they built with it. `icons8` and `ouch` keep a project
-on **one consistent set** instead of a pile of mismatched pieces; the seven that follow check the
-finished screen and fix what they find from the same catalogue.
+on **one consistent set** instead of a pile of mismatched pieces, `icon-generate` draws the icon the
+set is missing in that set's style, and the seven that follow check the finished screen and fix what
+they find from the same catalogue.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
 (420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser
@@ -99,7 +100,7 @@ copilot plugin install icons8@icons8
 ```
 
 Copilot CLI reads the marketplace from `.claude-plugin/marketplace.json` and installs the plugin in
-the Agent Plugins v1 format: the nine skills and the Icons8 server. `copilot mcp list` shows
+the Agent Plugins v1 format: the ten skills and the Icons8 server. `copilot mcp list` shows
 `icons8mcp` under the plugin servers.
 
 ### Any Agent Plugins v1 client
@@ -208,6 +209,7 @@ skills/ouch/
 │   ├── LAYOUT.md             # the browser measurements behind the layout rules
 │   └── ANIMATION.md          # when a slot earns motion, formats, the source order that plays
 └── scripts/measure.py        # ground line, mass offset, saturation: one source of the formulas
+skills/icon-generate/         # draws an icon the locked pack lacks, in that pack's style
 skills/icons8-design/         # front door: routes a design request to the skill that owns it
 skills/asset-check/           # four mechanical checks on what is on the page
 skills/ux-check/              # behaviour, the six states, flows, the accessibility floor
@@ -273,6 +275,23 @@ is folded in on the next write rather than deleted.
 
 Commit it. The next session picks up where this one left off.
 
+## When the pack has no icon
+
+Any pack misses a couple of the concepts a screen needs. Instead of borrowing the icon from a second
+pack or putting an emoji in its place, the `icon-generate` skill draws it: it downloads four or five
+icons of the locked pack as free PNG references, draws one SVG on the pack's canvas with its stroke,
+padding, corners and palette (`currentColor` only in a monochrome pack), renders it next to the
+references to compare, and records it in the lock as drawn:
+
+```json
+"triage": { "generated": true, "file": "assets/icons/triage.svg", "pack": "ios7" }
+```
+
+There is no id, because there is no catalogue icon behind it, and the report names every drawn icon
+so it can be swapped for the catalogue one when the pack gets it. The drawing is done by your agent's
+own model; it costs no Icons8 call beyond the free PNGs. It does not draw brand logos, trademarks or
+characters from films, games and anime, and says where to get those instead.
+
 ## Illustrations: the `ouch` skill
 
 The same discipline for [Ouch! illustrations](https://icons8.com/illustrations): hero images,
@@ -321,12 +340,14 @@ The skills do not send your source code, your files or your conversation to any 
 Icons8 operates all of them; the last one is the Cloudflare R2 storage that holds Icons8 originals.
 The [Icons8 privacy policy](https://intercom.help/icons8-7fb7577e8170/en/articles/7228039-privacy-policy) covers what the server keeps.
 
-In your project, the skills write `icons8.json` (the lock file), the asset files you approve, and a
-`sheet.html` contact sheet to choose from. They edit your UI code where you ask them to. When a
+In your project, the skills write `icons8.json` (the lock file), the asset files you approve, the SVG
+of any icon `icon-generate` drew, and a `sheet.html` contact sheet to choose from. They edit your UI code where you ask them to. When a
 screen gets an animated icon, the page loads the lottie-web player from `cdn.jsdelivr.net` in the
 visitor's browser; the plugin itself sends nothing there.
 
-On your machine, the `ouch` skill can run `scripts/measure.py`. It reads image files, rasterizes SVG
+On your machine, `icon-generate` downloads its reference PNGs into a temporary folder and, if
+`rsvg-convert` or ImageMagick is installed, renders the drawn icon there to compare it with them.
+The `ouch` skill can run `scripts/measure.py`. It reads image files, rasterizes SVG
 with headless Chrome or Edge, writes rasters to a temporary directory and deletes them on exit. It
 makes no network request. If you start it with `uv run`, uv downloads Pillow from PyPI first.
 

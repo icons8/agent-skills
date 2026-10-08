@@ -5,6 +5,34 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
+## [0.6.0] — 2026-10-08
+
+When the project's icon pack has no icon for a concept, the agent now draws one in that pack's
+style instead of borrowing it from another pack or putting an emoji in its place.
+
+### Added
+
+- **The `icon-generate` skill.** It runs after one filtered search and one reworded search come up
+  empty, or when the user asks for an icon drawn in the Icons8 style. It downloads four or five
+  icons of the locked pack as free PNG references, the nearest in meaning plus plain anchors such
+  as home and user, and draws one SVG on the pack's canvas: the same stroke weight, padding,
+  corners, level of detail and palette, `currentColor` only in a monochrome pack. Where
+  `rsvg-convert` or ImageMagick is installed it renders the drawing next to the references and
+  corrects it once. The drawing is written to `assets/icons/` and recorded in `icons8.json` with
+  `"generated": true`, its file and its pack, and without an id. The report names every drawn
+  icon and offers to swap it for the catalogue one once the pack has it. Brand logos, trademarks
+  and characters from films, games and anime are refused, with where to get them instead.
+
+### Changed
+
+- **`icons8` hands a missing concept to `icon-generate`.** The skill and its vocabulary map used
+  to end at "tell the user the concept is missing". They now send it to `icon-generate` and never
+  to a second pack, and the hand-back says which icons in the lock were drawn rather than picked.
+
+- **`asset-check` and `icons8-design` allow that one drawn icon.** Both forbade any drawn SVG.
+  They still do, except for a concept the locked pack lacks, drawn by `icon-generate` and marked
+  in the lock.
+
 ## [0.5.2] — 2026-10-05
 
 A Cursor marketplace can now list the plugin, and Cursor installs it from there with its skills and

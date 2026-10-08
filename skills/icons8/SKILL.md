@@ -68,7 +68,9 @@ understand.
 
 **1. List every concept before searching.** Write the full list of icons the screen needs
 (nav, actions, states, empty states). Pack choice depends on coverage of the whole list, not
-of the first icon. Two of ~40 concepts are always missing from any given pack.
+of the first icon. Two of ~40 concepts are always missing from any given pack. When one of
+yours is, the `icon-generate` skill draws it in this pack's style; never fill the hole from a
+second pack.
 
 **2. Pick the pack once.** See `references/PACKS.md`. One pack per project, chosen from the
 context table below. Use the exact `apiCode`. Never a partial name: `wired` silently resolves
@@ -198,6 +200,11 @@ names and tags, so ask for the object Icons8 would have drawn:
 If `countAll` is 1-2 and the single hit is a logo, treat it as a miss and reword. Full map in
 `references/VOCABULARY.md`.
 
+One reworded search and still nothing that passes [Reject these](#reject-these)? Then the
+concept is missing from this pack. Do not take it from another pack and do not put an emoji in
+its place: the `icon-generate` skill draws it in this pack's style, from the pack's own icons,
+and marks it `generated` in the lock. Brand logos and characters are never drawn.
+
 ## Reference files
 
 - `references/PACKS.md`: which pack for which job, outline plus filled pairs, coverage numbers.
@@ -210,4 +217,6 @@ If `countAll` is 1-2 and the single hit is a logo, treat it as a miss and reword
 ## What to hand back
 
 Per icon: `commonName`, id, pack, and the preview URL. Never invent or construct an id, they
-come from `search_icons` only. If the MCP tools are unavailable, say so and stop.
+come from `search_icons` only. An item with `"generated": true` in the lock was drawn by
+`icon-generate`: it has a file and no id, `get_icon_svg` skips it, and the report names it as
+drawn, not picked. If the MCP tools are unavailable, say so and stop.

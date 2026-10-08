@@ -47,7 +47,8 @@ so look at them before shipping.
 
 Rule: if `countAll` is 0-2, or the only hit sits in category `Logos`, the wording is wrong.
 Reword to the physical object an illustrator would draw, then search again. One retry, then
-tell the user the concept is missing from this pack.
+the concept is missing from this pack: the `icon-generate` skill draws it in the pack's style,
+and the report says it was drawn.
 
 ## Suffixes and prefixes
 

@@ -31,7 +31,7 @@ Rules of routing:
 
 ## Then fix, do not just say
 
-Every finding that involves an icon, an illustration, or a token has a fix available in the catalog. Icons come through the `icons8` skill (one pack per project, `icons8.json` is the lock), illustrations through `ouch` (one style per project). Never draw an ad hoc SVG, never leave a gray box, never scale a 16px icon in CSS.
+Every finding that involves an icon, an illustration, or a token has a fix available in the catalog. Icons come through the `icons8` skill (one pack per project, `icons8.json` is the lock), illustrations through `ouch` (one style per project). Never draw an ad hoc SVG, never leave a gray box, never scale a 16px icon in CSS. The one drawn icon allowed is a concept the locked pack lacks, drawn by `icon-generate` in that pack's style and marked in the lock.
 
 This is the part that separates the product from a linter: the report ships with the replacement already in place, or with the exact MCP call that puts it there.
 
