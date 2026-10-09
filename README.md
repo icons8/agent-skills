@@ -1,9 +1,10 @@
 # Icons8 — Agent Skills
 
-Nine [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
+Ten [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
 Icons8 artwork and then when looking at what they built with it. `icons8` and `ouch` keep a project
 on **one consistent set** instead of a pile of mismatched pieces; the seven that follow check the
-finished screen and fix what they find from the same catalogue.
+finished screen and fix what they find from the same catalogue. `illustration-animator` brings
+static SVG illustrations to life as looped Lottie animations.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
 (420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser
@@ -38,6 +39,7 @@ Ask in plain words. The skills trigger by intent, so you do not have to name the
 - "Put an animated illustration in the hero of this landing page."
 - "Check this screen: emoji icons, missing images, contrast."
 - "Review the button labels and error messages on this signup form."
+- "Animate the illustrations in styles/little: looped Lottie and MP4."
 
 ## Install
 
@@ -99,7 +101,7 @@ copilot plugin install icons8@icons8
 ```
 
 Copilot CLI reads the marketplace from `.claude-plugin/marketplace.json` and installs the plugin in
-the Agent Plugins v1 format: the nine skills and the Icons8 server. `copilot mcp list` shows
+the Agent Plugins v1 format: the ten skills and the Icons8 server. `copilot mcp list` shows
 `icons8mcp` under the plugin servers.
 
 ### Any Agent Plugins v1 client
@@ -215,6 +217,11 @@ skills/ux-writing/            # every string a user reads, with before/after pat
 skills/ui-polish/             # visual finish: radii, icons, contrast, focus, state styling
 skills/motion/                # whether it should animate at all, then every timing value
 skills/design-tokens/         # bootstrap a token system, then catch drift in counts
+skills/illustration-animator/
+├── SKILL.md                  # setup, the three steps, hard time limits
+├── references/               # analyze, create, verify, the judge, scene format, style rules
+├── engine/                   # Node engine: SVG + scene → Lottie, GIF, MOV, MP4; script checks
+└── examples/                 # walking and masking reference scenes
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
@@ -330,12 +337,36 @@ On your machine, the `ouch` skill can run `scripts/measure.py`. It reads image f
 with headless Chrome or Edge, writes rasters to a temporary directory and deletes them on exit. It
 makes no network request. If you start it with `uv run`, uv downloads Pillow from PyPI first.
 
+The `illustration-animator` skill runs a Node engine from its own folder. Its one-time setup
+installs four npm packages (`svgpath`, `lottie-web`, `puppeteer-core`, `@puppeteer/browsers`) from
+the npm registry into `~/.animator/`, downloads Chrome for Testing from Google only when no Chrome,
+Chromium or Edge is installed, and installs ffmpeg with Homebrew on macOS or winget on Windows when
+it is missing. After that it works offline: it reads the SVG files you point it at and writes
+scenes and animations next to them.
+
+## Animating illustrations: the `illustration-animator` skill
+
+Point it at a folder of SVG illustrations of one style and it returns looped animations: Lottie JSON
+GIF and MOV without background, plus MP4 (HEVC with alpha) on macOS. For each illustration it writes a short story (an
+action and a reaction to it), cuts the drawing into parts that move the way the object works (a
+wheel rolls, a pen writes, a walking person walks) with joints and tight line masks, builds the
+animation, then checks it with scripts and a visual judge and fixes what it finds, within hard time
+limits per illustration. Say "<scene> - bad" and why, and the failed technique becomes a rule for
+the whole style.
+
+The motion rules, style rules and reference scenes were trained on Icons8 animations and
+illustrations.
+
+It does not need the MCP server or an Icons8 account. It needs Node.js; the first run of
+`engine/bin/setup.js` installs what the engine uses (see below).
+
 ## Requirements
 
 - A client that supports the Agent Skills standard (Claude Code, Codex, VS Code + Copilot, Cursor, …)
 - Network access to `https://mcp.icons8.com/mcp/`
 - An Icons8 account, signed in through the browser on first use
 - An Icons8 API key **only** where the client cannot do OAuth, or on CI
+- For `illustration-animator`: Node.js, and ffmpeg (installed by its setup on macOS and Windows)
 
 ## Support
 
