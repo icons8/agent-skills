@@ -122,6 +122,6 @@ To view the cut and the poses:
 | `float` | `dur`, `period` (integer number of periods in `dur`), `amp` 8 | floating up and down |
 | `sway` | `dur`, `period`, `angle` 4 | swaying around the pivot |
 
-Key easing: `soft`, `inOut`, `out`, `in`, `back`, `sine`, `lin`, `hold` or a custom curve `[x1, y1, x2, y2]`. From rest — only with a flat start (`soft`, `inOut`, `sine`, a custom curve with y1 = 0); `out` and `back` — only as a continuation of ongoing motion, otherwise `make.js` rejects the scene (`speed`: a jerk from rest). Speeds on both sides of a key must match (a kink of more than 2× is also `speed`).
+Key easing: `soft`, `inOut`, `out`, `in`, `back`, `sine`, `lin`, `hold` or a custom curve `[x1, y1, x2, y2]`. From rest — only with a flat start (`soft`, `inOut`, `sine`, a custom curve with y1 = 0); `out` and `back` — only as a continuation of ongoing motion or as a snap of up to 8 frames (a pop, a rebound), otherwise `make.js` rejects the scene (`speed`: a jerk from rest). Speeds on both sides of a key must match (a kink of more than 2× is also `speed`).
 
 An arc with custom keys: the fourth element of a position key is `{"to": [dx, dy], "ti": [dx, dy]}`, path tangents to the next key (from this value and from the next one), as in After Effects.

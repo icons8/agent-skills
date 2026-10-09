@@ -78,6 +78,27 @@ The user writes: "<scene> — bad" (or «<сцена> — плохо»; may be h
 4. Find scenes with the same technique in `<style folder>/scenes/*.json` (same template, same part type, similar parameters) and redo them together with this one: scene edit → `node engine/bin/make.js …` → judge.
 5. Answer in one line: "ban recorded, N scenes redone: …".
 
+**Fixing by an owner's remark** (applies to every round of a hand refinement, not only to "bad"):
+- Before the edit, find the block of rules for this defect type in `common.md` and the style file (walking of a person, walking of an animal, white lines, line masks, cut limbs) and apply the whole block, not only the item the owner pointed at. The witch with the cat took 10 rounds because white-line and leg rules were applied one remark at a time.
+- Joints, corners and line ends come only from geometry (`els.js`, `centerline`), never by eye.
+- The same remark comes a second time — don't patch the result: name the technique that produces it and replace the technique.
+- Offer the owner only variants that follow the references (`examples/…`); a variant that contradicts a reference (stepping in place instead of the loader's walk) is not offered.
+- Before every delivery — the judge (step 2) and a look at the whole preview yourself. A delivery with "judge not run" or "preview not watched" does not happen, including fixes by the owner's word.
+
+## Refinement journal
+
+When the owner refines one illustration by hand (two or more remarks on the same scene), keep a journal: journals/<scene>/<YYYY-MM-DD>.md in the style folder, in the owner's language. One block per round, written right after the delivery:
+
+```
+## Round <N> (<time>)
+Owner: "<the remark, verbatim>"
+Did: <technique and parameters, 1–2 lines>
+Judge: <ok / redo: …> · preview watched: yes/no
+Owner's verdict: <in the next message: fixed / still … / new …>
+```
+
+When the owner accepts the scene (or stops the refinement), compress the journal in the same file into: "Minimal path" (the fewest moves that lead to the result), "Wasted moves" (round — what — why), "Rules that would have given the result at once". Each such rule goes as a lesson into `<style>.lessons.md` (or `common.md` if it is not about the style), source: journal.
+
 **Good:** the user writes "<scene> — good" (or «<сцена> — хорошо»; also "super", "ok", "the best" — «супер», «ок», «лучшее»). Copy `scenes/<name>.json` to `examples/<style>/<name>/scene.json`, the Lottie from `out/<name>.json` to `lottie.json`, the user's words with the date to `note.md`. This is a style sample and a control scene: rule edits must not break it. Answer in one line: "sample recorded".
 
 **Remove / rewrite a lesson** (or «убери / перепиши урок») — find the lesson in the "Lessons" section and do it right away. Answer in one line.

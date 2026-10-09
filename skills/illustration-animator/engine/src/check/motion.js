@@ -1,13 +1,16 @@
 // Speed of every animated property in px per frame: jumps of speed at keys (lint) and smoothness of runs (rhythm).
 // Calibrated on refs/Plain (node engine/bin/motion-ref.js): a motion starts at 0.4–0.8 of its mean speed,
 // speed changes over 2× between frames only where a symbol appears.
+// Checked against eval/approved (node engine/bin/regress.js): a snap of up to `snap` frames after a key — a pop from rest,
+// a rebound after an impact, a squash released, a wobble — may start at any speed: the owner approved such accents
+// in Main, Organic, Black Chalk and Ballpoint Pen. A part arriving off the canvas (a car driving out) may arrive at speed.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { valueAt } = require('../lottie/keys');
 
-const LIMITS = { start: 1.5, stop: 2.5, kink: 2 };
+const LIMITS = { start: 1.5, stop: 2.5, kink: 2, snap: 8 };
 const EPS = 0.02;
 const asArr = (v) => (Array.isArray(v) ? v : [v]);
 const len = (v) => Math.hypot(...v);
@@ -50,6 +53,14 @@ function meanSpeed(x, t0, t1) {
   return path / (t1 - t0);
 }
 
+// the part has left the canvas by position (a car driving out): it may arrive there at full speed
+function offCanvas(x, lottie, t) {
+  if (x.prop !== 'p') return false;
+  const d = diff(valueAt(x.P, t), valueAt(x.P, 0));
+  const [x0, y0, x1, y1] = x.part.bbox;
+  return x1 + d[0] < 0 || y1 + d[1] < 0 || x0 + d[0] > lottie.w || y0 + d[1] > lottie.h;
+}
+
 function hidden(L, t) {
   const o = L.ks.o && L.ks.o.a === 1 ? valueAt(L.ks.o, t)[0] : 100;
   const s = L.ks.s && L.ks.s.a === 1 ? valueAt(L.ks.s, t) : [100, 100];
@@ -74,6 +85,8 @@ function checkSpeed(lottie, model) {
       while (dir < 0 && moving(a - 1) && span(a - 1) === 1 && k[b + 1].t - k[a - 1].t <= 6) a--;
       return meanSpeed(x, k[a].t, k[b + 1].t);
     };
+    // frames the motion after key j lasts: a run of one-frame keys counts whole
+    const runLen = (j) => { let b = j; while (span(b) === 1 && moving(b + 1) && span(b + 1) === 1) b++; return k[b + 1].t - k[j].t; };
     for (let j = 0; j < k.length - 1; j++) {
       const t = k[j].t;
       if (allowed.has(`${x.L.nm}.${x.prop}.${t}`)) continue;
@@ -83,6 +96,7 @@ function checkSpeed(lottie, model) {
       const before = moving(jb), after = moving(j);
       if (before && after && span(jb) === 1 && span(j) === 1) continue;
       if (hidden(x.L, tb === op ? 0 : t)) continue;
+      const snap = after && runLen(j) <= LIMITS.snap;
       const vb = before ? diff(at(x, tb), at(x, tb - EPS)).map((v) => v / EPS) : [0];
       const va = after ? diff(at(x, t + EPS), at(x, t)).map((v) => v / EPS) : [0];
       const mb = before ? segMean(jb, -1) : 0, ma = after ? segMean(j, 1) : 0;
@@ -90,11 +104,11 @@ function checkSpeed(lottie, model) {
       if (M < 0.2) continue;
       const a = len(vb), b = len(va);
       let detail = null;
-      if (a < 0.05 * M && ma && b > LIMITS.start * ma) {
+      if (a < 0.05 * M && ma && b > LIMITS.start * ma && !snap) {
         detail = `${x.prop}: jerk from rest — starts ${(b / ma).toFixed(1)}× faster than average (from rest use a curve with a flat start: soft, inOut or spring; out and back only continue a motion)`;
-      } else if (b < 0.05 * M && mb && a > LIMITS.stop * mb) {
+      } else if (b < 0.05 * M && mb && a > LIMITS.stop * mb && !offCanvas(x, lottie, t)) {
         detail = `${x.prop}: hit at the key — arrives ${(a / mb).toFixed(1)}× faster than average (brake into the key or continue the motion with a spring)`;
-      } else if (a >= 0.05 * M && b >= 0.05 * M) {
+      } else if (a >= 0.05 * M && b >= 0.05 * M && !snap) {
         const dot = vb.reduce((s, v, n) => s + v * (va[n] || 0), 0);
         if (dot < 0 && Math.min(a, b) > 0.5 * M) detail = `${x.prop}: reversal without braking at the key`;
         else if (Math.max(a, b) / Math.min(a, b) > LIMITS.kink && Math.max(a, b) > M) {

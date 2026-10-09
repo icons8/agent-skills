@@ -50,3 +50,4 @@ The answer is only a JSON array, one object per scene, in the order the scenes w
 ```
 
 `verdict` — "not worse" or "worse"; `why` — one phrase, what exactly is worse (empty if not worse).
+
