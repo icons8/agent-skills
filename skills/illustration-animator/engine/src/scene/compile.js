@@ -40,9 +40,9 @@ function mergeProp(segs, rest, op, wrap = 0) {
   segs = [...segs].sort((a, b) => a.keys[0][0] - b.keys[0][0]);
   const keys = [[0, rest]];
   const jumps = [];
-  const close = (key, next, allowed) => {
-    if (!same(key[1], next[1])) jumps.push({ frame: next[0], allowed });
-    key[2] = 'hold';
+  const close = (cur, next, allowed) => {
+    if (!same(cur[1], next[1])) jumps.push({ frame: next[0], allowed });
+    cur[2] = 'hold';
   };
   for (const seg of segs) {
     const ks = seg.keys.map((k) => [...k]);
@@ -130,15 +130,15 @@ const compact = (keys) => keys.filter((k, n) =>
 
 // "N.j" in a part's els is subpath j of element N. Elements that parts claim by subpaths are cut into groups:
 // one per claiming part, plus one for the unclaimed rest (it stays static). Groups keep paint order by smallest subpath.
-// key: "N" or a cut piece "N:name" → index in els (after cuts).
-function splitFromParts(parts, els, key = (k) => Number(k)) {
+// elIndex: "N" or a cut piece "N:name" → index in els (after cuts).
+function splitFromParts(parts, els, elIndex = (k) => Number(k)) {
   const whole = new Set();
   const claimed = new Map(); // N -> Map(j -> part name)
   for (const p of parts) {
     for (const r of p.els) {
       const m = typeof r === 'string' ? /^(\d+)\.(\d+)$/.exec(r) : null;
-      if (!m) { whole.add(String(key(String(r), p.name))); continue; }
-      const n = String(key(m[1], p.name)), j = Number(m[2]);
+      if (!m) { whole.add(String(elIndex(String(r), p.name))); continue; }
+      const n = String(elIndex(m[1], p.name)), j = Number(m[2]);
       if (!els[Number(n)]) throw new Error(`${p.name}: no element ${n}`);
       const count = els[Number(n)].paths.length;
       if (j >= count) throw new Error(`${p.name}: element ${n} has no path ${j} (has 0–${count - 1})`);
@@ -162,8 +162,8 @@ function splitFromParts(parts, els, key = (k) => Number(k)) {
   }
   const resolve = (sp, r, who) => {
     const m = typeof r === 'string' ? /^(\d+)\.(\d+)$/.exec(r) : null;
-    if (!m) return sp.ref(String(key(String(r), who)), who);
-    const n = String(key(m[1], who));
+    if (!m) return sp.ref(String(elIndex(String(r), who)), who);
+    const n = String(elIndex(m[1], who));
     if (!split[n]) return sp.ref(n, who);
     return sp.ref(`${n}.${groupOf[n].findIndex((g) => g.includes(Number(m[2])))}`, who);
   };
@@ -283,14 +283,14 @@ function compileScene(file, opts = {}) {
   const parsed = parseSvg(svgFile, { size: scene.size || 1200 });
   const { w, h, src, warnings } = parsed;
   const cuts = applyCuts(parsed.els, scene.cuts);
-  const key = (k, who) => {
+  const elIndex = (k, who) => {
     if (cuts.index.has(k)) return cuts.index.get(k);
     const own = [...cuts.index.keys()].filter((x) => x.startsWith(`${k.split(':')[0]}:`));
     if (/^\d+$/.test(k) && own.length) throw new Error(`${who}: element ${k} is cut — name its pieces: ${own.join(', ')}`);
     if (k.includes(':')) throw new Error(`${who}: no piece ${k}${own.length ? ` (has: ${own.join(', ')})` : ' — element is not cut (cuts)'}`);
     throw new Error(`${who}: no element ${k}`);
   };
-  const cut = splitFromParts(scene.parts, cuts.els, key);
+  const cut = splitFromParts(scene.parts, cuts.els, elIndex);
   const sp = applySplit(cuts.els, cut.split);
   const els = sp.els;
   const { fr, op } = scene;

@@ -190,7 +190,7 @@ function videoEnergy(tools, video) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'animator-energy-'));
   try {
     execFileSync(tools.ffmpeg, ['-loglevel', 'error', ...dec, '-i', video, '-filter_complex',
-      '[0:v]format=rgba,split[a][b];[a]alphaextract[al];[b]format=gray[g];[g][al]blend=all_mode=multiply,tblend=all_mode=difference,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=e.txt',
+      '[0:v]format=rgba,split[a][b];[a]alphaextract[al];[b]format=gray[g];[g][al]blend=all_mode=multiply,tblend=all_mode=difference,signalstats,metadata=print:file=e.txt',
       '-f', 'null', '-'], { cwd: dir });
     return [...fs.readFileSync(path.join(dir, 'e.txt'), 'utf8').matchAll(/YAVG=([\d.]+)/g)].map((m) => Number(m[1]));
   } finally {

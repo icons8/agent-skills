@@ -31,10 +31,10 @@ function applySplit(els, split = {}) {
     });
   }
   const ref = (r, who) => {
-    const key = String(r);
-    if (map.has(key)) return map.get(key);
-    if (split[key]) throw new Error(`${who}: element ${key} is split — specify ${split[key].map((_, n) => `${key}.${n}`).join(' or ')}`);
-    throw new Error(`${who}: no element ${key}`);
+    const id = String(r);
+    if (map.has(id)) return map.get(id);
+    if (split[id]) throw new Error(`${who}: element ${id} is split — specify ${split[id].map((_, n) => `${id}.${n}`).join(' or ')}`);
+    throw new Error(`${who}: no element ${id}`);
   };
   return { els: out, ref };
 }

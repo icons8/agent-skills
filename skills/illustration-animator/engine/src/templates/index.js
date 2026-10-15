@@ -198,7 +198,7 @@ function checkKeys(name, out, hint = '') {
 function guard(name, fn) {
   return (at, params) => {
     const prm = params || {};
-    for (const key of REQUIRED[name] || []) if (prm[key] === undefined) throw new Error(`${name}: ${key} is not set`);
+    for (const field of REQUIRED[name] || []) if (prm[field] === undefined) throw new Error(`${name}: ${field} is not set`);
     if (prm.zeta !== undefined && !(prm.zeta > 0 && prm.zeta < 1)) throw new Error(`${name}: zeta must be between 0 and 1 (usually 0.28–0.36)`);
     if (prm.half !== undefined && !(prm.half >= 1)) throw new Error(`${name}: half is the half-period in frames, 1 or more (usually 4–8)`);
     return checkKeys(name, fn(at, prm), ' — increase dur');

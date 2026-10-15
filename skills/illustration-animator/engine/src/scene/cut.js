@@ -198,7 +198,7 @@ function seamSamples(all, els) {
   });
 }
 
-// els → { els (pieces in paint order, `from` = "N:name"), index: key → position }. No cuts: the same list.
+// els → { els (pieces in paint order, `from` = "N:name"), index: id → position }. No cuts: the same list.
 function applyCuts(els, cuts) {
   if (!cuts || !cuts.length) return { els, index: new Map(els.map((e) => [String(e.i), e.i])), seams: [] };
   validateCuts(cuts, els);
@@ -223,10 +223,10 @@ function applyCuts(els, cuts) {
     (after.get(last) || after.set(last, []).get(last)).push(c);
   }
   const out = [], index = new Map();
-  const push = (e, key, paths) => {
+  const push = (e, id, paths) => {
     if (paths && !paths.length) return; // the cut missed this element of its stack, or took all of it
-    index.set(key, out.length);
-    out.push(paths ? { ...e, i: out.length, paths, bbox: pathsBBox(paths), from: key } : { ...e, i: out.length, from: key });
+    index.set(id, out.length);
+    out.push(paths ? { ...e, i: out.length, paths, bbox: pathsBBox(paths), from: id } : { ...e, i: out.length, from: id });
   };
   for (const e of els) {
     if (byEl.has(e.i)) push(e, `${e.i}:rest`, pieces.get(`${e.i}:rest`));

@@ -207,13 +207,13 @@ function score(m, profile) {
   n++;
   if (m.fps === profile.fps) sum++;
   else misses.push(`fps: ${m.fps}, style has ${profile.fps}`);
-  for (const [key, [lo, hi]] of Object.entries(profile.ranges)) {
-    const v = m[key];
+  for (const [metric, [lo, hi]] of Object.entries(profile.ranges)) {
+    const v = m[metric];
     if (v === null || v === undefined) continue;
     n++;
     const pts = v >= lo && v <= hi ? 1 : v >= lo - 0.25 * Math.abs(lo) && v <= hi + 0.25 * Math.abs(hi) ? 0.5 : 0;
     sum += pts;
-    if (pts < 1) misses.push(`${LABELS[key]}: ${v}, style has ${lo}–${hi}`);
+    if (pts < 1) misses.push(`${LABELS[metric]}: ${v}, style has ${lo}–${hi}`);
   }
   return { score: round2(sum / n), misses };
 }
