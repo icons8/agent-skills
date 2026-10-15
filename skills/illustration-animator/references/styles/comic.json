@@ -1,0 +1,17 @@
+{
+  "style": "comic",
+  "fps": 30,
+  "ranges": {
+    "loopSec": [2.9, 3.1],
+    "moveFrames": [5, 20],
+    "holdFrames": [13, 20],
+    "rotAmpDeg": [5, 20],
+    "posAmpPx": [20, 120],
+    "overshootPct": [16, 50],
+    "lagFrames": [1, 5],
+    "linearShare": [0, 0.06],
+    "moveDistFit": [0.7, 1.3],
+    "startMax": [0, 1.2],
+    "ldlj": [-9, -4]
+  }
+}

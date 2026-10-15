@@ -5,6 +5,24 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
+## [0.6.0] — 2026-10-15
+
+A tenth skill: `illustration-animator` turns static SVG illustrations into looped animations.
+
+### Added
+
+- **`illustration-animator`.** Given a folder of SVG illustrations of one style, the skill writes a
+  short story for each one, cuts the drawing into moving parts with joints and tight line masks
+  (characters fused into one outline are cut and bent with a pinned seam), and builds a looped
+  Lottie JSON and an MP4 without background, plus GIF and MOV. It checks every animation with
+  scripts and a visual judge and fixes what it finds, within hard time limits per illustration. A
+  scene the user calls bad becomes a rule for the whole style. The rules and the reference scenes
+  were trained on Icons8 animations and illustrations. It runs a Node engine from its own folder and
+  does not use the MCP server. Its one-time setup lists what it would install (pinned npm packages
+  from a lockfile, a pinned Chrome checked by SHA-256) and installs nothing until the user agrees;
+  ffmpeg it only names, the user installs it; the lessons, bans and samples it collects stay in the
+  user's project, never in the plugin folder.
+
 ## [0.5.2] — 2026-10-05
 
 A Cursor marketplace can now list the plugin, and Cursor installs it from there with its skills and

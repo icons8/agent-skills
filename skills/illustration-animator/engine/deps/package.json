@@ -1,0 +1,12 @@
+{
+  "name": "animator-deps",
+  "private": true,
+  "description": "Runtime dependencies of the engine, exact versions; installed with npm ci into ~/.animator/deps",
+  "dependencies": {
+    "@puppeteer/browsers": "3.2.5",
+    "lottie-web": "5.13.0",
+    "paper": "0.12.18",
+    "puppeteer-core": "25.14.0",
+    "svgpath": "2.6.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "style": "plain",
+  "fps": 30,
+  "ranges": {
+    "loopSec": [2.8, 6],
+    "moveFrames": [5, 34],
+    "holdFrames": [0, 15],
+    "rotAmpDeg": [3, 20],
+    "posAmpPx": [12, 460],
+    "overshootPct": [3, 30],
+    "lagFrames": [1, 9],
+    "linearShare": [0, 0.1],
+    "moveDistFit": [0.7, 1.3],
+    "startMax": [0, 1.2],
+    "ldlj": [-9, -4]
+  }
+}

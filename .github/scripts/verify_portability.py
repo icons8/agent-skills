@@ -98,8 +98,10 @@ for rel, raw in contents.items():
 
 # --- 2. the checkout kept LF ---------------------------------------------------
 attributes = (REPO / ".gitattributes")
-check(".gitattributes exists and pins eol=lf",
-      attributes.is_file() and "eol=lf" in attributes.read_text(encoding="utf-8"),
+# `-text` (no line-ending conversion at all) and not `eol=lf`: the Claude directory validator
+# refuses a .gitattributes that sets `text=auto` or `eol`, and accepts `* -text`.
+check(".gitattributes exists and sets -text, so Git converts no line endings",
+      attributes.is_file() and re.search(r"^\*\s+-text\s*$", attributes.read_text(encoding="utf-8"), re.M) is not None,
       "without it Git for Windows checks out CRLF, because its system config sets "
       "core.autocrlf=true")
 
