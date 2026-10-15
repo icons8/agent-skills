@@ -22,7 +22,7 @@ node "${CLAUDE_SKILL_DIR}/engine/bin/setup.js"
 ```
 
 It installs nothing by itself:
-- exit code 0, "Environment ready" — nothing is missing;
+- exit code 0, "Setup done" — nothing is missing;
 - exit code 2 — it changed nothing and printed a plan: the pinned npm dependencies (`npm ci` from `engine/deps/package-lock.json`, install scripts off) into `~/.animator/deps`, Chrome for Testing (a pinned build, checked by SHA-256) into `~/.animator/chrome` if no Chrome, Chromium or Edge is installed. Show the plan to the user and, only after they agree, run the same command with `--yes`;
 - exit code 3 — there is no ffmpeg with the needed encoders. Setup never installs it: give the user the command it printed (`brew install ffmpeg`, `winget install --id Gyan.FFmpeg -e`, `sudo apt install ffmpeg`) to run themselves, then run setup again. An ffmpeg in a non-standard place: `--ffmpeg <path>`.
 

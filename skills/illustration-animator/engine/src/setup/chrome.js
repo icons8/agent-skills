@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// Standard install places only; the engine reads no environment variables (home: the user's home folder).
+// Standard install places only (home: the user's home folder).
 function chromeCandidates(platform = process.platform, home = os.homedir()) {
   if (platform === 'win32') {
     const roots = ['C:\\Program Files', 'C:\\Program Files (x86)', path.win32.join(home, 'AppData', 'Local')];

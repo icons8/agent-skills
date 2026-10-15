@@ -21,7 +21,7 @@ function missingEncoders(platform, enc) {
   return miss;
 }
 
-// given: a path the user named (setup --ffmpeg); then standard install places; the engine reads no environment variables
+// given: a path the user named (setup --ffmpeg); then standard install places; nothing else is consulted
 function ffmpegCandidates(platform, home, given) {
   const c = [];
   if (given) c.push(given);
