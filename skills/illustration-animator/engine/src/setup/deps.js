@@ -20,11 +20,16 @@ function installDeps() {
   fs.mkdirSync(DEPS, { recursive: true });
   for (const f of ['package.json', 'package-lock.json']) fs.copyFileSync(path.join(PIN, f), path.join(DEPS, f));
   const args = ['ci', '--prefix', DEPS, '--no-audit', '--no-fund', '--ignore-scripts'];
-  // npm's own script next to this node, run by node with an argument list: no shell, no quoting of the path
-  const bin = path.dirname(process.execPath);
-  const cli = [path.join(bin, 'node_modules', 'npm', 'bin', 'npm-cli.js'), path.join(bin, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')].find((f) => fs.existsSync(f));
+  // npm's own script, run by node with an argument list: no shell, no quoting of the path. It sits next to this node,
+  // or on Windows next to the npm.cmd that where.exe finds (a node manager keeps npm in a folder of its own).
+  const near = (dir) => [path.join(dir, 'node_modules', 'npm', 'bin', 'npm-cli.js'), path.join(dir, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')];
+  const found = () => {
+    if (process.platform !== 'win32') return [];
+    try { return execFileSync('where.exe', ['npm.cmd'], { encoding: 'utf8' }).split(/\r?\n/).filter(Boolean).map((f) => path.dirname(f)); } catch { return []; }
+  };
+  const cli = [path.dirname(process.execPath), ...found()].flatMap(near).find((f) => fs.existsSync(f));
   if (cli) execFileSync(process.execPath, [cli, ...args], { stdio: 'inherit' });
-  else if (process.platform === 'win32') execFileSync('npm.cmd', args.map((a) => `"${a}"`), { stdio: 'inherit', shell: true });
+  else if (process.platform === 'win32') throw new Error('npm not found: install Node.js with npm (https://nodejs.org) and run setup again');
   else execFileSync('npm', args, { stdio: 'inherit' });
 }
 
