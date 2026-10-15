@@ -2,7 +2,7 @@
 const path = require('path');
 const { execFileSync, spawnSync } = require('child_process');
 
-const formatsFor = (env) => (env.hevc ? ['gif', 'mov', 'mp4'] : ['gif', 'mov']);
+const formatsFor = (tools) => (tools.hevc ? ['gif', 'mov', 'mp4'] : ['gif', 'mov']);
 
 function encodeArgs(format, { fr, input, out }) {
   const src = input.endsWith('.mov') ? ['-i', input] : ['-framerate', String(fr), '-i', input];
@@ -22,35 +22,35 @@ function encodeArgs(format, { fr, input, out }) {
   }
 }
 
-const ff = (env, args) => execFileSync(env.ffmpeg, ['-y', '-loglevel', 'error', ...args]);
+const ff = (tools, args) => execFileSync(tools.ffmpeg, ['-y', '-loglevel', 'error', ...args]);
 
-function exportAll(framesDir, outBase, { fr, env, formats = formatsFor(env) }) {
+function encodeAll(framesDir, outBase, { fr, tools, formats = formatsFor(tools) }) {
   const input = path.join(framesDir, 'f%04d.png');
   return formats.map((f) => {
-    if (f === 'mp4' && !env.hevc) throw new Error('MP4 is built on Mac only');
+    if (f === 'mp4' && !tools.hevc) throw new Error('MP4 is built on Mac only');
     const out = `${outBase}.${f}`;
-    ff(env, encodeArgs(f, { fr, input, out }));
+    ff(tools, encodeArgs(f, { fr, input, out }));
     return out;
   });
 }
 
 // On a Mac: MP4 from an existing MOV (made on another machine, e.g. Windows).
-function mp4FromMov(env, movFile) {
-  if (!env.hevc) throw new Error('MP4 is built on Mac only');
+function mp4FromMov(tools, movFile) {
+  if (!tools.hevc) throw new Error('MP4 is built on Mac only');
   const out = movFile.replace(/\.mov$/, '.mp4');
-  ff(env, encodeArgs('mp4', { input: movFile, out }));
+  ff(tools, encodeArgs('mp4', { input: movFile, out }));
   return out;
 }
 
 // First frame as raw RGBA (GIF, MOV). The ffmpeg HEVC decoder drops the alpha layer, see hevcHasAlpha.
-function firstFrameRGBA(env, file, size) {
-  return execFileSync(env.ffmpeg, ['-loglevel', 'error', '-i', file, '-frames:v', '1',
+function firstFrameRGBA(tools, file, size) {
+  return execFileSync(tools.ffmpeg, ['-loglevel', 'error', '-i', file, '-frames:v', '1',
     '-vf', `scale=${size}:${size}`, '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'], { maxBuffer: 256 * 1024 * 1024 });
 }
 
 // HEVC alpha = a second layer (nuh_layer_id 1) plus the Alpha Channel Information SEI.
-function hevcHasAlpha(env, file) {
-  const r = spawnSync(env.ffmpeg, ['-hide_banner', '-i', file, '-frames:v', '1', '-c:v', 'copy',
+function hevcHasAlpha(tools, file) {
+  const r = spawnSync(tools.ffmpeg, ['-hide_banner', '-i', file, '-frames:v', '1', '-c:v', 'copy',
     '-bsf:v', 'trace_headers', '-f', 'null', '-'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const log = r.stderr || '';
   if (r.error || r.status !== 0) {
@@ -60,4 +60,4 @@ function hevcHasAlpha(env, file) {
   return /nuh_layer_id\s+\S+\s*=\s*1\b/.test(log) && log.includes('Alpha Channel Information');
 }
 
-module.exports = { formatsFor, encodeArgs, exportAll, mp4FromMov, firstFrameRGBA, hevcHasAlpha };
+module.exports = { formatsFor, encodeArgs, encodeAll, mp4FromMov, firstFrameRGBA, hevcHasAlpha };

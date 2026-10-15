@@ -10,36 +10,36 @@ const { valueAt } = require('../lottie/keys');
 const { weights, pose, deformPoint } = require('../bones/skin');
 const { speedSeries } = require('../check/motion');
 
-const ff = (env, args) => execFileSync(env.ffmpeg, ['-y', '-loglevel', 'error', ...args]);
+const ff = (tools, args) => execFileSync(tools.ffmpeg, ['-y', '-loglevel', 'error', ...args]);
 const pick = (total, n) => [...Array(n).keys()].map((i) => Math.floor((i * total) / n));
 const tmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'animator-sheet-'));
 
 // <dir>/f0000.png … f00NN.png → one sheet of n cells on white
-function tile(env, dir, out, n) {
+function tile(tools, dir, out, n) {
   const cols = Math.round(Math.sqrt(n)), cell = 1200 / cols;
-  ff(env, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', 'color=c=white:s=1200x1200',
+  ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', 'color=c=white:s=1200x1200',
     '-filter_complex', `[0:v]scale=${cell}:${cell},tile=${cols}x${cols}[t];[1:v][t]overlay=format=auto,format=rgb24`,
     '-frames:v', '1', out]);
   return out;
 }
 
-async function sheetFromLottie(lottie, env, out, { n = 16 } = {}) {
+async function sheetFromLottie(lottie, tools, out, { n = 16 } = {}) {
   const frames = pick(lottie.op - lottie.ip, n).map((f) => f + lottie.ip);
-  const dir = await renderFrames(lottie, env, { frames });
-  try { return tile(env, dir, out, n); } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  const dir = await renderFrames(lottie, tools, { frames });
+  try { return tile(tools, dir, out, n); } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
-function sheetFromVideo(env, video, out, { n = 16 } = {}) {
+function sheetFromVideo(tools, video, out, { n = 16 } = {}) {
   const all = tmpDir(), dir = tmpDir();
   try {
     // libvpx decoders keep the webm alpha; pick the one matching the stream (Icons8 previews are VP8)
-    const codec = execFileSync(env.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'csv=p=0', video]).toString().trim();
+    const codec = execFileSync(tools.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'csv=p=0', video]).toString().trim();
     const dec = { vp9: ['-c:v', 'libvpx-vp9'], vp8: ['-c:v', 'libvpx'] }[codec] || [];
-    ff(env, [...dec, '-i', video, path.join(all, 'a%05d.png')]);
+    ff(tools, [...dec, '-i', video, path.join(all, 'a%05d.png')]);
     const files = fs.readdirSync(all).sort();
     if (!files.length) throw new Error(`Video has no frames: ${video}`);
     pick(files.length, n).forEach((k, i) => fs.copyFileSync(path.join(all, files[k]), path.join(dir, `f${String(i).padStart(4, '0')}.png`)));
-    return tile(env, dir, out, n);
+    return tile(tools, dir, out, n);
   } finally {
     fs.rmSync(all, { recursive: true, force: true });
     fs.rmSync(dir, { recursive: true, force: true });
@@ -48,16 +48,16 @@ function sheetFromVideo(env, video, out, { n = 16 } = {}) {
 
 // setpts: ffmpeg 9 keeps the timestamp of the 5th frame, so overlay would never see the blur layer without it.
 // n moments evenly over the loop; each is `span` neighbouring frames averaged
-async function blurFrames(lottie, env, outDir, { n = 4, span = 5 } = {}) {
+async function blurFrames(lottie, tools, outDir, { n = 4, span = 5 } = {}) {
   const op = lottie.op - lottie.ip;
   const out = [];
   for (let i = 0; i < n; i++) {
     const c = Math.floor((i * op) / n + op / (2 * n));
     const frames = [...Array(span).keys()].map((k) => lottie.ip + ((((c - (span >> 1) + k) % op) + op) % op));
-    const dir = await renderFrames(lottie, env, { frames });
+    const dir = await renderFrames(lottie, tools, { frames });
     const file = path.join(outDir, `blur-${i + 1}.png`);
     try {
-      ff(env, ['-framerate', '30', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${lottie.w}x${lottie.h}`,
+      ff(tools, ['-framerate', '30', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${lottie.w}x${lottie.h}`,
         '-filter_complex', `[0:v]tmix=frames=${span},select=eq(n\\,${span - 1}),setpts=PTS-STARTPTS[b];[1:v][b]overlay=format=auto:shortest=1,scale=1200:1200,format=rgb24`,
         '-frames:v', '1', file]);
     } finally {
@@ -74,8 +74,8 @@ const esc = (t) => String(t).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt
 
 // SVG markup → transparent PNG of the same size, drawn by Chrome as an <img> from a data: URL, never as page markup:
 // an image runs no scripts or handlers and loads nothing external
-async function svgToPng(env, svg, [W, H], out) {
-  await withPage(env, [W, H], async (page) => {
+async function svgToPng(tools, svg, [W, H], out) {
+  await withPage(tools, [W, H], async (page) => {
     const src = `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
     await page.setContent(`<html><body style="margin:0;background:transparent"><img id="i" src="${src}" width="${W}" height="${H}" style="display:block"></body></html>`);
     await page.waitForFunction(() => document.getElementById('i').complete);
@@ -96,13 +96,13 @@ function trackPoint(inner, p, t) {
 
 // first.png — frame 0 of the output loop on white; ghosts.png — 16 frames of the loop at once with the path of every
 // moving part (dots every 1/16 of the loop, a ring on the first frame); speed.png — speed of each part over the loop.
-async function motionSheets(lottie, inner, model, env, outDir) {
+async function motionSheets(lottie, inner, model, tools, outDir) {
   const { w, h, op } = model;
   const start = (op - model.keyFrame) % op; // authoring frame shown at output frame 0
-  const onWhite = (src, out) => ff(env, ['-i', src, '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
+  const onWhite = (src, out) => ff(tools, ['-i', src, '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
     '-filter_complex', '[1:v][0:v]overlay=format=auto,scale=1200:1200,format=rgb24', '-frames:v', '1', out]);
 
-  const one = await renderFrames(lottie, env, { frames: [lottie.ip] });
+  const one = await renderFrames(lottie, tools, { frames: [lottie.ip] });
   try { onWhite(path.join(one, 'f0000.png'), path.join(outDir, 'first.png')); } finally { fs.rmSync(one, { recursive: true, force: true }); }
 
   // the parts that travel most, with their paths in output order
@@ -115,11 +115,11 @@ async function motionSheets(lottie, inner, model, env, outDir) {
   paths.forEach((x, i) => { x.color = COLORS[i]; });
 
   const frames = pick(op, 16);
-  const ghostDir = await renderFrames(lottie, env, { frames: frames.map((f) => f + lottie.ip) });
+  const ghostDir = await renderFrames(lottie, tools, { frames: frames.map((f) => f + lottie.ip) });
   const blend = path.join(ghostDir, 'blend.png'), lines = path.join(ghostDir, 'lines.png');
   try {
     // average of 16 frames on white: still parts stay solid, moving ones turn into ghosts
-    ff(env, ['-framerate', '16', '-i', path.join(ghostDir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
+    ff(tools, ['-framerate', '16', '-i', path.join(ghostDir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
       '-filter_complex', '[1:v][0:v]overlay=format=auto:shortest=1,tmix=frames=16,select=eq(n\\,15),setpts=PTS-STARTPTS,format=rgb24',
       '-frames:v', '1', blend]);
     const svg = paths.map((x) => {
@@ -130,8 +130,8 @@ async function motionSheets(lottie, inner, model, env, outDir) {
         + `<circle cx="${sx}" cy="${sy}" r="11" fill="none" stroke="${x.color}" stroke-width="4"/>`
         + `<text x="${sx + 14}" y="${sy - 10}" font-family="Arial" font-size="26" font-weight="bold" fill="${x.color}" stroke="white" stroke-width="5" paint-order="stroke">${esc(x.name)}</text>`;
     }).join('');
-    await svgToPng(env, `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${svg}</svg>`, [w, h], lines);
-    ff(env, ['-i', blend, '-i', lines, '-filter_complex', '[0:v][1:v]overlay=format=auto,scale=1200:1200,format=rgb24', '-frames:v', '1', path.join(outDir, 'ghosts.png')]);
+    await svgToPng(tools, `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${svg}</svg>`, [w, h], lines);
+    ff(tools, ['-i', blend, '-i', lines, '-filter_complex', '[0:v][1:v]overlay=format=auto,scale=1200:1200,format=rgb24', '-frames:v', '1', path.join(outDir, 'ghosts.png')]);
   } finally {
     fs.rmSync(ghostDir, { recursive: true, force: true });
   }
@@ -156,7 +156,7 @@ async function motionSheets(lottie, inner, model, env, outDir) {
     + curves.map((x, i) => `<polyline points="${x.v.map((v, k) => `${X(k + 0.5).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${x.color}" stroke-width="3"/>`
       + `<rect x="${W - R + 20}" y="${T + i * 30}" width="18" height="18" fill="${x.color}"/>${text(W - R + 46, T + i * 30 + 15, esc(x.name), 'fill="#222"')}`).join('')
     + '</svg>';
-  await svgToPng(env, chart, [W, H], path.join(outDir, 'speed.png'));
+  await svgToPng(tools, chart, [W, H], path.join(outDir, 'speed.png'));
   return ['first.png', 'ghosts.png', 'speed.png'].map((f) => path.join(outDir, f));
 }
 

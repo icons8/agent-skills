@@ -1,6 +1,6 @@
 // SVG -> flat list of filled elements in output space (fit into size×size, centred).
 const fs = require('fs');
-const { req } = require('../env/deps');
+const { req } = require('../setup/deps');
 
 const I = [1, 0, 0, 1, 0, 0];
 const mul = (m, n) => [

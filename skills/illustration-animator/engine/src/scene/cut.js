@@ -9,7 +9,7 @@
 // At rest the picture is the source: no two anti-aliased edges lie on one line (that shows a hairline through solid
 // black). Every lower piece reaches OV px under the edge above it, and within a stack each lower element's edge sits
 // D px deeper than the one above, so it is covered by it.
-const { req } = require('../env/deps');
+const { req } = require('../setup/deps');
 const { pathsBBox } = require('../svg/parse');
 const { inside, outline } = require('../bones/skin');
 

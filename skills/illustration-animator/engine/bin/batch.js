@@ -23,7 +23,7 @@ const MAKE = path.join(__dirname, 'make.js');
 const STATE = { 0: 'done', 2: 'failed' };
 // tried: failed/error scenes that have not changed since — make would only fail the same way again (verify handles them)
 const counts = { done: 0, failed: 0, error: 0, skipped: 0, remaining: 0, tried: 0 };
-const RETRYABLE = /Environment not ready|did not finish within/;
+const RETRYABLE = /Setup not done|did not finish within/;
 
 // a damaged or missing status counts as "not made"
 function readStatus(name) {

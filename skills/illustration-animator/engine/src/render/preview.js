@@ -32,7 +32,7 @@ function labelTags(els, chosen = null) {
 }
 
 // els: element numbers, or "N.j" for contour group j of a compound element N (shown on its own).
-async function preview(svgFile, env, out, { els: pickEls, labels = false } = {}) {
+async function preview(svgFile, tools, out, { els: pickEls, labels = false } = {}) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const parsed = parseSvg(svgFile);
   const { w, h } = parsed;
@@ -47,7 +47,7 @@ async function preview(svgFile, env, out, { els: pickEls, labels = false } = {})
   const shown = els.map((e) => (chosen && !chosen.has(e.i) ? { ...e, opacity: e.opacity * 0.15 } : e));
   const lottie = buildLottie({ w, h, fr: 30, op: 1, els: shown, layers: [{ name: 'ALL', els: shown.map((e) => e.i), pivot: [w / 2, h / 2] }] });
   const tags = labels ? labelTags(els, chosen) : [];
-  await withPage(env, [w, h], async (page) => {
+  await withPage(tools, [w, h], async (page) => {
     await load(page, lottie);
     await page.evaluate((tags) => {
       document.body.style.background = '#fff';

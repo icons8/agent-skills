@@ -2,7 +2,7 @@
 // speed.png for a scene)
 const fs = require('fs');
 const path = require('path');
-const { loadEnv } = require('../src/env');
+const { loadTools } = require('../src/setup');
 const { compileScene } = require('../src/scene/compile');
 const { sheetFromLottie, sheetFromVideo, blurFrames, motionSheets } = require('../src/render/sheet');
 
@@ -17,14 +17,14 @@ const out = path.resolve(args[i + 1]);
 fs.mkdirSync(out, { recursive: true });
 
 (async () => {
-  const env = loadEnv();
+  const tools = loadTools();
   if (src.endsWith('.json')) {
     const { lottie, inner, model } = compileScene(src);
-    await sheetFromLottie(lottie, env, path.join(out, 'sheet.png'));
-    await blurFrames(lottie, env, out);
-    await motionSheets(lottie, inner, model, env, out);
+    await sheetFromLottie(lottie, tools, path.join(out, 'sheet.png'));
+    await blurFrames(lottie, tools, out);
+    await motionSheets(lottie, inner, model, tools, out);
   } else {
-    sheetFromVideo(env, src, path.join(out, 'sheet.png'));
+    sheetFromVideo(tools, src, path.join(out, 'sheet.png'));
   }
   console.log(out);
 })().catch((e) => {

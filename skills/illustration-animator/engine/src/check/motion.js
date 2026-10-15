@@ -183,13 +183,13 @@ function runStats(lottie, model) {
 }
 
 // Motion energy of a video, one value a frame: mean luma difference of neighbouring frames, transparent = black.
-function videoEnergy(env, video) {
-  const codec = execFileSync(env.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'csv=p=0', video]).toString().trim();
+function videoEnergy(tools, video) {
+  const codec = execFileSync(tools.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'csv=p=0', video]).toString().trim();
   const dec = { vp9: ['-c:v', 'libvpx-vp9'], vp8: ['-c:v', 'libvpx'] }[codec] || [];
   // metadata=print writes to a file; a relative name in a temp cwd avoids the drive colon in the filter string
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'animator-energy-'));
   try {
-    execFileSync(env.ffmpeg, ['-loglevel', 'error', ...dec, '-i', video, '-filter_complex',
+    execFileSync(tools.ffmpeg, ['-loglevel', 'error', ...dec, '-i', video, '-filter_complex',
       '[0:v]format=rgba,split[a][b];[a]alphaextract[al];[b]format=gray[g];[g][al]blend=all_mode=multiply,tblend=all_mode=difference,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=e.txt',
       '-f', 'null', '-'], { cwd: dir });
     return [...fs.readFileSync(path.join(dir, 'e.txt'), 'utf8').matchAll(/YAVG=([\d.]+)/g)].map((m) => Number(m[1]));

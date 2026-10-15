@@ -3,7 +3,7 @@
 // Authored frames of a scene side by side (zoom into a seam with --box); --cuts tints every part its own colour;
 // --grid draws canvas coordinates, --pts numbers the vertices of contours N.j of the source SVG (for a cut).
 const path = require('path');
-const { loadEnv } = require('../src/env');
+const { loadTools } = require('../src/setup');
 const { parseSvg } = require('../src/svg/parse');
 const { buildLottie } = require('../src/lottie/build');
 const { compileScene } = require('../src/scene/compile');
@@ -36,6 +36,6 @@ const pts = (opt('--pts') || '').split(',').filter(Boolean).map((r) => {
 });
 const box = nums('--box');
 if (box && box.length !== 4) throw new Error('--box x,y,w,h');
-poses(lottie, loadEnv(), path.resolve(opt('--out')), { frames: nums('--frames') || [0], box, cell: Number(opt('--cell') || 600), grid: args.includes('--grid'), pts, legend })
+poses(lottie, loadTools(), path.resolve(opt('--out')), { frames: nums('--frames') || [0], box, cell: Number(opt('--cell') || 600), grid: args.includes('--grid'), pts, legend })
   .then((f) => console.log(f))
   .catch((e) => { console.error(e.message); process.exit(1); });

@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { req, resolve } = require('../env/deps');
+const { req, resolve } = require('../setup/deps');
 
 // Chrome processes still open: a run that times out kills them before it exits (on Windows a dead parent leaves them)
 const open = new Set();
@@ -19,17 +19,17 @@ function killBrowsers() {
 // why Chrome may not start on Linux, in words the user can act on
 const LINUX_HINT = 'On Linux Chrome may be blocked: Ubuntu 23.10+ restricts its sandbox with AppArmor, Chrome refuses to run as root (Docker), a snap Chromium cannot read files outside the home folder. Run as a regular user with Google Chrome or Chrome for Testing (setup downloads it when none is installed); in a container use a non-root user.';
 
-async function launch(puppeteer, env) {
+async function launch(puppeteer, tools) {
   try {
-    return await puppeteer.launch({ executablePath: env.chrome, headless: true, args: ['--force-color-profile=srgb'] });
+    return await puppeteer.launch({ executablePath: tools.chrome, headless: true, args: ['--force-color-profile=srgb'] });
   } catch (e) {
-    throw new Error(`Chrome did not start (${env.chrome}): ${e.message.split('\n')[0]}${process.platform === 'linux' ? `. ${LINUX_HINT}` : ''}`);
+    throw new Error(`Chrome did not start (${tools.chrome}): ${e.message.split('\n')[0]}${process.platform === 'linux' ? `. ${LINUX_HINT}` : ''}`);
   }
 }
 
-async function withPage(env, [W, H], fn) {
+async function withPage(tools, [W, H], fn) {
   const puppeteer = req('puppeteer-core');
-  const browser = await launch(puppeteer, env);
+  const browser = await launch(puppeteer, tools);
   const proc = browser.process();
   open.add(proc);
   try {
@@ -48,10 +48,10 @@ const load = (page, lottie) => page.evaluate((d) => {
   window.anim = lottie.loadAnimation({ container: document.getElementById('a'), renderer: 'svg', loop: false, autoplay: false, animationData: d });
 }, lottie);
 
-async function renderFrames(lottie, env, { dir, frames } = {}) {
+async function renderFrames(lottie, tools, { dir, frames } = {}) {
   dir = dir || fs.mkdtempSync(path.join(os.tmpdir(), 'animator-'));
   const list = frames || [...Array(lottie.op - lottie.ip).keys()].map((f) => f + lottie.ip);
-  await withPage(env, [lottie.w, lottie.h], async (page) => {
+  await withPage(tools, [lottie.w, lottie.h], async (page) => {
     await load(page, lottie);
     for (const [n, f] of list.entries()) {
       await page.evaluate((f) => window.anim.goToAndStop(f, true), f);
@@ -66,11 +66,11 @@ async function renderFrames(lottie, env, { dir, frames } = {}) {
 }
 
 // down: the compare runs at 1/down of the size (4 ignores hairline AA noise; 1 sees a hairline at a cut seam)
-async function compareFrame0(svgFile, lottie, env, [W, H], { frame = 0, diffOut, down = 4 } = {}) {
+async function compareFrame0(svgFile, lottie, tools, [W, H], { frame = 0, diffOut, down = 4 } = {}) {
   let svg = fs.readFileSync(svgFile, 'utf8');
   const head = svg.match(/<svg\b[^>]*>/)[0];
   if (!/\swidth=/.test(head)) svg = svg.replace(/<svg\b/, `<svg width="${W}" height="${H}"`);
-  const res = await withPage(env, [lottie.w, lottie.h], async (page) => {
+  const res = await withPage(tools, [lottie.w, lottie.h], async (page) => {
     await load(page, lottie);
     return page.evaluate(async (svg, W, H, size, frame, down) => {
       const w = Math.round(size / down), h = w;

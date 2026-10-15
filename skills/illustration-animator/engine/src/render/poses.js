@@ -45,14 +45,14 @@ function ptsSvg(pts, scale) {
 }
 
 // frames: authored frames to show; box: [x, y, w, h] in canvas px; cell: px per frame on the sheet
-async function poses(lottie, env, out, { frames = [0], box = null, cell = 600, grid = false, pts = [], legend = [] } = {}) {
+async function poses(lottie, tools, out, { frames = [0], box = null, cell = 600, grid = false, pts = [], legend = [] } = {}) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const { w, h } = lottie;
   const [bx, by, bw, bh] = box || [0, 0, w, h];
   const k = cell / Math.max(bw, bh);
   const W = cell * frames.length, H = cell + (legend.length ? 24 : 0);
   const over = (grid ? gridSvg(w, h) : '') + ptsSvg(pts, k);
-  await withPage(env, [W, H], async (page) => {
+  await withPage(tools, [W, H], async (page) => {
     await page.evaluate(({ frames, cell, k, bx, by, w, h, over, legend, data }) => {
       document.body.innerHTML = '';
       document.body.style.cssText = 'margin:0;background:#fff;font:13px sans-serif';

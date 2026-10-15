@@ -1,5 +1,5 @@
 // usage: node engine/bin/setup.js [--yes] [--ffmpeg <path>]
-// One-time setup → ~/.animator/env.json. Without --yes it only prints what it would install and changes nothing:
+// One-time setup → ~/.animator/tools.json. Without --yes it only prints what it would install and changes nothing:
 // show the plan to the user and re-run with --yes once they agree. It installs only what is missing: the pinned npm
 // dependencies (npm ci from deps/package-lock.json, install scripts off) into ~/.animator/deps and Chrome for Testing
 // (a pinned build, checked by SHA-256) into ~/.animator/chrome when no Chrome, Chromium or Edge is installed.
@@ -7,10 +7,10 @@
 // to run themselves (licence prompts stay theirs); --ffmpeg names one in a non-standard place.
 // Agents' skill folders are not touched.
 const path = require('path');
-const { HOME, DEPS, missingDeps, installDeps } = require('../src/env/deps');
-const { findChrome, downloadChrome, CHROME_BUILD } = require('../src/env/chrome');
-const { findFfmpeg, readEncoders, missingEncoders, hevcEncoder, INSTALL } = require('../src/env/ffmpeg');
-const { saveEnv, ENV_FILE } = require('../src/env');
+const { HOME, DEPS, missingDeps, installDeps } = require('../src/setup/deps');
+const { findChrome, downloadChrome, CHROME_BUILD } = require('../src/setup/chrome');
+const { findFfmpeg, readEncoders, missingEncoders, hevcEncoder, INSTALL } = require('../src/setup/ffmpeg');
+const { saveTools, TOOLS_FILE } = require('../src/setup');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const args = process.argv.slice(2);
@@ -47,8 +47,8 @@ const NODE_MIN = [22, 12];
   const browser = chrome || (await downloadChrome(path.join(HOME, 'chrome')));
   const enc = readEncoders(ffmpeg);
   const ffprobe = path.join(path.dirname(ffmpeg), 'ffprobe' + (process.platform === 'win32' ? '.exe' : ''));
-  saveEnv({ root: ROOT, chrome: browser, ffmpeg, ffprobe, hevc: hevcEncoder(process.platform, enc) });
-  console.log('Environment ready:', ENV_FILE);
+  saveTools({ root: ROOT, chrome: browser, ffmpeg, ffprobe, hevc: hevcEncoder(process.platform, enc) });
+  console.log('Setup done:', TOOLS_FILE);
   console.log({ root: ROOT, chrome: browser, ffmpeg, hevc: hevcEncoder(process.platform, enc) });
 })().catch((e) => {
   console.error(e.message);

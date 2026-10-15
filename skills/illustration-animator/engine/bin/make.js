@@ -2,10 +2,10 @@
 // scene → Lottie → frame-0 check → script checks → frames → GIF/MP4/MOV, plus <name>.status.json
 const fs = require('fs');
 const path = require('path');
-const { loadEnv } = require('../src/env');
+const { loadTools } = require('../src/setup');
 const { compileScene } = require('../src/scene/compile');
 const { compareFrame0, renderFrames, killBrowsers } = require('../src/render/frames');
-const { exportAll, formatsFor, hevcHasAlpha } = require('../src/render/export');
+const { encodeAll, formatsFor, hevcHasAlpha } = require('../src/render/encode');
 const { lint } = require('../src/check/lint');
 const { sourceHash } = require('../src/scene/source-hash');
 const { seamHits } = require('../src/scene/cut');
@@ -48,19 +48,19 @@ setTimeout(() => {
 }, TIMEOUT).unref();
 
 (async () => {
-  const env = loadEnv();
+  const tools = loadTools();
   const { lottie, inner, model } = compileScene(sceneFile);
   // parser warnings (stroke, mask, ...) ride along in every status once the model exists
   const warn = model.warnings.length ? { warnings: model.warnings } : {};
   fs.writeFileSync(path.join(outDir, `${name}.json`), JSON.stringify(lottie));
 
   const issues = lint(inner, model);
-  const f0 = await compareFrame0(model.svgFile, lottie, env, model.src, { frame: model.keyFrame, diffOut: path.join(outDir, `${name}.frame0-diff.png`) });
+  const f0 = await compareFrame0(model.svgFile, lottie, tools, model.src, { frame: model.keyFrame, diffOut: path.join(outDir, `${name}.frame0-diff.png`) });
   if (!f0.ok) issues.unshift({ check: 'frame0', frame: 0, outputFrame: model.keyFrame, detail: `key pose differs from SVG by ${f0.badPixelsPct}%` });
   else fs.rmSync(path.join(outDir, `${name}.frame0-diff.png`), { force: true });
   // a cut must not show at rest: the full-size compare along every cut line (the one above is 4× smaller)
   if (model.seams.length) {
-    const full = await compareFrame0(model.svgFile, lottie, env, model.src, { frame: model.keyFrame, down: 1 });
+    const full = await compareFrame0(model.svgFile, lottie, tools, model.src, { frame: model.keyFrame, down: 1 });
     for (const s of seamHits(full.leakPts, model.seams)) {
       if (s.hits > SEAM_PX) issues.push({ check: 'cut', part: s.name, frame: 0, detail: `cut seam ${s.name} is visible at rest: ${s.hits} px along the cut line are lighter than the SVG — gap between pieces (hairline)` });
     }
@@ -73,11 +73,11 @@ setTimeout(() => {
 
   const lottieOnly = args.includes('--lottie-only');
   if (!lottieOnly) {
-    const dir = await renderFrames(lottie, env);
+    const dir = await renderFrames(lottie, tools);
     try {
-      const built = exportAll(dir, path.join(outDir, name), { fr: lottie.fr, env });
+      const built = encodeAll(dir, path.join(outDir, name), { fr: lottie.fr, tools });
       const mp4 = built.find((f) => f.endsWith('.mp4'));
-      if (mp4 && !hevcHasAlpha(env, mp4)) {
+      if (mp4 && !hevcHasAlpha(tools, mp4)) {
         fs.rmSync(mp4, { force: true });
         throw new Error('MP4 has no alpha layer — check the encoder hevc_videotoolbox (-alpha_quality)');
       }
@@ -86,7 +86,7 @@ setTimeout(() => {
     }
   }
   // done = checks passed; pending lists the formats that were not built here
-  const pending = [...(lottieOnly ? ['gif', 'mov'] : []), ...(!lottieOnly && formatsFor(env).includes('mp4') ? [] : ['mp4'])];
+  const pending = [...(lottieOnly ? ['gif', 'mov'] : []), ...(!lottieOnly && formatsFor(tools).includes('mp4') ? [] : ['mp4'])];
   status({ state: 'done', ...(lottieOnly ? { lottieOnly: true } : {}), ...(pending.length ? { pending } : {}), ...warn });
   console.log('ok', name);
 })().catch((e) => {

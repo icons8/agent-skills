@@ -2,7 +2,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { loadEnv } = require('../src/env');
+const { loadTools } = require('../src/setup');
 const { preview } = require('../src/render/preview');
 
 const args = process.argv.slice(2);
@@ -16,6 +16,6 @@ const name = path.basename(args[0], '.svg') + (els ? `-els-${els.join('-')}` : '
 // default: a fresh private folder in the temp dir, not a guessable shared name
 const out = path.resolve(opt('--out') || path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'animator-preview-')), `${name}.png`));
 
-preview(path.resolve(args[0]), loadEnv(), out, { els, labels: args.includes('--labels') })
+preview(path.resolve(args[0]), loadTools(), out, { els, labels: args.includes('--labels') })
   .then((f) => console.log(f))
   .catch((e) => { console.error(e.message); process.exit(1); });
