@@ -1,6 +1,6 @@
 ---
 name: ouch
-description: Choose and ship Icons8 illustrations (Ouch!) through the Icons8 MCP so a deliverable ends up with pictures that are about the product, read as one set, and can legally and technically be published. Use when a landing page, app screen, empty state, onboarding, 404, docs page, slide deck or project site needs illustrations, when the user mentions Ouch, Icons8 illustrations or a style by name, and when extending or auditing illustrations already in a file. Covers animated illustrations too (video and Lottie). Use it when a brief asks for motion, an animated hero or a moving illustration. For small symbols in buttons, menus, toolbars and tables use the `icons8` skill instead.
+description: Choose and ship Icons8 illustrations (Ouch!) through the Icons8 MCP so a deliverable ends up with pictures that are about the product, read as one set, and can legally and technically be published. Use when a landing page, app screen, empty state, onboarding, 404, docs page, slide deck or project site needs illustrations, when the user mentions Ouch, Icons8 illustrations or a style by name, and when extending or auditing illustrations already in a file. Covers animated illustrations too (video and Lottie). Use it when a brief asks for motion, an animated hero or a moving illustration. To animate a static SVG illustration that has no animated version, use `illustration-animator`. For small symbols in buttons, menus, toolbars and tables use the `icons8` skill instead.
 ---
 
 # Icons8 illustrations
@@ -155,7 +155,8 @@ and has nothing for the failure states is the wrong style.
 
 **Mark at most one slot as the one that may move**, normally the hero, and only if
 the brief wants motion at all. Everything else is static. Empty states are static
-always. `references/ANIMATION.md` has the rest.
+always. `references/ANIMATION.md` has the rest. This skill ships ready
+animations from the catalogue; animating a static SVG is `illustration-animator`.
 
 ### 2b. If the product has a specific noun, find out who draws it first
 

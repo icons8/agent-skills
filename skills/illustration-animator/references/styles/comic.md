@@ -1,6 +1,5 @@
 # Comic
 
-
 ## Format
 
 - **30 fps**, 1200×1200, loop **90 frames (3 s)**.
@@ -30,11 +29,11 @@ An emotional reaction of a character, a short gag with a return to the initial p
 - Lag 1–5 frames by hierarchy; secondary parts trail by 1–3 frames and swing 1.5–2 times more. Fingers in a cascade, 1 frame each.
 - Overshoot as a separate key rolls back 16–50 % over 2–7 frames.
 - Holds are "moving": after the pose, ~5 more frames of drift in the same direction, then stop. For Comic this is allowed and expected.
-- Trembling (fear) — by keys: ±7 px and ±2° switching every 2 frames.
+- Trembling (fear) - by keys: ±7 px and ±2° switching every 2 frames.
 
 ## Easing
 
-- Main curve — fast start, long settle: `[0.34, 0, 0.15, 1]`.
+- Main curve - fast start, long settle: `[0.34, 0, 0.15, 1]`.
 - Body, pupils: `[0.34, 0, 0.06, 1]`.
 - Fall, dive: `[0.84, 0, 0.76, 1]` (slow start, fast end).
 - Fingers: `[0.33, 0, 0.67, 1]`.
