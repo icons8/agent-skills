@@ -6,7 +6,7 @@ The style has no rules of its own yet: work by common.md, keep the character of 
 
 - Don't make a reaction and an action small and short (swell below ~115 %, shift under ~15 px, rotation under ~5°, peak shorter than ~6 frames) → make them bigger and longer, so the peak is visible in at least 2 frames out of 16 (otherwise the action doesn't read).
 - Don't leave a full hold longer than ~15 frames → fill it with the next story beat or the life of the symbols (otherwise a dead pause).
-- Don't remove symbols at the loop seam → the last one leaves before the seam, taking start into account (otherwise a jump at the seam); scattered symbols leave one by one with a step of 4–8 frames, while the contents of one object (purchases in a basket) — all at once.
+- Don't remove symbols at the loop seam → the last one leaves before the seam, taking start into account (otherwise a jump at the seam); scattered symbols leave one by one with a step of 4–8 frames, while the contents of one object (purchases in a basket) - all at once.
 - Don't spin wheels drawn as an oval in perspective → keep them still, show driving with bumps and body tilt (otherwise the wheels look broken).
 - Don't drive a car sideways to its axis → move it along the line through the wheel centers (otherwise it looks dragged).
 

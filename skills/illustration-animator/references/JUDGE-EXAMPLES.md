@@ -1,8 +1,8 @@
 # Judge examples
 
-Cases where Icons8 reviewers disagreed with the judge. This file ships with the skill and is never edited: the user's own cases go to `<style folder>/judge-examples.md` in the same format, newest first.
+Read before a verdict: each entry is a defect a reviewer caught after the judge passed the scene. A scene that repeats one fails that check. This file ships with the skill and is never edited: the user's own cases go to `<style folder>/judge-examples.md` in the same format, newest first.
 
-Entry format — two lines:
+Entry format - two lines:
 
 ```
 ## <scene> · judge: <verdict> · user: <ok / not ok>

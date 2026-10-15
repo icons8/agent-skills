@@ -1,6 +1,5 @@
 # Plain
 
-
 ## Format
 
 - **30 fps**, 1200×1200, loop 85–180 frames (2.8–6 s), usually ≈105 (3.5 s).
@@ -28,8 +27,8 @@ One loop is one mini-story with a return to the initial pose, 3–10 beats. Typi
 
 ## Character
 
-- Almost always something is moving. Real holds — only for a scene character.
-- The character's body may sway during pauses — it is part of the story, not a violation.
+- Almost always something is moving. Real holds - only for a scene character.
+- The character's body may sway during pauses - it is part of the story, not a violation.
 - Moves are large: character 60–475 px, UI drag 230–460 px.
 - Pop-in with overshoot +3…+6 % (up to +18 % for a small one), settle 2–5 frames; swell +24 % before disappearing.
 - Spring: the swing is 0.3–0.4 times smaller per half-period of 4.5–8 frames.
@@ -40,9 +39,9 @@ One loop is one mini-story with a return to the initial pose, 3–10 beats. Typi
 ## Easing
 
 - Acceleration shorter than deceleration: `[0.3, 0, 0.15, 1]`.
-- Dive — pure acceleration `in`; surfacing — `soft` from rest and a spring (`spring` with `v0` of the incoming motion).
-- Background — `sine`.
-- Dragging by the hand — almost uniform: `[0.2, 0, 0.8, 1]`.
+- Dive - pure acceleration `in`; surfacing - `soft` from rest and a spring (`spring` with `v0` of the incoming motion).
+- Background - `sine`.
+- Dragging by the hand - almost uniform: `[0.2, 0, 0.8, 1]`.
 
 ## Templates: starting parameters
 

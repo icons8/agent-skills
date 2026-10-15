@@ -9,7 +9,7 @@ The style has no rules of its own yet: work by common.md, keep the character of 
 - Don't remove several symbols at once or at the loop seam → one by one with a step of 4–8 frames, the last one leaves before the seam, taking start into account (otherwise they go as a "bunch" and there is a jump at the seam).
 - Don't fade symbols out with opacity → collapse them by scale: swell to 118–124 %, then 0 over 4–6 frames (opacity is almost not used in our animations).
 - Don't throw a rocket/object across other parts → check that during the motion it doesn't run into neighboring symbols; the symbols give way (otherwise an overlap).
-- Don't build a "pose — hold — return" loop when the output loop starts from the middle of the pose (start) → a continuous wave without holds or start in the SVG pose (otherwise the return at the start of the loop reads as a sharp reset).
+- Don't build a "pose - hold - return" loop when the output loop starts from the middle of the pose (start) → a continuous wave without holds or start in the SVG pose (otherwise the return at the start of the loop reads as a sharp reset).
 
 ## User bans
 

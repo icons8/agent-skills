@@ -15,4 +15,4 @@ Style rules:
 - Don't move only the ball symbols (antennas, sparks) when a character is next to them → the character raises and lowers an arm, moves the head and torso, rubbery.
 - Don't spin the center of an atom that stands still → only the orbits rotate and the electrons fly along the orbits.
 - Don't leave some of the gears stationary → all of them turn, in counter-rotation.
-- Don't levitate a character standing on the ground → pose on the support; for a ghost (it flies) — levitation up and down.
+- Don't levitate a character standing on the ground → pose on the support; for a ghost (it flies) - levitation up and down.

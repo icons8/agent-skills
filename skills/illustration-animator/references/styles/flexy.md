@@ -1,6 +1,5 @@
 # Flexy
 
-
 ## Format
 
 - **30 fps**, 1200×1200, loop 135–180 frames (4.5–6 s).
@@ -25,14 +24,14 @@ Work in an interface: a UI object changes state (scroll, checkmark, chart, highl
 
 ## Character
 
-- Amplitudes are small (pixels on the 1200 canvas): head 2–10 px and 3–7°, torso ≤ 3° and ≤ 10 px. Large — only the UI scroll (~75 px), the pointing hand (up to ~58 px), running.
+- Amplitudes are small (pixels on the 1200 canvas): head 2–10 px and 3–7°, torso ≤ 3° and ≤ 10 px. Large - only the UI scroll (~75 px), the pointing hand (up to ~58 px), running.
 - No lag inside the head; secondary parts +2…+3 frames; strands +9…12.
 - Earrings and pendants live on their own keys with 22–48 % overshoots.
 - Background as part of the story: panels float 9–16 px with a period of the whole loop.
 
 ## Easing
 
-- Easy Ease: `[0.33, 0, 0.67, 1]` — the main curve.
+- Easy Ease: `[0.33, 0, 0.67, 1]` - the main curve.
 - Hard S-curve (chart, torso): `[0.72, 0, 0.28, 1]` and `[0.86, 0, 0.16, 1]`.
 - Scroll: `[0.82, 0, 0.56, 1]`, kickback `[0.34, 0, 0.32, 1]`.
 - Head tilt: `[0.34, 0, 0.02, 1]`.
