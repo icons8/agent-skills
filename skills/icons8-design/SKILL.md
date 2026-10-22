@@ -18,6 +18,7 @@ Do not load all six for a narrow question. Route, run, merge.
 | Any user-facing string: buttons, errors, empty states, labels | `ux-writing` |
 | "Feels off", spacing, radii, icons, contrast, focus ring, hover | `ui-polish` |
 | Anything that moves, or should not | `motion` |
+| A static SVG illustration that should become a looped animation | `illustration-animator` |
 | Hardcoded hex everywhere, no tokens, twelve grays | `design-tokens` |
 
 Rules of routing:

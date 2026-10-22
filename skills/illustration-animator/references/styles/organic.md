@@ -8,7 +8,7 @@ The style has no rules of its own yet: work by common.md, keep the character of 
 - Don't remove several symbols at once or at the loop seam → one by one with a step of 4–8 frames, the last one leaves before the seam, taking start into account (otherwise they go as a "bunch" and there is a jump at the seam).
 - Don't fade symbols out with opacity → collapse them by scale: swell to 118–124 %, then 0 over 4–6 frames (opacity is almost not used in our animations).
 - Don't let reactions pop up without a visible cause → the press or gesture first, large (arm rotation from the shoulder 10–20° with anticipation), the reactions after.
-- Don't promise a change of brightness or color (the engine doesn't change them) → show the state by motion: drooped — squashed and tilted, lit up — hopped and swelled.
+- Don't promise a change of brightness or color (the engine doesn't change them) → show the state by motion: drooped - squashed and tilted, lit up - hopped and swelled.
 - Don't depict a step or a run of a figure whose legs are not separated from the body (one contour) → move it as a whole: poke out and hide, hop, tilt (otherwise "running on one leg").
 
 ## User bans
