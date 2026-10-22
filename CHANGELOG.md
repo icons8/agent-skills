@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
-## [0.6.1] — 2026-10-16
+## [0.6.1] — 2026-10-22
 
 `illustration-animator` reads like the rest of the line, and its neighbours point to it.
 
@@ -16,7 +16,7 @@ The plugin version lives in four manifests that have to agree: `plugin.json`,
   and credits. It explains why this skill, unlike the design skills, runs subagents, and it
   describes the `no-stop` mode. Paths are stated once in `SKILL.md`; the step documents point to it.
 - **The steps read as instructions.** The analysis steps are written as imperatives, user remarks
-  are recognised in the user's language instead of a list of Russian phrases, the style lessons sit
+  are recognised in the user's language, the style lessons sit
   in each style's file instead of separate working notes, the step documents are upper-case like
   the rest of the line, and every document uses one kind of dash.
 - **Cross-links.** `ouch` (and its `ANIMATION.md`), `motion` and the routing table in

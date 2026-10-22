@@ -36,9 +36,9 @@ The answer is only a JSON array, one object per scene, in the order the scenes w
 ]
 ```
 
-## "Comparison with the reference" mode (only in eval)
+## "Comparison with the reference" mode (when a reference animation of the same illustration is given)
 
-Additionally: `ref-sheet.png` and the story of our animation of the same illustration. A different story is not worse by itself. Worse is when the animation is more boring, less readable, coarser in motion or poorer in rhythm than ours.
+Additionally: `ref-sheet.png` and the story of the reference animation. A different story is not worse by itself. Worse is when the animation is more boring, less readable, coarser in motion or poorer in rhythm than the reference.
 
 The answer is only a JSON array, one object per scene, in the order the scenes were given:
 
