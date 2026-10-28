@@ -4,6 +4,7 @@
   "description": "Runtime dependencies of the engine, exact versions; installed with npm ci into ~/.animator/deps",
   "dependencies": {
     "@puppeteer/browsers": "3.2.5",
+    "canvaskit-wasm": "0.41.1",
     "lottie-web": "5.13.0",
     "paper": "0.12.18",
     "puppeteer-core": "25.14.0",

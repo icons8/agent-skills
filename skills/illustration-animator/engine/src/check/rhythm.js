@@ -121,6 +121,25 @@ function partRuns(lottie, model) {
   return out;
 }
 
+// The easing of the main stroke of a run: where it is at 1/4 and 1/2 of its way to its farthest point, as a share of that way,
+// and how far it settles back from that point ("overshoot", % of the stroke; a return of more than 40% is a swing back, not a settle,
+// and reads 0). The way is the vector from the
+// start to the farthest point, so a swing that comes back is read by its outward stroke. Null for a run with no displacement.
+function runCurve(run) {
+  const vals = [];
+  for (let t = run.t0; t <= run.t1; t++) vals.push(comps(run.prop, valueAt(run.obj, t)));
+  const a = vals[0];
+  const dev = vals.map((v) => v.map((x, i) => x - a[i]));
+  let far = 0, at = 0;
+  dev.forEach((v, j) => { const m = Math.hypot(...v); if (m > far) { far = m; at = j; } });
+  if (vals.length < 4 || at < 3 || far < 1) return null;
+  const e = dev[at].map((x) => x / far);
+  const u = dev.map((v) => v.reduce((x, c, i) => x + c * e[i], 0) / far).slice(0, at + 1);
+  const pick = (f) => u[Math.min(at, Math.round(f * at))];
+  const end = dev[dev.length - 1].reduce((x, c, i) => x + c * e[i], 0) / far;
+  return { len: run.t1 - run.t0, stroke: at, p25: pick(0.25), p50: pick(0.5), overshoot: (1 - end) <= 0.4 ? Math.max(0, (1 - end) * 100) : 0 };
+}
+
 function metrics(lottie, model) {
   const byPart = partRuns(lottie, model);
   const all = Object.values(byPart).flat();
@@ -223,4 +242,4 @@ function rhythm(lottie, model, profile) {
   return { metrics: m, ...score(m, profile) };
 }
 
-module.exports = { runs, runStats, metrics, score, rhythm };
+module.exports = { runs, runStats, runCurve, partRuns, metrics, score, rhythm };

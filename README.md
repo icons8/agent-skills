@@ -218,17 +218,18 @@ skills/ui-polish/             # visual finish: radii, icons, contrast, focus, st
 skills/motion/                # whether it should animate at all, then every timing value
 skills/design-tokens/         # bootstrap a token system, then catch drift in counts
 skills/illustration-animator/
-├── SKILL.md                  # setup, the three steps, hard rules, never ship, what to hand back
-├── references/
-│   ├── ANALYZE.md            # story, parts, bones and timeline per illustration, in subagent batches
-│   ├── CREATE.md             # builds every scene in portions: Lottie, GIF, MOV, MP4 on macOS
-│   ├── VERIFY.md             # script checks, the judge, up to 3 fixes, lessons, the user's remarks
-│   ├── JUDGE.md              # the visual judge's checklist and answer format
-│   ├── JUDGE-EXAMPLES.md     # defects reviewers caught after the judge passed a scene
-│   ├── SCENE-FORMAT.md       # the scene JSON: parts, bones, cuts, masks, tracks, templates
-│   └── styles/               # common rules, then one file per style with its lessons and bans
-├── engine/                   # Node engine: SVG + scene → Lottie, GIF, MOV, MP4; script checks
-└── examples/                 # reference scenes: walking and masking, tight line masks
+├── SKILL.md                  # router: choosing the path, hard rules, never ship, what to hand back
+├── CHANGELOG.md              # what changed in the skill, in terms of what you see in the result
+├── simple-animation/         # whole objects: a short build script per scene, checked loop and fidelity
+│   ├── SKILL.md
+│   ├── scripts/              # the build library and the checks
+│   ├── references/
+│   └── examples/             # build scripts of finished scenes
+├── complex-animation/        # people, animals, fused outlines: analyze, create, verify
+│   ├── SKILL.md
+│   ├── references/           # ANALYZE, CREATE, VERIFY, JUDGE, SCENE-FORMAT, styles/ with lessons and bans
+│   └── examples/             # reference scenes: walking and masking, tight line masks
+└── engine/                   # Node engine shared by both paths: Lottie, GIF, MOV, MP4; script checks
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
@@ -345,18 +346,27 @@ with headless Chrome or Edge, writes rasters to a temporary directory and delete
 makes no network request. If you start it with `uv run`, uv downloads Pillow from PyPI first.
 
 The `illustration-animator` skill runs a Node engine from its own folder. Its one-time setup
-prints a plan and installs nothing until you agree. It installs five npm packages pinned by a
-lockfile (`svgpath`, `lottie-web`, `paper`, `puppeteer-core`, `@puppeteer/browsers`) from the npm
-registry into `~/.animator/`, and downloads Chrome for Testing from Google (a pinned build, checked
+prints a plan and installs nothing until you agree. It installs six npm packages pinned by a
+lockfile (`svgpath`, `lottie-web`, `paper`, `puppeteer-core`, `@puppeteer/browsers`,
+`canvaskit-wasm`) from the npm registry into `~/.animator/`, and downloads Chrome for Testing from Google (a pinned build, checked
 by SHA-256) only when no Chrome, Chromium or Edge is installed. It does not install ffmpeg: when
 ffmpeg is missing, setup shows the command for you to run. After that it works offline. It reads the
 SVG files you point it at, writes scenes, animations, rules and samples into that style folder, and
-renders frames in the system temporary folder.
+renders frames in the system temporary folder. The simple path also runs Python 3 scripts from the
+skill folder; its `tools` command only lists the Python packages that are missing and prints the
+install commands for you to run, it installs nothing.
 
 ## Animating illustrations: the `illustration-animator` skill
 
-Point it at a folder of SVG illustrations of one style and it returns looped animations: Lottie JSON,
-GIF and MOV without background, plus MP4 (HEVC with alpha) on macOS. For each illustration it writes a short story (an
+Point it at SVG illustrations and it returns looped animations: Lottie JSON, GIF and MOV without
+background, plus MP4 (HEVC with alpha) on macOS. The skill is a router over two skills and looks at
+each illustration to pick the path (you can force one path for a whole folder).
+
+`simple-animation` takes whole objects (a bell, a clock, a phone, a ghost, a robot). It writes a
+short build script for the drawing, renders every frame, and checks the loop seam and that frame 0
+matches the SVG.
+
+`complex-animation` takes people, animals and outlines fused into one. For each illustration it writes a short story (an
 action and a reaction to it), cuts the drawing into parts that move the way the object works (a
 wheel rolls, a pen writes, a walking person walks) with joints and tight line masks, builds the
 animation, then checks it with scripts and a visual judge and fixes what it finds, within hard time
@@ -375,7 +385,7 @@ It does not need the MCP server or an Icons8 account. It needs Node.js; the firs
 - Network access to `https://mcp.icons8.com/mcp/`
 - An Icons8 account, signed in through the browser on first use
 - An Icons8 API key **only** where the client cannot do OAuth, or on CI
-- For `illustration-animator`: Node.js 22.12 or newer, and ffmpeg (its setup shows how to install it)
+- For `illustration-animator`: Node.js 22.12 or newer, and ffmpeg (its setup shows how to install it); the simple path also needs Python 3
 
 ## Support
 
