@@ -1,6 +1,6 @@
 # Journal
 
-Characters are drawn as one outline together with objects (an arm with the torso, a bartender with the counter). They are cut and bent with bones with a pinned seam — `common.md`, "Fused parts"; keep the character of motion the same across the whole batch. fr 30, loop 3–5 s.
+Characters are drawn as one outline together with objects (an arm with the torso, a bartender with the counter). They are cut and bent with bones with a pinned seam - `common.md`, "Fused parts"; keep the character of motion the same across the whole batch. fr 30, loop 3–5 s.
 
 ## Lessons
 

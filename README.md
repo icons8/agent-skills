@@ -3,8 +3,8 @@
 Ten [Agent Skills](https://agentskills.io) that give coding agents taste, first when picking
 Icons8 artwork and then when looking at what they built with it. `icons8` and `ouch` keep a project
 on **one consistent set** instead of a pile of mismatched pieces; the seven that follow check the
-finished screen and fix what they find from the same catalogue. `illustration-animator` brings
-static SVG illustrations to life as looped Lottie animations.
+finished screen and fix what they find from the same catalogue. `illustration-animator` turns
+static SVG illustrations into looped Lottie animations.
 
 Ships as a Claude Code plugin that bundles the [Icons8 MCP server](https://github.com/icons8/icons8-mcp)
 (420,000+ icons across 132 styles). Installing it is the whole setup: sign in through the browser
@@ -218,10 +218,17 @@ skills/ui-polish/             # visual finish: radii, icons, contrast, focus, st
 skills/motion/                # whether it should animate at all, then every timing value
 skills/design-tokens/         # bootstrap a token system, then catch drift in counts
 skills/illustration-animator/
-├── SKILL.md                  # setup, the three steps, hard time limits
-├── references/               # analyze, create, verify, the judge, scene format, style rules
+├── SKILL.md                  # setup, the three steps, hard rules, never ship, what to hand back
+├── references/
+│   ├── ANALYZE.md            # story, parts, bones and timeline per illustration, in subagent batches
+│   ├── CREATE.md             # builds every scene in portions: Lottie, GIF, MOV, MP4 on macOS
+│   ├── VERIFY.md             # script checks, the judge, up to 3 fixes, lessons, the user's remarks
+│   ├── JUDGE.md              # the visual judge's checklist and answer format
+│   ├── JUDGE-EXAMPLES.md     # defects reviewers caught after the judge passed a scene
+│   ├── SCENE-FORMAT.md       # the scene JSON: parts, bones, cuts, masks, tracks, templates
+│   └── styles/               # common rules, then one file per style with its lessons and bans
 ├── engine/                   # Node engine: SVG + scene → Lottie, GIF, MOV, MP4; script checks
-└── examples/                 # walking and masking reference scenes
+└── examples/                 # reference scenes: walking and masking, tight line masks
 ```
 
 Reference files load on demand, so the cost of having them is close to zero until they're needed.
@@ -348,7 +355,7 @@ renders frames in the system temporary folder.
 
 ## Animating illustrations: the `illustration-animator` skill
 
-Point it at a folder of SVG illustrations of one style and it returns looped animations: Lottie JSON
+Point it at a folder of SVG illustrations of one style and it returns looped animations: Lottie JSON,
 GIF and MOV without background, plus MP4 (HEVC with alpha) on macOS. For each illustration it writes a short story (an
 action and a reaction to it), cuts the drawing into parts that move the way the object works (a
 wheel rolls, a pen writes, a walking person walks) with joints and tight line masks, builds the

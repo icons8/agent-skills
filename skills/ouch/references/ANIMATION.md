@@ -8,6 +8,9 @@ shippable. This file covers only what motion adds.
 No duration, curve, spring or stagger value appears here. The timing lives
 inside the asset and is not adjustable.
 
+This file is about ready animations from the catalogue. To make a static SVG
+illustration move, use the `illustration-animator` skill.
+
 Measured 2026-09-21/22 against the live server.
 
 ## 1. Decide whether the slot earns motion

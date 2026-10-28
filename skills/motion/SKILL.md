@@ -13,7 +13,7 @@ This skill owns all timing: durations, easings, springs, stagger, press feedback
 
 One exception on the other side: the response-time budgets in `ux-check` (feedback within 100 ms, progress past a second) are perception thresholds for whether the interface answered at all, not animation values, and they stay there.
 
-Animation authored inside an Icons8 asset (an animated icon, an Ouch video or Lottie) keeps the animator's timing: `icons8` and `ouch` decide when it may play, and no duration here applies to it. The press feedback on the control around it is still yours.
+Animation authored inside an Icons8 asset (an animated icon, an Ouch video or Lottie) keeps the animator's timing: `icons8` and `ouch` decide when it may play, and no duration here applies to it. The press feedback on the control around it is still yours. Turning a static SVG illustration into a looped animation is `illustration-animator`'s job, with its own style timing.
 
 Motion tokens (`--ease-*`, durations) are defined here and may live in their own file. `design-tokens` exempts that file from its parallel-palette count; it does not own these values and does not rename them.
 
