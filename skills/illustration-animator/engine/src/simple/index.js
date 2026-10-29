@@ -46,7 +46,7 @@ function detect({ python, nodeModules } = {}) {
   if (!py) { out.missing.push('python 3'); return out; }
   const has = JSON.parse(run(py, ['-c', PROBE], { cwd: os.tmpdir() }).stdout || '{}');
   for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2', 'resvg_py']) if (!has[m]) out.missing.push(m);
-  const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless', resvg_py: 'resvg-py' }[m] || m)).filter((m) => !m.startsWith('python'));
+  const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless', resvg_py: 'resvg-py==0.5.0' }[m] || m)).filter((m) => !m.startsWith('python'));
   if (pip.length) out.install.push(`${py} -m pip install ${pip.join(' ')}`);
   const nm = cfg.nodeModules && fs.existsSync(path.join(cfg.nodeModules, 'canvaskit-wasm', 'package.json'));
   if (!nm) { out.missing.push('canvaskit-wasm 0.41.1 (Skottie)'); out.install.push('npm i --prefix <folder> canvaskit-wasm@0.41.1   then: node engine/bin/simple.js tools --node-modules <folder>/node_modules'); out.nodeModules = null; }
@@ -78,11 +78,8 @@ function bans(lottie) {
   return issues;
 }
 
-// A stricter check of the module can sit beside this file (./socket); without it only the entry points are checked.
+// the module has the entry points the adapter calls
 function guard(dir = MODULE) {
-  let S = null;
-  try { S = require('./socket'); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e; }
-  if (S) return S.guard(dir, { version });
   const e = entryPoints(dir);
   return e.ok ? { ok: true, warn: null, state: 'ok' } : { ok: false, error: `The module in ${dir} lacks ${e.missing.join(', ')}` };
 }

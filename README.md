@@ -362,7 +362,7 @@ listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md):
 
 | Package | License | Used for |
 |---|---|---|
-| `resvg-py` | MIT (resvg itself: MIT or Apache-2.0) | Rendering SVG to PNG |
+| `resvg-py==0.5.0` | MIT (resvg itself: MIT or Apache-2.0) | Rendering SVG to PNG |
 | `svgpathtools` | MIT | Path geometry |
 | `svgelements` | MIT | Reading SVG with its transforms |
 | `numpy` | BSD-3-Clause | Arrays |

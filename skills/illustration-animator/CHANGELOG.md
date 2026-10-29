@@ -4,14 +4,14 @@ What changed in the `illustration-animator` skill, newest first. Each entry says
 
 Not every part of the work is in the packaged skill. A part that lives only in the skill's source tree is marked "source tree only": the scoring script of the router, the After Effects build path, and the tools that measure the skill itself (regression and capability runs, the run ledger, grids). They are listed here so the history is complete, and they are not in this folder.
 
-## Unreleased
+## 0.7.0
 
 ### Choosing how to animate
 
 - **The skill is now a router with two paths.** `illustration-animator` keeps its name and picks the path per illustration: `simple-animation` for whole objects whose parts swing, turn or pop (a bell, a clock, a ghost, a robot, a bust), `complex-animation` for people and animals with limbs, fused outlines and anything that has to be cut. A borderline picture is looked at, not guessed. The user can force either path for the whole folder; a simple scene that fails the checks twice moves to the complex path. The scoring script of the router is source tree only.
 - **The simple path is one short build script per scene.** No scenario to read, no cutting by an analysis, one round of checks, about four minutes per scene. The style's bans and lessons are checked on top of it: opacity fades, a loop that is too short, a still scene, frame 0 against the SVG on black and white. It delivers Lottie, GIF, MOV and a white MP4.
 - **The simple path runs on a swappable module.** The module sits in one folder; one adapter is the only place that knows its inputs and outputs. The adapter stops with the reason instead of a stack trace when a file it needs is missing. Swapping the module is source tree only.
-- **The simple path needs no copyleft package.** SVGs are rendered with `resvg` (the `resvg-py` package, MIT; resvg itself is MIT or Apache-2.0) through a stand-in for the module's renderer calls, so Cairo, CairoSVG and PyMuPDF are neither needed nor suggested. The `tools` command lists the missing Python packages and prints the pip command; it installs nothing.
+- **The simple path needs no copyleft package.** SVGs are rendered with `resvg` (the `resvg-py` package, pinned to 0.5.0, MIT; resvg itself is MIT or Apache-2.0) through a stand-in for the module's renderer calls, so Cairo, CairoSVG and PyMuPDF are neither needed nor suggested. The `tools` command lists the missing Python packages and prints the pip command; it installs nothing.
 - **The complex path is the former skill, unchanged.** Analyze, create, verify and the judge, now in `complex-animation/`.
 
 ### Analysis

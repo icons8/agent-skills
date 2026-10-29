@@ -13,7 +13,7 @@ Talk to the user in their language.
 
 ## Setup
 
-Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL.md` ("Setup": it installs nothing until the user agrees to its plan). The simple path also needs Python 3 with a few packages: `node "${CLAUDE_SKILL_DIR}/engine/bin/simple.js" tools` lists what is missing and prints the install commands for the user to run; it installs nothing itself.
+Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL.md` ("Setup": it installs nothing until the user agrees to its plan). The simple path also needs Python 3 with a few packages: `node "${CLAUDE_SKILL_DIR}/engine/bin/simple.js" tools` lists what is missing and prints the install commands for the user to run; it installs nothing itself. The build script of each simple scene is written by the model and runs as Python with the user's permissions, like any other command the agent runs.
 
 ## Choosing the path
 
