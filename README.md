@@ -127,6 +127,13 @@ Using the community [`skills`](https://www.npmjs.com/package/skills) installer (
 skill, not the plugin/marketplace):
 
 ```
+npx skills add icons8/agent-skills
+```
+
+That installs all ten skills (also listed on [skills.sh](https://skills.sh)); pick one with
+`--skill icons8` and an agent with `-a claude-code`:
+
+```
 npx skills add icons8/agent-skills --skill icons8 -a claude-code
 # -a codex to target Codex instead, or '*' for every detected agent; add -g for a global install
 ```
