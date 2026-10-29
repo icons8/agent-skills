@@ -36,7 +36,7 @@ function parseTransform(str) {
 const attrs = (s) => {
   const o = {};
   // a name starts after whitespace or at the start: a long run of name characters is not rescanned from every position
-  s.replace(/(?<![\w:-])([\w:-]+)\s*=\s*"([^"]*)"/g, (_, k, v) => (o[k] = v));
+  s.replace(/(?<![\w:-])([\w:-]+)\s*=\s*"([^"]*)"/g, (_, k, v) => (o[/^\w+:href$/.test(k) ? 'xlink:href' : k] = v));
   return o;
 };
 
@@ -188,7 +188,7 @@ function parseSvgString(src, { size = 1200 } = {}) {
     if (a.mask && a.mask !== 'none') warnings.push(`element ${label(tag, a)}: mask is not carried over`);
     if (a.stroke && a.stroke !== 'none' && num(a['stroke-width'], 1) > 0) warnings.push(`element ${label(tag, a)}: stroke is not carried over`);
   };
-  // First pass: gradients can be defined after their use (Figma puts <defs> at the end).
+  // First pass: gradients can be defined after their use (some exporters put <defs> at the end).
   {
     const gre = /<(\/?)(\w+)\b([^<>]*?)(\/?)>/g;
     let g, cur = null;

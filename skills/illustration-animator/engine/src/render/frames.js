@@ -91,7 +91,7 @@ async function compareFrame0(svgFile, lottie, tools, [W, H], { frame = 0, diffOu
       // white and black backgrounds: a white element on transparency shows up on black, a black one on white
       const runOn = (bg) => {
         const [, xa] = canvas(bg); xa.drawImage(imgA, dx, dy, W * k, H * k);
-        const [, xb] = canvas(bg); xb.drawImage(imgB, 0, 0, w, h);
+        const [, xb] = canvas(bg); xb.drawImage(imgB, 0, 0, w, h); // the same letterbox as the SVG: a canvas that is not square must not be stretched
         const A = xa.getImageData(0, 0, w, h).data, B = xb.getImageData(0, 0, w, h).data;
         const [dc, xd] = canvas(bg); const im = xd.createImageData(w, h);
         let sum = 0, bad = 0;

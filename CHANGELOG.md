@@ -5,6 +5,20 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
+## [0.7.0] — 2026-10-28
+
+`illustration-animator` keeps its name and becomes a router over two skills: one for whole objects, one for people and fused outlines.
+
+### Changed
+
+- **`illustration-animator` picks the path per illustration.** `simple-animation` takes whole objects (a bell, a clock, a phone, a ghost, a robot): the agent writes one short build script on a small library, every frame is rendered, and the loop seam and the match of frame 0 with the SVG are checked. `complex-animation` is the earlier skill (analyze, create, verify, the judge) in its own folder, for people, animals and outlines fused into one. You can force one path for a whole folder; a scene of the simple path that fails its checks twice goes to the complex path.
+- **The folder is laid out for two skills.** `SKILL.md` is the router; `simple-animation/`, `complex-animation/` and the shared `engine/` sit beside it. The engine commands now read `node "${CLAUDE_SKILL_DIR}/engine/bin/<tool>.js"`. The skill name and its path in the plugin are unchanged.
+- **The complex path got the motion work done since 0.6.0.** A scene brief and a tempo line come before the story, walking bends at the knee, the loop is read as a whole, and a checker reports limbs that swing too little or too far. The full list is in the skill's `CHANGELOG.md`.
+- **Setup.** The engine pins one more npm package, `canvaskit-wasm` (the renderer of the simple path); the simple path also needs Python 3, and `simple.js tools` lists the missing packages and prints the install commands without installing anything.
+- `icons8-design` has a routing row for the router, and its description no longer counts skills.
+
+The fixes of 0.6.1 (the review of the skill's text) are part of this release.
+
 ## [0.6.1] — 2026-10-22
 
 `illustration-animator` reads like the rest of the line, and its neighbours point to it.

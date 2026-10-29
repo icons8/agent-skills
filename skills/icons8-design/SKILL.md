@@ -1,13 +1,13 @@
 ---
 name: icons8-design
-description: The front door to Icons8 design help. Use when someone asks for a design pass, a UI review, or "make this look finished", when a screen or landing page has just been built and nobody has checked it, or when they mention Icons8 design checks. Routes the work to the skill that owns it (asset-check, ux-check, ux-writing, ui-polish, motion, design-tokens), fixes what it finds with catalog assets through the Icons8 MCP, and returns one report instead of one per skill.
+description: The front door to Icons8 design help. Use when someone asks for a design pass, a UI review, or "make this look finished", when a screen or landing page has just been built and nobody has checked it, or when they mention Icons8 design checks. Routes the work to the skill that owns it (asset-check, ux-check, ux-writing, ui-polish, motion, design-tokens, and illustration-animator for a static SVG illustration that should move), fixes what it finds with catalog assets through the Icons8 MCP, and returns one report instead of one per skill.
 ---
 
 # Icons8 design
 
 One entry point. The MCP brings assets, these skills bring the rules that decide which asset and where, and this file decides who runs and how the answer comes back.
 
-Do not load all six for a narrow question. Route, run, merge.
+Do not load every skill for a narrow question. Route, run, merge.
 
 ## Route first
 

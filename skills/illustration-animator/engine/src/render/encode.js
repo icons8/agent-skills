@@ -42,6 +42,38 @@ function mp4FromMov(tools, movFile) {
   return out;
 }
 
+// Preview for the user: the scene's MOV over white, H.264, at the scene's own frame rate.
+// Never resampled: an output at another rate drops or repeats frames and breaks the loop seam (a 96-frame loop becomes 77).
+function probeVideo(tools, file) {
+  const r = execFileSync(tools.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-count_frames',
+    '-show_entries', 'stream=r_frame_rate,width,height,nb_read_frames', '-of', 'json', file]).toString();
+  const s = JSON.parse(r).streams[0];
+  const [n, d] = s.r_frame_rate.split('/').map(Number);
+  return { fps: n / (d || 1), width: s.width, height: s.height, frames: Number(s.nb_read_frames) };
+}
+
+// What a preview must be, from the scene's frame rate and loop length and what the MOV actually holds.
+function checkPreviewSource({ fr, op }, probe) {
+  if (Math.abs(probe.fps - fr) > 1e-6) throw new Error(`MOV is ${probe.fps} fps, the scene is ${fr}: the preview is not resampled, rebuild the MOV`);
+  if (probe.frames !== op) throw new Error(`MOV has ${probe.frames} frames, the loop is ${op}: the seam would break, rebuild the MOV`);
+}
+
+function whitePreviewArgs({ fr, input, width, height, out }) {
+  return ['-f', 'lavfi', '-i', `color=c=white:s=${width}x${height}:r=${fr}`, '-i', input,
+    '-filter_complex', '[0][1]overlay=shortest=1:format=auto,format=yuv420p',
+    '-r', String(fr), '-c:v', 'libx264', '-crf', '14', '-preset', 'slow',
+    '-movflags', '+faststart', out];
+}
+
+function whitePreview(tools, movFile, { fr, op }, out = movFile.replace(/.mov$/, '.white.mp4')) {
+  const probe = probeVideo(tools, movFile);
+  checkPreviewSource({ fr, op }, probe);
+  ff(tools, whitePreviewArgs({ fr, input: movFile, width: probe.width, height: probe.height, out }));
+  const made = probeVideo(tools, out);
+  checkPreviewSource({ fr, op }, made);
+  return out;
+}
+
 // First frame as raw RGBA (GIF, MOV). The ffmpeg HEVC decoder drops the alpha layer, see hevcHasAlpha.
 function firstFrameRGBA(tools, file, size) {
   return execFileSync(tools.ffmpeg, ['-loglevel', 'error', '-i', file, '-frames:v', '1',
@@ -60,4 +92,4 @@ function hevcHasAlpha(tools, file) {
   return /nuh_layer_id\s+\S+\s*=\s*1\b/.test(log) && log.includes('Alpha Channel Information');
 }
 
-module.exports = { formatsFor, encodeArgs, encodeAll, mp4FromMov, firstFrameRGBA, hevcHasAlpha };
+module.exports = { formatsFor, encodeArgs, encodeAll, mp4FromMov, probeVideo, checkPreviewSource, whitePreviewArgs, whitePreview, firstFrameRGBA, hevcHasAlpha };

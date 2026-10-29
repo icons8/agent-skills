@@ -8,12 +8,15 @@
 // last element, so a cut arm passes over the torso instead of between its fill and outline.
 // At rest the picture is the source: no two anti-aliased edges lie on one line (that shows a hairline through solid
 // black). Every lower piece reaches OV px under the edge above it, and within a stack each lower element's edge sits
-// D px deeper than the one above, so it is covered by it.
+// D px deeper than the one above, so it is covered by it. A cut that moves away from its neighbours carries a longer reach
+// (`ov`, set by hand or by compileScene from how far the two sides come apart): the line of the lower piece goes on
+// under the moving one and shows when it leaves, so the outline is not broken at the seam.
 const { req } = require('../setup/deps');
 const { pathsBBox } = require('../svg/parse');
 const { inside, outline } = require('../bones/skin');
 
 const OV = 3;
+const MAX_OV = 12;
 const D = 1.5;
 let paper = null;
 function getPaper() {
@@ -82,13 +85,13 @@ function chain(sp, from, to, bridge = []) {
 }
 
 // The rest's bridge A → B bows OV px into the piece (zero at both ends, steep ramps), so the two overlap along the seam.
-function bowed(A, B, piecePoly) {
+function bowed(A, B, piecePoly, ov = OV) {
   const L = Math.hypot(B[0] - A[0], B[1] - A[1]);
   let nx = -(B[1] - A[1]) / L, ny = (B[0] - A[0]) / L;
-  const mid = [(A[0] + B[0]) / 2 + nx * OV, (A[1] + B[1]) / 2 + ny * OV];
+  const mid = [(A[0] + B[0]) / 2 + nx * ov, (A[1] + B[1]) / 2 + ny * ov];
   if (!inside(mid, piecePoly)) { nx = -nx; ny = -ny; }
   return [[0.02, 0.5], [0.06, 1], [0.25, 1], [0.5, 1], [0.75, 1], [0.94, 1], [0.98, 0.5]]
-    .map(([t, w]) => [A[0] + (B[0] - A[0]) * t + nx * OV * w, A[1] + (B[1] - A[1]) * t + ny * OV * w]);
+    .map(([t, w]) => [A[0] + (B[0] - A[0]) * t + nx * ov * w, A[1] + (B[1] - A[1]) * t + ny * ov * w]);
 }
 
 // a contour goes with the piece when most of its vertices lie inside the piece (a hole in the hand, a button)
@@ -123,12 +126,14 @@ function validateCuts(cuts, els) {
       if (!sp) bad(`cuts ${c.name}: element ${c.el} has no path ${c.contour} (has 0–${e.paths.length - 1})`);
       if (c.from === c.to || [c.from, c.to].some((k) => k < 0 || k >= sp.v.length)) bad(`cuts ${c.name}: from and to must be different points of path ${c.el}.${c.contour} (0–${sp.v.length - 1})`);
     }
+    if (c.ov !== undefined && !(Number.isFinite(c.ov) && c.ov >= 0 && c.ov <= MAX_OV)) bad(`cuts ${c.name}: ov must be a number of px, 0–${MAX_OV}`);
     for (const n of poly ? c.els : [...(c.with || []), c.el]) if (!els[n]) bad(`cuts ${c.name}: no element ${n}`);
   }
 }
 
 // A cut: its region (paper item), the line along which its pieces meet the rest, and its stack of elements.
-function prepare(c, els) {
+function prepare(c0, els, ovs) {
+  const c = { ...c0, ov: ovs && ovs[c0.name] !== undefined ? ovs[c0.name] : c0.ov !== undefined ? c0.ov : OV };
   if (c.poly) return { ...c, stack: [...new Set(c.els)].sort((a, b) => a - b), region: () => polyPath(c.poly), seam: c.poly, closed: true };
   const sp = els[c.el].paths[c.contour];
   const piece = chain(sp, c.from, c.to);
@@ -148,7 +153,7 @@ function cutElement(e, list) {
     if (list.length > 1) throw new Error(`cuts: the path of element ${e.i} is split by cut ${own.name} — it cannot have other cuts`);
     const sp = e.paths[own.contour], A = sp.v[own.from], B = sp.v[own.to];
     const poly = outline(own.piece, 8);
-    const rest = chain(sp, own.to, own.from, bowed(A, B, poly));
+    const rest = chain(sp, own.to, own.from, bowed(A, B, poly, own.ov));
     const mine = [own.piece], left = [rest];
     e.paths.forEach((q, k) => { if (k !== own.contour) (within(q, poly) ? mine : left).push(q); });
     return [{ name: 'rest', paths: left }, { name: own.name, paths: mine }];
@@ -159,9 +164,9 @@ function cutElement(e, list) {
   let below = src;
   list.forEach((c, k) => {
     let mine = intersect(src, inner(c, sh(c)));
-    for (const l of list.slice(k + 1)) mine = subtract(mine, inner(l, sh(l) + OV));
+    for (const l of list.slice(k + 1)) mine = subtract(mine, inner(l, sh(l) + l.ov));
     out.push({ name: c.name, paths: fromPaper(mine) });
-    below = subtract(below, inner(c, sh(c) + OV));
+    below = subtract(below, inner(c, sh(c) + c.ov));
   });
   return [{ name: 'rest', paths: fromPaper(below) }, ...out];
 }
@@ -185,7 +190,7 @@ function seamSamples(all, els) {
         const el = [...c.stack].reverse().find((i) => item(i).contains(new P.Point(p)));
         if (el === undefined) continue;
         if (all.slice(k + 1).some((l) => l.stack.includes(el) && inside(p, polyOf(l)))) continue; // a later cut took it
-        const q1 = [p[0] + nx * 2 * OV, p[1] + ny * 2 * OV], q2 = [p[0] - nx * 2 * OV, p[1] - ny * 2 * OV];
+        const r = 2 * Math.max(OV, c.ov), q1 = [p[0] + nx * r, p[1] + ny * r], q2 = [p[0] - nx * r, p[1] - ny * r];
         const in1 = inside(q1, mine), in2 = inside(q2, mine);
         if (in1 === in2) continue; // a corner of the polygon
         const q = in1 ? q2 : q1;
@@ -199,10 +204,10 @@ function seamSamples(all, els) {
 }
 
 // els → { els (pieces in paint order, `from` = "N:name"), index: id → position }. No cuts: the same list.
-function applyCuts(els, cuts) {
+function applyCuts(els, cuts, ovs) {
   if (!cuts || !cuts.length) return { els, index: new Map(els.map((e) => [String(e.i), e.i])), seams: [] };
   validateCuts(cuts, els);
-  const all = cuts.map((c) => prepare(c, els));
+  const all = cuts.map((c) => prepare(c, els, ovs));
   for (const c of all) {
     const s = c.stack;
     for (let i = s[0]; i <= s[s.length - 1]; i++) {
@@ -250,4 +255,4 @@ function seamHits(pts, seams, r = 4) {
   });
 }
 
-module.exports = { applyCuts, seamHits, toPaper, fromPaper, chain, OV, D };
+module.exports = { applyCuts, seamHits, toPaper, fromPaper, chain, OV, MAX_OV, D };
