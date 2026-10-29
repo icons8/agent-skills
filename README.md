@@ -356,7 +356,9 @@ renders frames in the system temporary folder. The simple path also runs Python 
 build, check and inspect scripts from the skill folder, and the short build script the agent writes
 for each picture, which reads the SVG and writes the Lottie and frames in your working folder. Its
 `tools` command installs nothing: it lists the Python packages that are missing and prints one pip
-command for you to run, which downloads them from PyPI. None of them is copyleft:
+command for you to run, which downloads them from PyPI. Each package is under a permissive license
+(none is GPL, LGPL or AGPL); a few wheels also carry native libraries under their own licenses,
+listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md):
 
 | Package | License | Used for |
 |---|---|---|
@@ -372,8 +374,8 @@ command for you to run, which downloads them from PyPI. None of them is copyleft
 The module's scripts call the renderer by the name `cairosvg`; the skill answers that call with its
 own stand-in over resvg, so it needs neither Cairo, CairoSVG nor PyMuPDF. The simple path renders
 frames with `canvaskit-wasm`, one of the engine's npm packages above. None of these packages is
-bundled in the plugin, and the skill sends nothing anywhere: no request leaves your machine except
-the installs you run.
+bundled in the plugin. The scripts of the simple path make no network requests; the only downloads
+are the installs described here, each after you agree.
 
 ## Animating illustrations: the `illustration-animator` skill
 
