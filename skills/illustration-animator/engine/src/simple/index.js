@@ -34,23 +34,19 @@ const saveConfig = (c) => { fs.mkdirSync(path.dirname(CONFIG), { recursive: true
 
 const run = (cmd, args, opt = {}) => spawnSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...opt });
 
-// what the python needs: the module's packages, and a cairosvg or the stand-in over PyMuPDF
-// cairosvg is tried, not only found: on Windows the package may be there without the cairo library
-const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelements\",\"numpy\",\"PIL\",\"scipy\",\"cv2\",\"fitz\"]\nr={x:u.find_spec(x) is not None for x in m}\ntry:\n import cairosvg;r[\"cairosvg\"]=True\nexcept Exception:\n r[\"cairosvg\"]=False\nprint(json.dumps(r))";
+// what the python needs: the module's packages and resvg-py, which renders the SVGs. The module calls cairosvg;
+// the stand-in in shim/ answers that call over resvg, so cairosvg (LGPL) and its cairo library are never needed.
+const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelements\",\"numpy\",\"PIL\",\"scipy\",\"cv2\",\"resvg_py\"]\nprint(json.dumps({x:u.find_spec(x) is not None for x in m}))";
 
 // Detect only: installs nothing. Returns what is there and the commands the user may run.
 function detect({ python, nodeModules } = {}) {
   const cfg = { ...loadConfig(), ...(python ? { python } : {}), ...(nodeModules ? { nodeModules } : {}) };
   const py = [cfg.python, 'python', 'python3'].filter(Boolean).find((p) => { const r = run(p, ['-c', 'print(1)']); return !r.error && r.status === 0; });
-  const out = { python: py || null, nodeModules: cfg.nodeModules || null, missing: [], install: [], shim: false };
+  const out = { python: py || null, nodeModules: cfg.nodeModules || null, missing: [], install: [], shim: true };
   if (!py) { out.missing.push('python 3'); return out; }
   const has = JSON.parse(run(py, ['-c', PROBE], { cwd: os.tmpdir() }).stdout || '{}');
-  for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2']) if (!has[m]) out.missing.push(m);
-  if (!has.cairosvg) {
-    if (has.fitz) out.shim = true;
-    else out.missing.push('cairosvg (or pymupdf for the stand-in)');
-  }
-  const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless' }[m] || (m.startsWith('cairosvg') ? 'cairosvg' : m))).filter((m) => !m.startsWith('python'));
+  for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2', 'resvg_py']) if (!has[m]) out.missing.push(m);
+  const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless', resvg_py: 'resvg-py' }[m] || m)).filter((m) => !m.startsWith('python'));
   if (pip.length) out.install.push(`${py} -m pip install ${pip.join(' ')}`);
   const nm = cfg.nodeModules && fs.existsSync(path.join(cfg.nodeModules, 'canvaskit-wasm', 'package.json'));
   if (!nm) { out.missing.push('canvaskit-wasm 0.41.1 (Skottie)'); out.install.push('npm i --prefix <folder> canvaskit-wasm@0.41.1   then: node engine/bin/simple.js tools --node-modules <folder>/node_modules'); out.nodeModules = null; }

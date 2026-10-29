@@ -1,6 +1,6 @@
 // usage: node engine/bin/simple.js <command> ...   - the simple-animation path: the adapter over the module that animates one illustration by a short build script
 //   tools [--python <exe>] [--node-modules <dir>]       what is installed; installs nothing, prints the commands for the user (exit 2 if something is missing)
-//   run <build.py> [args...]                            run a build script of the scene (the module's lot.py on the path, the cairosvg stand-in if needed)
+//   run <build.py> [args...]                            run a build script of the scene (the module's lot.py on the path, the cairosvg stand-in over resvg)
 //   check <scene.json> --svg <file.svg> [--out <dir>]   our bans + frame 0 against the SVG + the module's seam check and sheet
 //   deliver <scene.json> --name <scene> --out <dir> [--preview <dir>] [--no-optimize]   JSON (lightened by src/lottie/optimize.js), GIF, MOV (ours) and the white MP4
 const fs = require('fs');

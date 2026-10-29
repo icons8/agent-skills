@@ -97,3 +97,25 @@ https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
 - 18F Content Guide, https://github.com/18F/content-guide — released with no copyright.
 - shadcn/ui, https://github.com/shadcn-ui/ui (MIT) — only variable names are followed
   (`--primary`, `--radius` and the rest of the semantic vocabulary), which carry no protected text.
+
+## Packages the illustration-animator skill asks you to install
+
+None of these is bundled in the plugin. The skill's setup installs the npm packages at exact
+versions after you agree; the Python packages are only listed with a pip command for you to run.
+
+npm (engine, exact versions in `engine/deps/package.json` and its lockfile, 30 packages with
+dependencies): MIT 19, Apache-2.0 4, ISC 4, BSD-3-Clause 3, none copyleft. Direct ones:
+`svgpath` (MIT), `lottie-web` (MIT), `paper` (MIT), `puppeteer-core` (Apache-2.0),
+`@puppeteer/browsers` (Apache-2.0), `canvaskit-wasm` (BSD-3-Clause).
+
+Python (simple path): `resvg-py` (MIT; resvg itself is MIT or Apache-2.0), `svgpathtools` (MIT),
+`svgelements` (MIT), `numpy` (BSD-3-Clause), `scipy` (BSD-3-Clause), `opencv-python-headless`
+(Apache-2.0), `pillow` (MIT-CMU), and `svgwrite` (MIT) pulled in by `svgpathtools`. Some of their
+wheels carry native libraries under their own licenses, listed in each wheel's license files: the
+FFmpeg build inside `opencv-python-headless` (LGPL-2.1), the GCC Fortran runtime inside `numpy`
+and `scipy` (GPL-3.0 with the GCC Runtime Library Exception), and libimagequant inside `pillow`
+(GPL-3.0-or-later, used only by palette quantization). The skill does not ship them, and
+its scripts call neither video input of OpenCV nor quantization of Pillow.
+
+Chrome for Testing is downloaded at a pinned build and checked by SHA-256 before use; ffmpeg is
+not installed by the skill.

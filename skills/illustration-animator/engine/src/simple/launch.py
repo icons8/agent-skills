@@ -1,5 +1,5 @@
-# Runs one script of the simple-animation module with the module's folders on the python path, the cairosvg stand-in
-# behind the real packages and the node modules folder known to the child processes (check.py starts node):
+# Runs one script of the simple-animation module with the module's folders on the python path, the stand-in that answers
+# the module's cairosvg calls with resvg first and the node modules folder known to the child processes (check.py starts node):
 #   python launch.py --scripts <dir> [--shim <dir>] [--node-modules <dir>] -- <script.py> [args...]
 import os
 import runpy

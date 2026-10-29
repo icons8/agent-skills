@@ -352,9 +352,28 @@ lockfile (`svgpath`, `lottie-web`, `paper`, `puppeteer-core`, `@puppeteer/browse
 by SHA-256) only when no Chrome, Chromium or Edge is installed. It does not install ffmpeg: when
 ffmpeg is missing, setup shows the command for you to run. After that it works offline. It reads the
 SVG files you point it at, writes scenes, animations, rules and samples into that style folder, and
-renders frames in the system temporary folder. The simple path also runs Python 3 scripts from the
-skill folder; its `tools` command only lists the Python packages that are missing and prints the
-install commands for you to run, it installs nothing.
+renders frames in the system temporary folder. The simple path also runs Python 3 scripts: the
+build, check and inspect scripts from the skill folder, and the short build script the agent writes
+for each picture, which reads the SVG and writes the Lottie and frames in your working folder. Its
+`tools` command installs nothing: it lists the Python packages that are missing and prints one pip
+command for you to run, which downloads them from PyPI. None of them is copyleft:
+
+| Package | License | Used for |
+|---|---|---|
+| `resvg-py` | MIT (resvg itself: MIT or Apache-2.0) | Rendering SVG to PNG |
+| `svgpathtools` | MIT | Path geometry |
+| `svgelements` | MIT | Reading SVG with its transforms |
+| `numpy` | BSD-3-Clause | Arrays |
+| `scipy` | BSD-3-Clause | Masks and silhouettes |
+| `opencv-python-headless` | Apache-2.0 | Contours of masks |
+| `pillow` | MIT-CMU | Reading and writing PNG |
+| `svgwrite` | MIT | Pulled in by `svgpathtools` |
+
+The module's scripts call the renderer by the name `cairosvg`; the skill answers that call with its
+own stand-in over resvg, so it needs neither Cairo, CairoSVG nor PyMuPDF. The simple path renders
+frames with `canvaskit-wasm`, one of the engine's npm packages above. None of these packages is
+bundled in the plugin, and the skill sends nothing anywhere: no request leaves your machine except
+the installs you run.
 
 ## Animating illustrations: the `illustration-animator` skill
 
