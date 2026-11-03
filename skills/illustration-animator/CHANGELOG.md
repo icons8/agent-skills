@@ -14,9 +14,13 @@ Not every part of the work is in the packaged skill. A part that lives only in t
 - **Tracing a PNG uses `vtracer`.** Smooth settings (about 4 to 9 times fewer nodes than the defaults, flat fills); `trace_png.py` takes a PNG with alpha and writes per-part SVG. `vtracer` is MIT; no copyleft tracer is used.
 - **The Python packages are pinned.** The `tools` command lists what is missing and prints one pip command with fixed versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest); it installs nothing. None of the packages is copyleft.
 
+### Frame check
+
+- **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
+
 ### Plot choice
 
-- **Four plots first, in both paths.** Before the storyboard, the plan or any build, the skill offers four plots as text (its main plot and three variants, a title and one or two sentences each) and waits for your pick; this includes a complex scene. A run without a person (a batch you told to run without stops, an evaluation or regression run) does not wait: it takes its main plot and writes the other three into the plan or story.
+- **Four plots first, in both paths.** Before the storyboard, the plan or any build, the skill offers four plots as text (its main plot and three variants, a title and one or two sentences each) and waits for your pick; this includes a complex scene. A run without a person (a batch you told to run without stops, an evaluation or regression run) does not wait: it takes its main plot and writes the other three into the `Other plots:` block of the plan (the story keeps only the intent).
 
 ## 0.7.0
 
