@@ -10,7 +10,7 @@ to describe the motion, check the frames, or fix anything themselves.
 
 ## What "done" looks like
 
-For each SVG: `<plot>_loop.json` (Lottie, transparent, canvas = SVG viewBox, 30 fps,
+For each SVG: `<plot>_loop.json` (Lottie, transparent, canvas 1200×1200 (art scaled uniformly to fit and centred, not the raw viewBox), 30 fps,
 3–8 s unless asked otherwise) + `<plot>_loop_preview.gif`, and a short note per file: the
 plot in 2–4 sentences and anything they should know (e.g. masks used). Layers named
 sensibly (`Bell`, `Bubble`, `Arm L upper`…), parented where it's a rig, main accent colour
@@ -25,6 +25,20 @@ node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" tools
 It installs nothing: it lists the Python packages and the Skottie renderer (canvaskit-wasm 0.41.1) that are missing and prints the install commands. Show them to the user, run them only after the user agrees, then run `tools` again.
 
 `${CLAUDE_SKILL_DIR}` is the folder that holds this SKILL.md; the engine is shared with the router, one level up (`../engine`).
+
+### 1b. PNG instead of SVG (raster with alpha)
+```bash
+node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/trace_png.py" art.png art.svg     # one <path> per drawn part + wash_*.png + wash.json
+```
+Opaque colours become traced ink paths; translucent colours (watercolour wash, tint) become paths with their
+fill-opacity AND their original pixels (`wash_<i>.png`). Compare a render of art.svg with the PNG on white
+before going on. If the texture is visible, embed the washes behind each part's outline with
+`D.image_layer(name, file, x, y, parent=part)` and drop the flat wash paths from that part's `grp()`
+(style-notes Principle 18; example `examples/robot_hello_png.py`). Verify the rest frame against the PNG,
+not the traced SVG. Image layers move rigidly only - no `deform_group` on textured parts.
+
+### Safety
+The build script of step 3 is Python that you write for each picture, and it runs with the user's permissions on their machine. Keep it to reading the SVG and writing the Lottie and frames in the working folder: no network, no files outside that folder, no shell commands. The Python packages the module needs are installed by the user (the `tools` command lists them and prints the pip command).
 
 ### 2. Look at the drawing before deciding anything
 ```bash
@@ -42,8 +56,7 @@ let the answers shape the story. They win over anything below.
 Ask: what does this object *do*? A bell rings, a megaphone shouts, a loader runs, a teacher
 explains. Build one small story: setup → action → hold → reset. One hero motion, one or two
 supporting, the rest still or barely breathing. Duration 3–8 s. If the user asked you to
-invent it, tell them the plot in a few lines and start building right away - don't wait for
-approval; they'll redirect if they want. Pick patterns from `references/motion-recipes.md`
+invent it, tell them the plot in a few lines. Send the user 4 plots as text (your main one + 3 variants, a title and 1-2 sentences each) and wait for their choice (maybe with edits) BEFORE building. Exception: a run without a person (an eval, a batch where the user said to go without stopping) - take your main plot, build it, and write the other 3 into the note of the scene. Pick patterns from `references/motion-recipes.md`
 (read it the first time in a session).
 
 ### 4. Build with `scripts/lot.py`
@@ -101,8 +114,11 @@ but keep a consistent house style (30 fps, similar energy, same easing family). 
 
 ## Reference
 - `scripts/lot.py` - loader, groups, keyframe helpers (`anim`, `sine`, `bob`, `wrap_keys`,
-  `wipe_mask`), occlusion (`silhouette`, `matte_layer`, `set_matte`), physics (`sample`, `pendulum`), splitting merged art (`ink_mask`, `mask_to_paths`, `mask_group`), reveals (`wipe_mask`, `axis_reveal`), path bending (`deform_group`, `bend_warp`, `motion_frames`), `Doc` builder.
+  `wipe_mask`), occlusion (`silhouette`, `matte_layer`, `set_matte`), physics (`sample`, `pendulum`), splitting merged art (`ink_mask`, `mask_to_paths`, `mask_group`), reveals (`wipe_mask`, `axis_reveal`), path bending (`deform_group`, `bend_warp`, `motion_frames`), `Doc` builder (+ `Doc.image_layer` for embedded raster textures; semi-transparent fills keep their opacity).
 - `scripts/inspect_svg.py`, `scripts/check.py`, `scripts/render.js` - inspection, verification, Skottie render.
+- `scripts/make_sequences.py` - export PNG sequences: `_alpha` (real transparency) and `_gif` (white underlay under textured image layers only, for GIF). Run only when the user asks for sequences.
+- `node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/optimize_lottie.py" in.json out.json --verify` (needs the oxipng program, which the user installs) - lossless recompression of embedded PNGs (oxipng) plus tidy numbers; same pixels, about 30% lighter. Run it on every textured Lottie before delivery; keep the unoptimized original aside.
+- `scripts/trace_png.py` - PNG with alpha → per-part SVG + texture washes (traced with the vtracer package; run it as in step 1b).
 - `references/style-notes.md` - the art director's rules (read every time).
 - `references/motion-recipes.md` - timing/easing recipes for common illustration beats.
-- `examples/` - complete build scripts (alarm clock, AI brain, Saturn constellation, microphone, DNA + cell, chemistry pour, coffee cup, zero balance, ghost, flashlight, GPS, handshake, new email, wallet; plus bell and skeleton rig demos).
+- `examples/` - complete build scripts (alarm clock, AI brain, Saturn constellation, microphone, DNA + cell, chemistry pour, coffee cup, zero balance, ghost, flashlight, GPS, handshake, new email, wallet, robot hello from a PNG with watercolour texture; plus bell and skeleton rig demos).

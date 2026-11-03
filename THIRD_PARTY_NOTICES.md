@@ -108,7 +108,7 @@ dependencies): MIT 19, Apache-2.0 4, ISC 4, BSD-3-Clause 3, none copyleft. Direc
 `svgpath` (MIT), `lottie-web` (MIT), `paper` (MIT), `puppeteer-core` (Apache-2.0),
 `@puppeteer/browsers` (Apache-2.0), `canvaskit-wasm` (BSD-3-Clause).
 
-Python (simple path): `resvg-py==0.5.0` (MIT; resvg itself is MIT or Apache-2.0), `svgpathtools` (MIT),
+Python (simple path): `resvg-py==0.5.0` (MIT; resvg itself is MIT or Apache-2.0), `vtracer==0.6.15` (MIT), `svgpathtools` (MIT),
 `svgelements` (MIT), `numpy` (BSD-3-Clause), `scipy` (BSD-3-Clause), `opencv-python-headless`
 (Apache-2.0), `pillow` (MIT-CMU), and `svgwrite` (MIT) pulled in by `svgpathtools`. Some of their
 wheels carry native libraries under their own licenses, listed in each wheel's license files: the
@@ -121,5 +121,6 @@ its scripts use neither video input or output of OpenCV, nor quantization or tex
 Programs the skill runs as separate processes, under their own licenses: Chrome for Testing
 (Chromium, BSD-3-Clause with the third-party notices of its build, some of them LGPL), downloaded
 at a pinned build and checked by SHA-256 before use; ffmpeg, which encodes GIF, MOV and MP4 and
-which you install yourself (its license depends on the build, many builds are GPL). The skill
+which you install yourself (its license depends on the build, many builds are GPL); `oxipng` (MIT),
+which you install yourself and which the optional lossless pass over embedded PNGs runs. The skill
 installs no ffmpeg and links neither program.
