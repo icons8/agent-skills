@@ -40,8 +40,14 @@ def load_paths(svg_file):
         p.approximate_arcs_with_cubics()
         if len(p) == 0:
             continue
-        out.append((p.d(), e.fill.hex[:7].upper()))
+        d = p.d()
+        a = e.fill.alpha / 255                 # svgelements folds fill-opacity into the colour alpha
+        if a < 0.999:
+            OPAC[d] = round(a * 100, 1)          # semi-transparent fill (e.g. watercolour wash traced from a PNG)
+        out.append((d, e.fill.hex[:7].upper()))
     return out
+
+OPAC = {}   # path d -> fill opacity % for shapes that aren't fully opaque (group() applies it)
 
 def svg_size(svg_file):
     from svgelements import SVG
@@ -108,7 +114,7 @@ def group(name, path, slot=True):
             ACCENT[0] = fill.upper()
         if fill.upper() == ACCENT[0]:
             fc["sid"] = "accentColor"
-    it.append({"ty": "fl", "c": fc, "o": {"a": 0, "k": 100}, "r": 1})
+    it.append({"ty": "fl", "c": fc, "o": {"a": 0, "k": OPAC.get(d, 100)}, "r": 1})
     it.append({"ty": "tr", "p": {"a": 0, "k": [0, 0]}, "a": {"a": 0, "k": [0, 0]},
                "s": {"a": 0, "k": [100, 100]}, "r": {"a": 0, "k": 0}, "o": {"a": 0, "k": 100}})
     return {"ty": "gr", "nm": name, "it": it}
@@ -258,6 +264,28 @@ class Doc:
             L["parent"] = parent
             at = next(n for n, l in enumerate(self.layers) if l["ind"] == parent)
             self.layers.insert(at, L)
+        else:
+            self.layers.append(L)
+        return ind
+
+    def image_layer(self, name, png_file, x, y, parent=None):
+        """Embed a raster (PNG, base64) placed with its top-left at canvas (x, y). With parent it sits directly
+        BEHIND the parent and moves with it -> keep a texture the vectors can't carry (watercolour wash, chalk
+        grain, paper) under the part's vector outline. Rigid only: deform_group can't bend it."""
+        import base64
+        from PIL import Image
+        if not hasattr(self, 'assets'): self.assets = []
+        w, h = Image.open(png_file).size
+        ref = f'img_{len(self.assets)}'
+        self.assets.append({"id": ref, "w": w, "h": h, "u": "", "e": 1,
+                            "p": "data:image/png;base64," + base64.b64encode(open(png_file, 'rb').read()).decode()})
+        ind = max([l["ind"] for l in self.layers], default=0) + 1
+        L = {"ddd": 0, "ind": ind, "ty": 2, "nm": name, "refId": ref, "sr": 1, "ip": 0, "op": self.op, "st": 0, "bm": 0,
+             "ks": {"a": st([0, 0, 0]), "p": st([x, y, 0]), "s": st(S100), "r": st(0), "o": st(100)}}
+        if parent:
+            L["parent"] = parent
+            at = next(k for k, l in enumerate(self.layers) if l["ind"] == parent)
+            self.layers.insert(at + 1, L)
         else:
             self.layers.append(L)
         return ind
