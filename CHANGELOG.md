@@ -20,6 +20,11 @@ The plugin version lives in four manifests that have to agree: `plugin.json`,
 
 - **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
 
+### Known issues
+
+- **The router can send a figure to the simple path without the people gate** when the file name has no word for a person or people (the check reads the name, not the picture). Tell the skill which path to use if a figure was routed wrong.
+- **The router can detect a puppet on a head** in some one-colour chalk drawings, where the parts are not limbs.
+
 ## [0.7.0] — 2026-11-11
 
 `illustration-animator` keeps its name and becomes a router over two skills: one for whole objects, one for people and fused outlines.
