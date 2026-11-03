@@ -14,7 +14,11 @@ The plugin version lives in four manifests that have to agree: `plugin.json`,
 - **The simple path runs on a newer module.** It brings the art direction rules (an analysis pass before the story, a motion mode per picture, smooth curves, endings and textures), a lossless pass over the PNGs inside a Lottie (needs the `oxipng` program, which you install yourself), and PNG sequences with real alpha on request.
 - **Tracing a PNG uses `vtracer` (MIT).** No copyleft tracer is involved.
 - **The Python packages are listed with fixed versions.** The `tools` command still installs nothing: it prints one pip command with pinned versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest). README and THIRD_PARTY_NOTICES name `vtracer` and `oxipng`.
-- **Both paths offer four plots first.** Before a storyboard, a plan or a build, the skill shows your pick of four plots as text (its main plot and three variants, a title and one or two sentences each), including for a complex scene. A run you told to go without stops takes its main plot and writes the other three into the plan or story.
+- **Both paths offer four plots first.** Before a storyboard, a plan or a build, the skill shows your pick of four plots as text (its main plot and three variants, a title and one or two sentences each), including for a complex scene. A run you told to go without stops takes its main plot and writes the other three into the `Other plots:` block of the plan (the story keeps only the intent).
+
+### Fixed
+
+- **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
 
 ## [0.7.0] — 2026-11-11
 

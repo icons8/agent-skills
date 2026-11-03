@@ -31,7 +31,7 @@ A scene of the simple path that fails its checks twice goes to the complex path.
 
 ## Plot choice
 
-Both paths start the same way: before the storyboard, the plan or any build, offer four plots as plain text - your main plot and three other variants, each a title and one or two sentences - and wait for the person to pick one. This holds for a complex scene too. Exception, a run without a person (a batch the user told to run without stops, an evaluation or regression run): do not wait; take your main plot and write the other three into the scene's plan or story.
+Both paths start the same way: before the storyboard, the plan or any build, offer four plots as plain text - your main plot and three other variants, each a title and one or two sentences - and wait for the person to pick one. This holds for a complex scene too. Exception, a run without a person (a batch the user told to run without stops, an evaluation or regression run): do not wait; take your main plot and write the other three into the `Other plots:` block of the scene's plan (the story keeps only the intent).
 
 ## Hard rules
 
