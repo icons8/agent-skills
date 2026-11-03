@@ -13,7 +13,7 @@ Talk to the user in their language.
 
 ## Setup
 
-Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL.md` ("Setup": it installs nothing until the user agrees to its plan). The simple path also needs Python 3 with a few packages: `node "${CLAUDE_SKILL_DIR}/engine/bin/simple.js" tools` lists what is missing and prints the install commands for the user to run; it installs nothing itself. The build script of each simple scene is written by the model and runs as Python with the user's permissions, like any other command the agent runs.
+Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL.md` ("Setup": it installs nothing until the user agrees to its plan). The simple path also needs Python 3 with a few packages: `node "${CLAUDE_SKILL_DIR}/engine/bin/simple.js" tools` lists what is missing and prints the install commands for the user to run; it installs nothing itself.
 
 ## Choosing the path
 
@@ -29,11 +29,15 @@ Look at each illustration (open the SVG as a picture and list its parts) and cho
 
 A scene of the simple path that fails its checks twice goes to the complex path. Read the SKILL.md of the chosen path and follow it; the two paths are never mixed within one scene.
 
+## Plot choice
+
+Both paths start the same way: before the storyboard, the plan or any build, offer four plots as plain text - your main plot and three other variants, each a title and one or two sentences - and wait for the person to pick one. This holds for a complex scene too. Exception, a run without a person (a batch the user told to run without stops, an evaluation or regression run): do not wait; take your main plot and write the other three into the scene's plan or story.
+
 ## Hard rules
 
 1. **The motion comes from the object.** A loader ring rotates, a wheel turns, a door opens on its hinge; a pulse or floating never stands in for it. Tested: a round loader animated as a wave of swelling segments instead of one turn of the whole ring was sent back on review.
 2. **Nothing is delivered unseen.** Before every delivery look at the whole preview yourself; a loop that was not looked at is not handed over.
-3. **Faster, not slower.** Take the short end of every timing range. Tested: reviewers asked to speed animations up six times and never to slow one down.
+3. **Faster, not slower.** Take the short end of every timing range. Tested: in review, speeding up was asked for six times (a shield, a collaboration scene twice, a premium badge, a door twice) and slowing down never.
 
 ## When not to apply
 

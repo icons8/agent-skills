@@ -4,6 +4,20 @@ What changed in the `illustration-animator` skill, newest first. Each entry says
 
 Not every part of the work is in the packaged skill. A part that lives only in the skill's source tree is marked "source tree only": the scoring script of the router, the After Effects build path, and the tools that measure the skill itself (regression and capability runs, the run ledger, grids). They are listed here so the history is complete, and they are not in this folder.
 
+## 0.7.1
+
+### Simple path
+
+- **The simple-animation module is replaced by its newer version.** The same folder and the same adapter; the module is checked against its recorded checksum (`vendor-verify`) and the adapter's contract.
+- **The simple path has the module's new art direction rules**: an analysis pass before the story, a motion mode per picture (a story told with energetic cartoon motion, or calm continuous motion for things that move by nature), smooth curves without jolts, endings and textures.
+- **Textured loops are lighter and can be exported as frames.** A lossless pass recompresses the embedded PNGs and drops repeated keys (needs the `oxipng` program, which you install yourself); the canvas is fitted to at most 1200 px. On request, PNG sequences with real alpha and a variant for GIF.
+- **Tracing a PNG uses `vtracer`.** Smooth settings (about 4 to 9 times fewer nodes than the defaults, flat fills); `trace_png.py` takes a PNG with alpha and writes per-part SVG. `vtracer` is MIT; no copyleft tracer is used.
+- **The Python packages are pinned.** The `tools` command lists what is missing and prints one pip command with fixed versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest); it installs nothing. None of the packages is copyleft.
+
+### Plot choice
+
+- **Four plots first, in both paths.** Before the storyboard, the plan or any build, the skill offers four plots as text (its main plot and three variants, a title and one or two sentences each) and waits for your pick; this includes a complex scene. A run without a person (a batch you told to run without stops, an evaluation or regression run) does not wait: it takes its main plot and writes the other three into the plan or story.
+
 ## 0.7.0
 
 ### Choosing how to animate

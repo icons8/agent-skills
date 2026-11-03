@@ -37,7 +37,10 @@ const run = (cmd, args, opt = {}) => spawnSync(cmd, args, { encoding: 'utf8', ma
 
 // what the python needs: the module's packages and resvg-py, which renders the SVGs. The module calls cairosvg;
 // the stand-in in shim/ answers that call over resvg, so cairosvg (LGPL) and its cairo library are never needed.
-const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelements\",\"numpy\",\"PIL\",\"scipy\",\"cv2\",\"resvg_py\"]\nprint(json.dumps({x:u.find_spec(x) is not None for x in m}))";
+const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelements\",\"numpy\",\"PIL\",\"scipy\",\"cv2\",\"resvg_py\",\"vtracer\"]\nprint(json.dumps({x:u.find_spec(x) is not None for x in m}))";
+
+// pip names at fixed versions: the packages are MIT, BSD, Apache or similar, none is copyleft (see the package notes).
+const PIP = { svgpathtools: 'svgpathtools==1.8.0', svgelements: 'svgelements==1.9.6', numpy: 'numpy==2.4.4', PIL: 'pillow==12.2.0', scipy: 'scipy==1.17.1', cv2: 'opencv-python-headless==4.13.0.92', resvg_py: 'resvg-py==0.5.0', vtracer: 'vtracer==0.6.15' };
 
 // Detect only: installs nothing. Returns what is there and the commands the user may run.
 function detect({ python, nodeModules } = {}) {
@@ -49,8 +52,8 @@ function detect({ python, nodeModules } = {}) {
   const out = { python: py || null, nodeModules: cfg.nodeModules || null, missing: [], install: [], shim: true };
   if (!py) { out.missing.push('python 3'); return out; }
   const has = JSON.parse(run(py, ['-c', PROBE], { cwd: os.tmpdir() }).stdout || '{}');
-  for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2', 'resvg_py']) if (!has[m]) out.missing.push(m);
-  const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless', resvg_py: 'resvg-py==0.5.0' }[m] || m)).filter((m) => !m.startsWith('python'));
+  for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2', 'resvg_py', 'vtracer']) if (!has[m]) out.missing.push(m);
+  const pip = out.missing.filter((m) => !m.startsWith('python')).map((m) => PIP[m] || m);
   if (pip.length) out.install.push(`${py} -m pip install ${pip.join(' ')}`);
   const nm = cfg.nodeModules && fs.existsSync(path.join(cfg.nodeModules, 'canvaskit-wasm', 'package.json'));
   if (!nm) { out.missing.push('canvaskit-wasm 0.41.1 (Skottie)'); out.install.push('node engine/bin/setup.js   (installs the engine\'s pinned npm packages, canvaskit-wasm included, into ~/.animator/deps)'); out.nodeModules = null; }
@@ -82,7 +85,7 @@ function bans(lottie) {
   return issues;
 }
 
-// the module has the entry points the adapter calls
+// The module must have the four entry points the adapter calls.
 function guard(dir = MODULE) {
   const e = entryPoints(dir);
   return e.ok ? { ok: true, warn: null, state: 'ok' } : { ok: false, error: `The module in ${dir} lacks ${e.missing.join(', ')}` };
