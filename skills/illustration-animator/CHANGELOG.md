@@ -22,6 +22,11 @@ Not every part of the work is in the packaged skill. A part that lives only in t
 
 - **Four plots first, in both paths.** Before the storyboard, the plan or any build, the skill offers four plots as text (its main plot and three variants, a title and one or two sentences each) and waits for your pick; this includes a complex scene. A run without a person (a batch you told to run without stops, an evaluation or regression run) does not wait: it takes its main plot and writes the other three into the `Other plots:` block of the plan (the story keeps only the intent).
 
+### Known issues
+
+- **The router can send a figure to the simple path without the people gate** when the file name has no word for a person or people (the check reads the name, not the picture). Tell the skill which path to use if a figure was routed wrong.
+- **The router can detect a puppet on a head** in some one-colour chalk drawings, where the parts are not limbs.
+
 ## 0.7.0
 
 ### Choosing how to animate
