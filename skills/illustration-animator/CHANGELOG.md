@@ -22,6 +22,10 @@ Not every part of the work is in the packaged skill. A part that lives only in t
 
 - **Four plots first, in both paths.** Before the storyboard, the plan or any build, the skill offers four plots as text (its main plot and three variants, a title and one or two sentences each) and waits for your pick; this includes a complex scene. A run without a person (a batch you told to run without stops, an evaluation or regression run) does not wait: it takes its main plot and writes the other three into the `Other plots:` block of the plan (the story keeps only the intent).
 
+### Router
+
+- **The simple path goes first.** The router takes `complex-animation` only when the picture shows a concrete warning: a person or an animal whose limbs have to bend or walk, a limb stuck to the body in one outline, or a figure assembled on hinges. A picture with none of these is simple, and so is a borderline one (a hand with an object, a figure drawn as one whole piece); before, an unsure picture and a whole folder went to the complex path. A scene of the simple path that fails its checks twice still moves to the complex path. Source tree only: the scoring script of the router makes the same choice, a borderline picture is fast unless the look shows a limb stuck to the body.
+
 ### Known issues
 
 - **The router can send a figure to the simple path without the people gate** when the file name has no word for a person or people (the check reads the name, not the picture). Tell the skill which path to use if a figure was routed wrong.

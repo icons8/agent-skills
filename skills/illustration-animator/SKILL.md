@@ -19,15 +19,22 @@ Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL
 
 Look at each illustration (open the SVG as a picture and list its parts) and choose the path for it. The user may force one path for the whole folder: then do not choose.
 
+**Simple first.** Start on `simple-animation/SKILL.md`. Take `complex-animation/SKILL.md` only when the picture shows one of these concrete warnings:
+
+- a person or an animal whose limbs, wings or tail have to bend or walk;
+- a limb or a hand stuck to the body in one outline, so that a part has to be cut out and the hidden part redrawn;
+- a figure assembled on hinges (arms and legs are separate shapes that meet the body), because the people gate of the complex path reads it.
+
+A picture with none of these is simple, however many parts it has. A person drawn as one whole piece (a bust, a mascot, a hand and an object as separate shapes) is simple too.
+
 | The illustration | Path |
 |---|---|
-| A whole object or a few of them: a bell, a clock, a phone, a ghost, a robot, a bust, a plant, a device with a hand-free action | `simple-animation/SKILL.md` |
-| A person or an animal with limbs that must bend or walk; a hand; a group of people | `complex-animation/SKILL.md` |
+| No warning from the list above: a whole object or a few of them (a bell, a clock, a phone, a ghost, a robot, a bust, a plant), a figure drawn as one whole piece, a hand with an object as separate shapes | `simple-animation/SKILL.md` |
+| A person or an animal with limbs that must bend or walk; a group of people | `complex-animation/SKILL.md` |
 | Any picture where a part has to be cut out of a fused outline and the hidden part redrawn | `complex-animation/SKILL.md` |
-| A set of illustrations of one style in a folder, to be analyzed and built as a batch | `complex-animation/SKILL.md` |
-| Unsure | Look at the picture again; still unsure - `complex-animation/SKILL.md` |
+| Unsure | Look at the picture again; no concrete warning from the list - `simple-animation/SKILL.md` |
 
-A scene of the simple path that fails its checks twice goes to the complex path. Read the SKILL.md of the chosen path and follow it; the two paths are never mixed within one scene.
+A folder is not a warning: choose the path for each illustration in it. A scene of the simple path that fails its checks twice goes to the complex path. Read the SKILL.md of the chosen path and follow it; the two paths are never mixed within one scene.
 
 ## Plot choice
 
