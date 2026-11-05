@@ -50,6 +50,10 @@ function detect({ python, nodeModules } = {}) {
   if (!cfg.nodeModules && fs.existsSync(path.join(own, 'canvaskit-wasm', 'package.json'))) cfg.nodeModules = own;
   const py = [cfg.python, 'python3', 'python'].filter(Boolean).find((p) => { const r = run(p, ['-c', 'print(1)']); return !r.error && r.status === 0; });
   const out = { python: py || null, nodeModules: cfg.nodeModules || null, missing: [], install: [], shim: true };
+  // oxipng is optional: only scripts/optimize_lottie.py (textured loops) uses it. Reported, never counted as missing, never installed.
+  const ox = run('oxipng', ['--version']);
+  out.oxipng = !ox.error && ox.status === 0 ? ((ox.stdout || '').trim().split('\n')[0] || 'found') : null;
+  if (!out.oxipng) out.optional = ['oxipng: not found. Only scripts/optimize_lottie.py needs it (textured loops); without it skip that step. The user installs it from its releases or a package manager.'];
   if (!py) { out.missing.push('python 3'); return out; }
   const has = JSON.parse(run(py, ['-c', PROBE], { cwd: os.tmpdir() }).stdout || '{}');
   for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2', 'resvg_py', 'vtracer']) if (!has[m]) out.missing.push(m);

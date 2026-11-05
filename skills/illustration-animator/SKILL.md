@@ -44,7 +44,7 @@ Both paths start the same way: before the storyboard, the plan or any build, off
 
 1. **The motion comes from the object.** A loader ring rotates, a wheel turns, a door opens on its hinge; a pulse or floating never stands in for it. Tested: a round loader animated as a wave of swelling segments instead of one turn of the whole ring was sent back on review.
 2. **Nothing is delivered unseen.** Before every delivery look at the whole preview yourself; a loop that was not looked at is not handed over.
-3. **Faster, not slower.** Take the short end of every timing range. Tested: in review, speeding up was asked for six times (a shield, a collaboration scene twice, a premium badge, a door twice) and slowing down never.
+3. **Faster, not slower.** Take the short end of every timing range. Tested: in review, speeding up was asked for four scenes (a shield and a team collaboration scene in Black Chalk, a premium badge and an exit door in Organic; see their style rules) and slowing down never.
 
 ## When not to apply
 

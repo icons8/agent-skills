@@ -55,7 +55,7 @@ Organic is hand-drawn UI and concept icons: thick black brush outlines with flat
 - Don't open a door as an opening → the leaf with the handle turns around the hinge (squeeze in width toward the hinge).
 - Don't start the blogger with all the icons → first the card where the person waves, then the other elements appear one by one.
 - Don't give the truck starting off and braking → continuous driving in the loop.
-- Don't make the door figure "run" on one leg and don't start with the door open → in the first frame of the loop the door is closed, then it opens, the figure pokes out, holds, hides, the door closes; the tempo is fast (twice as fast as the previous 94 frames).
+- Don't make the door figure "run" on one leg and don't start with the door open → in the first frame of the loop the door is closed, then it opens, the figure pokes out, holds, hides, the door closes; the tempo is faster (twice as fast as the previous 94 frames).
 - Don't give the brainstorm a story with a drooping lamp and synchronous movement of the parts → the lamp pulses separately from the bubble, the bubble "breathes" at its own rhythm, the dashes scale in turn clockwise; the phases of the parts are offset.
 - Don't drag out the tempo of premium → faster, shorter loop, shorter movements (keep the smoothness).
 - Don't have the blogger wave a hand once → the person waves continuously for the whole loop, the other elements appear in turn and at the end of the loop disappear in turn.

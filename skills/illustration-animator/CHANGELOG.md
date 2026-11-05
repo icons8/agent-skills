@@ -10,7 +10,7 @@ Not every part of the work is in the packaged skill. A part that lives only in t
 
 - **The simple-animation module is replaced by its newer version.** The same folder and the same adapter; the module is checked against its recorded checksum (`vendor-verify`) and the adapter's contract.
 - **The simple path has the module's new art direction rules**: an analysis pass before the story, a motion mode per picture (a story told with energetic cartoon motion, or calm continuous motion for things that move by nature), smooth curves without jolts, endings and textures.
-- **Textured loops are lighter and can be exported as frames.** A lossless pass recompresses the embedded PNGs and drops repeated keys (needs the `oxipng` program, which you install yourself); the canvas is fitted to at most 1200 px. On request, PNG sequences with real alpha and a variant for GIF.
+- **Textured loops are lighter and can be exported as frames.** A lossless pass recompresses the embedded PNGs and drops repeated keys (needs the `oxipng` program, which you install yourself; the `tools` command shows whether it is installed, and without it the step is skipped); the canvas is fitted to at most 1200 px. On request, PNG sequences with real alpha and a variant for GIF.
 - **Tracing a PNG uses `vtracer`.** Smooth settings (about 4 to 9 times fewer nodes than the defaults, flat fills); `trace_png.py` takes a PNG with alpha and writes per-part SVG. `vtracer` is MIT; no copyleft tracer is used.
 - **The Python packages are pinned.** The `tools` command lists what is missing and prints one pip command with fixed versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest); it installs nothing. None of the packages is copyleft.
 
