@@ -51,7 +51,7 @@ The Icons8 design skills run in one agent. This one does not, on purpose: analyz
 3. **Joints and line ends come from the geometry** (`els.js`, `centerline`), never by eye. Tested: a leg extension drawn by eye left a kink at the knee; taking its direction from the stroke's centerline points fixed it.
 4. **A remark on one defect applies its whole block of rules.** Walking, animal paws, white lines, line masks: before the edit, apply the whole matching block of `common.md`, not the one item named. Tested: a witch with a cat took 10 review rounds; in five of them the cat's white lines were repaired one remark at a time; one pass over the whole block of white-line rules would have settled them.
 5. **The same remark twice means a wrong technique.** Name the technique that produces it and replace it; do not patch the result again.
-6. **Faster, not slower.** Take the short end of every timing range in the style rules. Tested: in review, speeding up was asked for six times (a shield, a collaboration scene twice, a premium badge, a door twice) and slowing down never.
+6. **Faster, not slower.** Take the short end of every timing range in the style rules. Tested: in review, speeding up was asked for four scenes (a shield and a team collaboration scene in Black Chalk, a premium badge and an exit door in Organic; see their style rules) and slowing down never.
 7. **Nothing is delivered unseen.** Before every delivery, including a fix by the user's word: a look at the whole preview yourself. The judge gives advice in one round per scene (the script refuses a second); its remarks go to the user and are not rebuilt.
 
 ## When not to apply
