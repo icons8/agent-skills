@@ -19,6 +19,8 @@ The plugin version lives in four manifests that have to agree: `plugin.json`,
 
 ### Fixed
 
+- **`tools` shows whether `oxipng` is installed.** It is optional and is not counted as missing; the simple path runs the lossless PNG pass only when `oxipng` is there.
+- **The "Tested" note of the tempo rule names only reviews found in the style rules** (a shield and a team collaboration scene in Black Chalk, a premium badge and an exit door in Organic).
 - **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
 
 ### Known issues

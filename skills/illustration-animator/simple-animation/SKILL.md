@@ -22,7 +22,7 @@ exposed as the `accentColor` slot.
 ```bash
 node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" tools
 ```
-It installs nothing: it lists the Python packages and the Skottie renderer (canvaskit-wasm 0.41.1) that are missing and prints the install commands. Show them to the user, run them only after the user agrees, then run `tools` again.
+It installs nothing: it lists the Python packages and the Skottie renderer (canvaskit-wasm 0.41.1) that are missing and prints the install commands. It also shows whether the optional oxipng program is installed (only `optimize_lottie.py` needs it). Show them to the user, run them only after the user agrees, then run `tools` again.
 
 `${CLAUDE_SKILL_DIR}` is the folder that holds this SKILL.md; the engine is shared with the router, one level up (`../engine`).
 
@@ -117,7 +117,7 @@ but keep a consistent house style (30 fps, similar energy, same easing family). 
   `wipe_mask`), occlusion (`silhouette`, `matte_layer`, `set_matte`), physics (`sample`, `pendulum`), splitting merged art (`ink_mask`, `mask_to_paths`, `mask_group`), reveals (`wipe_mask`, `axis_reveal`), path bending (`deform_group`, `bend_warp`, `motion_frames`), `Doc` builder (+ `Doc.image_layer` for embedded raster textures; semi-transparent fills keep their opacity).
 - `scripts/inspect_svg.py`, `scripts/check.py`, `scripts/render.js` - inspection, verification, Skottie render.
 - `scripts/make_sequences.py` - export PNG sequences: `_alpha` (real transparency) and `_gif` (white underlay under textured image layers only, for GIF). Run only when the user asks for sequences.
-- `node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/optimize_lottie.py" in.json out.json --verify` (needs the oxipng program, which the user installs) - lossless recompression of embedded PNGs (oxipng) plus tidy numbers; same pixels, about 30% lighter. Run it on every textured Lottie before delivery; keep the unoptimized original aside.
+- `node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/optimize_lottie.py" in.json out.json --verify` (needs the oxipng program, which the user installs) - lossless recompression of embedded PNGs (oxipng) plus tidy numbers; same pixels, about 30% lighter. If oxipng is installed (the `tools` command shows it), run it on every textured Lottie before delivery; without oxipng skip this step; keep the unoptimized original aside.
 - `scripts/trace_png.py` - PNG with alpha → per-part SVG + texture washes (traced with the vtracer package; run it as in step 1b).
 - `references/style-notes.md` - the art director's rules (read every time).
 - `references/motion-recipes.md` - timing/easing recipes for common illustration beats.
