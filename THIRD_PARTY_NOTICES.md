@@ -114,9 +114,10 @@ Python (simple path): `resvg-py==0.5.0` (MIT; resvg itself is MIT or Apache-2.0)
 wheels carry native libraries under their own licenses, listed in each wheel's license files: the
 FFmpeg build inside `opencv-python-headless` (LGPL-2.1), the GCC Fortran runtime inside `numpy`
 and `scipy` (GPL-3.0 with the GCC Runtime Library Exception), and libimagequant inside `pillow`
-(GPL-3.0-or-later, used only by palette quantization); `pillow` also loads FriBiDi (LGPL-2.1-or-later)
+(GPL-3.0-or-later, used only when a caller asks Pillow for that quantizer); `pillow` also loads FriBiDi (LGPL-2.1-or-later)
 from the system for text layout if it is installed there. The skill does not ship any of them, and
-its scripts use neither video input or output of OpenCV, nor quantization or text of Pillow.
+its scripts use neither video input or output of OpenCV, nor the libimagequant quantizer or text layout
+of Pillow: the GIF preview of the simple path reduces colors with Pillow's built-in median cut.
 
 Programs the skill runs as separate processes, under their own licenses: Chrome for Testing
 (Chromium, BSD-3-Clause with the third-party notices of its build, some of them LGPL), downloaded
