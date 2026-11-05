@@ -107,12 +107,7 @@ function pickExamples(root, scene, style, n = LIMITS.examples) {
 }
 
 // MP4 on white of a rated clip (the preview) or its MOV; null when the file is gone
-function findClip(root, scene) {
-  const base = path.join(root, '!animated');
-  if (!fs.existsSync(base)) return null;
-  for (const d of fs.readdirSync(base)) {
-    for (const f of [path.join(base, d, '!preview', `${scene}.mp4`), path.join(base, d, scene, `${scene}.mov`), path.join(base, '!preview', `${scene}.mp4`)]) if (fs.existsSync(f)) return f;
-  }
+function findClip() {
   return null;
 }
 
