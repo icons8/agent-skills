@@ -1,0 +1,3 @@
+# Stories: Handy Line (7)
+
+Line versions of the Handy scenes with the same animation: ai-training-or-machine-learning-dataset… = machine-learning-process…; creative-document-management-with-smiling-folder-and-idea-bulb = digital-file-storage-mascot-discovering-new-idea-bulb; drone-carrying-box-automated-delivery-service = drone-delivery-of-package…; paper-shredder-shredding-rubber-duck-image… = paper-shredder-destroying-rubber-duck-drawing…; personal-finance-concept-with-happy-banknote-and-coin-characters = saving-money-concept-with-cheerful-banknote…; printer-character-loading-paper-tray-office-workflow = cartoon-printer-with-arms-adding-sheets…; smiling-cloud-practicing-yoga-meditation-and-stress-relief = cute-cloud-with-headband-meditating…. See `handy.md`.

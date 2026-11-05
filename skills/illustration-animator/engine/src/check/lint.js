@@ -1,8 +1,10 @@
 // Script checks on a compiled scene: loop seam, jumps, easing, speed, roles, timing, joints, bounds, deformation, overlap.
 const { valueAt } = require('../lottie/keys');
 const { worldMatrix, apply } = require('../lottie/evaluate');
-const { weights, pose, deformPoint, area, outline, inside } = require('../bones/skin');
-const { checkSpeed } = require('./motion');
+const { weights, pose, deformPoint, area, foldArea, outline, inside } = require('../bones/skin');
+const { checkSpeed, checkJitter } = require('./motion');
+const { checkExposed } = require('./exposed');
+const { checkLoop, loopWarnings } = require('./loop');
 
 const ROLES = ['action', 'reaction', 'ambient'];
 const eq = (a, b, eps = 0.01) => a.every((v, i) => Math.abs(v - b[i]) <= eps);
@@ -61,12 +63,30 @@ const checkRoles = (scene) => scene.tracks
   .filter((tr) => !ROLES.includes(tr.role))
   .map((tr) => ({ check: 'role', part: tr.part, frame: start(tr), detail: 'track has no role (action / reaction / ambient)' }));
 
+// Frames where a track starts to move: its at, or for raw keys every key where a value leaves a rest of 6+ frames
+// (a key at frame 0 that rests until the real burst must not hide the burst from the check).
+function onsets(tr) {
+  if (tr.at != null) return [tr.at];
+  const out = new Set();
+  for (const ks of Object.values(tr.keys || {})) {
+    for (let n = 0; n < ks.length - 1; n++) {
+      const a = [].concat(ks[n][1]), b = [].concat(ks[n + 1][1]);
+      const moves = !eq(a, b), held = n === 0 || (eq([].concat(ks[n - 1][1]), a) && ks[n][0] - ks[n - 1][0] >= 6);
+      if (moves && held) out.add(ks[n][0]);
+    }
+  }
+  return out.size ? [...out] : [start(tr)];
+}
+
 function checkSimultaneous(scene) {
-  const rs = scene.tracks.filter((tr) => tr.role === 'reaction').sort((a, b) => start(a) - start(b));
+  const ev = [];
+  for (const tr of scene.tracks.filter((t) => t.role === 'reaction')) for (const t of onsets(tr)) ev.push({ part: tr.part, t });
+  ev.sort((a, b) => a.t - b.t);
   const out = [];
-  for (let n = 1; n < rs.length; n++) {
-    if (rs[n].part !== rs[n - 1].part && Math.abs(start(rs[n]) - start(rs[n - 1])) < 3) {
-      out.push({ check: 'simultaneous', part: `${rs[n - 1].part}+${rs[n].part}`, frame: start(rs[n]), detail: 'two reactions at once' });
+  for (let n = 1; n < ev.length; n++) {
+    const prev = ev.slice(0, n).reverse().find((e) => e.part !== ev[n].part);
+    if (prev && Math.abs(ev[n].t - prev.t) < 3) {
+      out.push({ check: 'simultaneous', part: `${prev.part}+${ev[n].part}`, frame: ev[n].t, detail: 'two reactions at once' });
     }
   }
   return out;
@@ -173,14 +193,29 @@ function crossings(paths) {
 function checkDeform(lottie, model) {
   const out = [];
   for (const p of Object.values(model.parts)) {
-    if (!p.shapeKeys) continue;
+    if (!p.shapeKeys || p.morph) continue; // a morph changes the area by design (a face narrows as the volume turns)
     for (const [i, keys] of Object.entries(p.shapeKeys)) {
       const rest = model.els[i].paths;
       const a0 = area(rest), x0 = crossings(rest);
+      let f0 = null;
+      // skinned bend (a knee, an elbow) squeezes the inside of the bend by nature — a rubbery limb is wanted — the folds are
+      // caught by the twist test below; a pinned rotation shrinks the blend zone a little (about 11 % at 25 degrees
+      // against the pin), rigid motion has to keep its area within 10 %
+      const lim = p.bones && p.bendProp ? 0.35 : p.mapAt ? 0.2 : 0.1;
       for (const kf of keys) {
-        const ratio = area(kf.paths) / a0;
-        if (Math.abs(ratio - 1) > 0.1) { out.push({ check: 'deform', part: p.name, frame: kf.t, detail: `area changed by a factor of ${ratio.toFixed(2)}` }); break; }
-        if (crossings(kf.paths) > x0) { out.push({ check: 'deform', part: p.name, frame: kf.t, detail: 'path twisted at the bend' }); break; }
+        // a pinned part's baked shape has its own layer transform (and its ancestors') undone: on the canvas the
+        // part is somewhere between 'pinned' (area unchanged) and 'free' (area scaled by the world matrix), so only
+        // an area outside that band, widened by 10 %, is a fold — scaling a pinned part is not
+        let det = 1;
+        if (p.mapAt) { const m = worldMatrix(lottie, p.name, kf.t); det = Math.abs(m[0] * m[3] - m[1] * m[2]); }
+        const ratio = area(kf.paths) * det / a0;
+        if (ratio < Math.min(1, det) * (1 - lim) || ratio > Math.max(1, det) * (1 + lim)) { out.push({ check: 'deform', part: p.name, frame: kf.t, detail: `area changed by a factor of ${ratio.toFixed(2)}` }); break; }
+        // more crossings is only a twist when the path really folds over itself: a sliver or a tapered tip that
+        // grazes itself gains crossings from a one-degree bend and folds nothing visible
+        if (crossings(kf.paths) > x0) {
+          f0 ??= foldArea(rest);
+          if (foldArea(kf.paths) - f0 > 0.02 * a0) { out.push({ check: 'deform', part: p.name, frame: kf.t, detail: 'path twisted at the bend' }); break; }
+        }
       }
     }
   }
@@ -198,9 +233,14 @@ function checkStructure(lottie, model) {
 }
 
 // A cut must not tear the drawing: wherever a cut line runs through it, the two sides move together (the line is
-// pinned, or it runs where nothing moves). Worst gap per cut over the loop, px.
+// pinned, or it runs where nothing moves). Worst gap per cut over the loop, px of the 1200 canvas. What counts is the gap
+// as the viewer sees it: the output is shown at about OUT_PX across, so a gap that is <= SEE_PX there is a warning, not a fault.
 const TEAR = 2;
-function checkTear(lottie, model) {
+const OUT_PX = 500;
+const SEE_PX = 2;
+const seen = (d, model) => d * OUT_PX / (model.w || 1200);
+// worst divergence of the two sides of every cut over the loop: [{ s (the cut), worst: { d, t, p, X, Y } | null }]
+function seamSpread(lottie, model) {
   const out = [];
   const owner = new Map();
   for (const p of Object.values(model.parts)) for (const i of p.els) owner.set(model.els[i].from, p.name);
@@ -216,12 +256,21 @@ function checkTear(lottie, model) {
         if (d > TEAR && (!worst || d > worst.d)) worst = { d, t, p: sm.p, X, Y };
       }
     }
+    out.push({ s, worst });
+  }
+  return out;
+}
+function tears(lottie, model) {
+  const out = [];
+  for (const { s, worst } of seamSpread(lottie, model)) {
     if (worst) {
-      out.push({ check: 'tear', part: s.name, frame: worst.t, detail: `cut ${s.name} tears the drawing at (${worst.p.map(Math.round).join(', ')}): ${worst.X || 'static'} and ${worst.Y || 'static'} diverge by ${worst.d.toFixed(1)} px — run the cut line along a seam pinned by pin.line, or through empty space` });
+      out.push({ check: 'tear', part: s.name, frame: worst.t, seen: seen(worst.d, model), detail: `cut ${s.name} tears the drawing at (${worst.p.map(Math.round).join(', ')}): ${worst.X || 'static'} and ${worst.Y || 'static'} diverge by ${worst.d.toFixed(1)} px (${seen(worst.d, model).toFixed(1)} px at the output size) — run the cut line along a seam pinned by pin.line, or through empty space` });
     }
   }
   return out;
 }
+const checkTear = (lottie, model) => tears(lottie, model).filter((i) => i.seen > SEE_PX);
+const tearWarnings = (lottie, model) => tears(lottie, model).filter((i) => i.seen <= SEE_PX);
 
 // Parts that stand apart in the key pose must not run into each other: the shared area of two parts (grid of points
 // over their common box, even-odd fill) above 15 % of the smaller one. Parent and child, attached parts, parts
@@ -315,6 +364,7 @@ const lint = (lottie, model) => [
   ...checkStructure(lottie, model),
   ...checkJumps(model),
   ...checkSeam(lottie),
+  ...checkLoop(lottie, model),
   ...checkLinear(lottie, model.linearOk),
   ...checkSpeed(lottie, model),
   ...checkRoles(model.scene),
@@ -325,6 +375,11 @@ const lint = (lottie, model) => [
   ...checkDeform(lottie, model),
   ...checkOverlap(lottie, model),
   ...checkTear(lottie, model),
+  ...checkExposed(lottie, model),
 ];
 
-module.exports = { lint, checkSpeed, checkOverlap, checkTear, checkStructure, checkJumps, checkSeam, checkLinear, checkRoles, checkNarrative, checkSimultaneous, checkJoints, checkBounds, checkDeform, crossings };
+// Findings that do not fail the build: they ride along as warnings in the status (a tremble is a matter of taste, the rule
+// does not separate every shaky scene from the approved ones).
+const lintWarnings = (lottie, model) => [...checkJitter(lottie, model), ...tearWarnings(lottie, model), ...loopWarnings(lottie, model)].map((i) => `${i.check}: ${i.part}, frame ${i.frame} — ${i.detail}`);
+
+module.exports = { lint, lintWarnings, tearWarnings, checkSpeed, checkJitter, checkOverlap, checkTear, checkExposed, checkStructure, checkJumps, checkSeam, checkLoop, loopWarnings, checkLinear, checkRoles, checkNarrative, checkSimultaneous, checkJoints, checkBounds, checkDeform, crossings, pointOf, seamSpread };

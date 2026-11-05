@@ -4,14 +4,15 @@ const path = require('path');
 const { parseSvg, color } = require('../svg/parse');
 const { sceneSvg } = require('./svg-path');
 const { applySplit } = require('./split');
-const { applyCuts } = require('./cut');
+const { applyCuts, OV, MAX_OV } = require('./cut');
 const { anim, valueAt } = require('../lottie/keys');
+const { resolveThrough } = require('../lottie/through');
 const { buildLottie } = require('../lottie/build');
 const { bakeBend, deformPaths, pointOnBone, boneAngle, weights, pose, deformPoint, pinWeight, pinned, bakeMap } = require('../bones/skin');
 const { localMatrix, mul, invert, apply } = require('../lottie/evaluate');
 const { TEMPLATES, PARAMS, checkKeys } = require('../templates');
 
-const REST = { p: [0, 0], s: [100, 100], r: 0, o: 100 };
+const REST = { p: [0, 0], s: [100, 100], r: 0, o: 100, m: 0 };
 const asArr = (v) => (Array.isArray(v) ? v : [v]);
 const sameValue = (a, b) => asArr(a).every((v, k) => Math.abs(v - asArr(b)[k]) < 0.01);
 const same = sameValue;
@@ -77,9 +78,17 @@ function validateScene(scene) {
   if (!Array.isArray(scene.parts)) bad('Scene: parts must be an array of parts');
   if (!Array.isArray(scene.tracks)) bad('Scene: tracks must be an array of tracks');
   if (scene.split !== undefined) bad('split is no longer needed: give the paths directly in els ("17.0")');
+  if (scene.through !== undefined && typeof scene.through !== 'boolean') bad('through must be true or false (false: no automatic through curve, every key keeps its own easing)');
+  if (scene.poses !== undefined) {
+    const ok = scene.poses && typeof scene.poses === 'object' && !Array.isArray(scene.poses) && Object.values(scene.poses).every((v) => typeof v === 'string' && v);
+    if (!ok) bad('poses must be an object {name: "path to the pose SVG"}');
+  }
   const pt = (q) => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite);
   for (const p of scene.parts) {
     if (!p || typeof p.name !== 'string' || !p.name) bad('Part without name');
+    if (p.morph !== undefined && !(typeof p.morph === 'string' && scene.poses && scene.poses[p.morph])) {
+      bad(`${p.name}: morph names a pose from poses (${scene.poses ? Object.keys(scene.poses).join(', ') : 'the scene has no poses'})`);
+    }
     const okRef = (r) => Number.isInteger(r) || (typeof r === 'string' && /^\d+(\.\d+|:[A-Za-z][\w-]*)$/.test(r));
     if (!Array.isArray(p.els) || !p.els.length) bad(`${p.name}: els must be a non-empty array of element numbers`);
     if (!p.els.every(okRef)) bad(`${p.name}: els are element numbers (12), paths of a split element ("17.0") or cut pieces ("4:arm", "4:rest")`);
@@ -276,13 +285,41 @@ function centerline(elList, { from, to, via }) {
   return { pts, w: ws[Math.floor(ws.length / 2)] };
 }
 
-function compileScene(file, opts = {}) {
+// The pose's paths for an element of the scene: a whole element "N", or subpaths "N.j+N.k" of a split one. Points must match one to one.
+function posePaths(el, poseEls, part, pose) {
+  const from = el.from ?? String(el.i);
+  if (from.includes(':')) throw new Error(`${part}: morph on a cut piece (${from}) is not supported`);
+  const B = from.split('+').flatMap((tok) => {
+    const [n, j] = tok.split('.');
+    const pe = poseEls[Number(n)];
+    if (!pe) throw new Error(`pose ${pose}: no element ${n}`);
+    return j === undefined ? pe.paths : [pe.paths[Number(j)]];
+  });
+  const A = el.paths;
+  if (B.length !== A.length || B.some((x) => !x)) throw new Error(`pose ${pose}: element ${from} has ${B.length} paths, the SVG has ${A.length}`);
+  A.forEach((a, k) => {
+    if (a.v.length !== B[k].v.length) {
+      throw new Error(`pose ${pose}: element ${from}, path ${k} has ${B[k].v.length} points, the SVG has ${a.v.length} — move points, don't add or delete them (and keep the same start point)`);
+    }
+    if (!!a.c !== !!B[k].c) throw new Error(`pose ${pose}: element ${from}, path ${k} is ${B[k].c ? 'closed' : 'open'} in the pose and not in the SVG`);
+  });
+  return B;
+}
+
+// m 0 — the SVG, 1 — the pose; other values blend or extrapolate (−1 — the turn to the other side)
+function blendPaths(A, B, m) {
+  const mix = (a, b) => a.map((q, k) => [q[0] + (b[k][0] - q[0]) * m, q[1] + (b[k][1] - q[1]) * m]);
+  return A.map((a, k) => ({ c: a.c, v: mix(a.v, B[k].v), i: mix(a.i, B[k].i), o: mix(a.o, B[k].o) }));
+}
+
+function compileOnce(file, opts = {}) {
+  const file0 = file;
   const scene = JSON.parse(fs.readFileSync(file, 'utf8'));
   validateScene(scene);
   const svgFile = sceneSvg(file, scene.svg);
   const parsed = parseSvg(svgFile, { size: scene.size || 1200 });
   const { w, h, src, warnings } = parsed;
-  const cuts = applyCuts(parsed.els, scene.cuts);
+  const cuts = applyCuts(parsed.els, scene.cuts, opts.cutOv);
   const elIndex = (k, who) => {
     if (cuts.index.has(k)) return cuts.index.get(k);
     const own = [...cuts.index.keys()].filter((x) => x.startsWith(`${k.split(':')[0]}:`));
@@ -294,6 +331,22 @@ function compileScene(file, opts = {}) {
   const sp = applySplit(cuts.els, cut.split);
   const els = sp.els;
   const { fr, op } = scene;
+  // poses: the same drawing with its points moved (a 3D turn of a volume, an opened lid) — a part with "morph": "<pose>"
+  // blends its paths between the SVG (m 0) and the pose (m 1) by its m keys
+  const poseCache = {};
+  const loadPose = (name) => {
+    if (poseCache[name]) return poseCache[name];
+    const file = sceneSvg(file0, scene.poses[name]);
+    if (!fs.existsSync(file)) throw new Error(`pose ${name}: no file ${scene.poses[name]}`);
+    const ps = parseSvg(file, { size: scene.size || 1200 });
+    if (ps.src && src && (Math.abs(ps.src[0] - src[0]) > 0.5 || Math.abs(ps.src[1] - src[1]) > 0.5)) {
+      throw new Error(`pose ${name}: canvas ${ps.src.join('×')} differs from the SVG ${src.join('×')} — export both from the same artboard`);
+    }
+    if (ps.els.length !== parsed.els.length) {
+      throw new Error(`pose ${name}: ${ps.els.length} elements, the SVG has ${parsed.els.length} — the pose must be the same drawing with points moved (same layers, nothing added or removed)`);
+    }
+    return (poseCache[name] = ps.els);
+  };
   const start = opts.start ?? scene.start ?? 0;
   if (!(Number.isInteger(start) && start >= 0 && start < op)) throw new Error(`start must be a whole frame from 0 to op−1 (got ${start})`);
 
@@ -314,6 +367,7 @@ function compileScene(file, opts = {}) {
   for (const p of Object.values(parts)) {
     if (p.attach && p.parent) throw new Error(`${p.name}: attach and parent together — keep one`);
     if (p.bones && !(Array.isArray(p.bones.joints) && p.bones.joints.length >= 2)) throw new Error(`${p.name}: bones need at least 2 joints`);
+    if (p.bones && p.bones.mode !== undefined) throw new Error(`${p.name}: bones.mode is not supported (the curve bend is not in this engine) — remove it`);
     if (p.parent && !parts[p.parent]) throw new Error(`${p.name}: no parent ${p.parent}`);
     if (p.attach && !(parts[p.attach.part] && parts[p.attach.part].bones)) throw new Error(`${p.name}: ${p.attach.part} has no bones`);
     if (p.attach) {
@@ -360,11 +414,24 @@ function compileScene(file, opts = {}) {
       if (prop === 'p' && p.attach) throw new Error(`${p.name}: an attached part has no position motion of its own`);
       const m = mergeProp(list, rest[prop], op, prop === 'r' ? 360 : 0);
       jumps.push(...m.jumps.map((j) => ({ ...j, part: p.name, prop })));
-      merged[prop] = m.keys;
+      merged[prop] = resolveThrough(m.keys, op, { auto: scene.through !== false, rest: rest[prop] });
     }
     const abs = (prop, v) => (prop === 'p' ? [p.pivot[0] + v[0], p.pivot[1] + v[1], 0] : prop === 's' ? [v[0], v[1], 100] : v);
     for (const prop of ['p', 's', 'r', 'o']) {
       if (merged[prop]) L[prop] = anim(merged[prop].map(([t, v, e, arc]) => [t, abs(prop, v), e, arc]), prop === 'p');
+    }
+    if (merged.m && !p.morph) throw new Error(`${p.name}: m (morph) keys need "morph": "<pose>" on the part`);
+    if (merged.m) {
+      if (merged.bend) throw new Error(`${p.name}: morph and bend on one part are not supported — split the part`);
+      if (pinChain(p)) throw new Error(`${p.name}: morph doesn't work with pin (a pinned cut) on the part or its parents`);
+      if (p.backfill) throw new Error(`${p.name}: morph doesn't work with backfill`);
+      const pose = loadPose(p.morph);
+      const mk = anim(merged.m).k;
+      p.shapeKeys = Object.fromEntries(L.els.map((i) => {
+        const A = els[i].paths, B = posePaths(els[i], pose, p.name, p.morph);
+        return [i, mk.map((kf) => ({ t: kf.t, paths: blendPaths(A, B, kf.s[0]), o: kf.o, i: kf.i, h: kf.h }))];
+      }));
+      L.shapeKeys = p.shapeKeys;
     }
     if (merged.bend) {
       p.bendProp = anim(merged.bend);
@@ -443,7 +510,7 @@ function compileScene(file, opts = {}) {
         // poly: [[x, y], ...] instead of hull — a traced (concave) silhouette, where the convex hull would eat a neighbour (boot and ankle).
         if (!layers[mb.part]) throw new Error(`${o}: maskBy — no part ${mb.part}`);
         if (mb.lines) {
-          // lines: [{ from, to, via? }] — a tight mask on the part's own drawn lines (the Figma way): a pen stroke along each line's
+          // lines: [{ from, to, via? }] — a tight mask on the part's own drawn lines: a pen stroke along each line's
           // centre, its width, round ends where the line is cut. fill: true — plus the limb's inside, closed by a straight chord between
           // the ends (the limb covers what is behind it); without fill only the lines are cut. trim: { s, e } — keys in % of each line:
           // the ends slide along it (the line grows or shrinks as the limb moves).
@@ -551,6 +618,22 @@ function rotateLoop(inner, start) {
     assets: [{ id: 'loop', layers: inner.layers }],
     layers: [ref(1, -start, 0, op - start), ref(2, op - start, op - start, op)],
   };
+}
+
+// A cut that moves away from its neighbours reaches further under them (cut.js `ov`), by how far the two sides come apart:
+// the outline of the lower piece goes on under the moving one, so the line is not broken at the seam. A cut with its own `ov`
+// keeps it; `grow: false` in the options leaves every cut at the default.
+function compileScene(file, opts = {}) {
+  const r = compileOnce(file, opts);
+  if (opts.grow === false || !(r.model.seams || []).length) return r;
+  const { seamSpread } = require('../check/lint');
+  const need = {};
+  for (const { s, worst } of seamSpread(r.inner, r.model)) {
+    const own = (r.model.scene.cuts || []).find((c) => c.name === s.name);
+    if (own && own.ov !== undefined) continue;
+    if (worst && worst.d > OV - 0.5) need[s.name] = Math.min(MAX_OV, Math.ceil(worst.d + 2));
+  }
+  return Object.keys(need).length ? compileOnce(file, { ...opts, cutOv: need }) : r;
 }
 
 module.exports = { compileScene, mergeProp, rotateLoop, centerline };

@@ -123,6 +123,40 @@ function area(paths) {
   return Math.abs(total);
 }
 
+// Area folded over itself: per subpath, the grid cells (about 2500 over its box) where its winding number points
+// against the subpath's own orientation or is 2 or more. A tapered tip or a sliver that just touches itself gives
+// a few cells; a fold at a bend gives a wedge. Returns px².
+function foldArea(paths) {
+  let total = 0;
+  for (const sp of paths) {
+    const poly = outline(sp, 6);
+    if (poly.length < 3) continue;
+    let sa = 0, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let k = 0; k < poly.length; k++) {
+      const [xa, ya] = poly[k], [xb, yb] = poly[(k + 1) % poly.length];
+      sa += xa * yb - xb * ya;
+      x0 = Math.min(x0, xa); y0 = Math.min(y0, ya); x1 = Math.max(x1, xa); y1 = Math.max(y1, ya);
+    }
+    if (!sa) continue;
+    const sign = Math.sign(sa), cell = Math.max(1, Math.sqrt(((x1 - x0) * (y1 - y0)) / 2500));
+    let n = 0;
+    for (let y = y0 + cell / 2; y < y1; y += cell) {
+      for (let x = x0 + cell / 2; x < x1; x += cell) {
+        let w = 0;
+        for (let a = 0, b = poly.length - 1; a < poly.length; b = a++) {
+          const [xa, ya] = poly[a], [xb, yb] = poly[b];
+          if ((ya > y) === (yb > y)) continue;
+          const left = (xb - xa) * (y - ya) - (x - xa) * (yb - ya);
+          w += (yb > ya ? 1 : -1) * (left > 0 ? 1 : left < 0 ? -1 : 0) * -1;
+        }
+        if (w * sign < 0 || Math.abs(w) >= 2) n++;
+      }
+    }
+    total += n * cell * cell;
+  }
+  return total;
+}
+
 function bakeBend(paths, joints, bendProp, op, power = 4) {
   const frames = [];
   for (let t = 0; t <= op; t++) frames.push({ t, a: valueAt(bendProp, t) });
@@ -182,6 +216,6 @@ function bakeMap(paths, mapAt, op) {
 }
 
 module.exports = {
-  weights, pose, deformPoint, deformPaths, pointOnBone, boneAngle, area, bakeBend, outline, inside,
+  weights, pose, deformPoint, deformPaths, pointOnBone, boneAngle, area, foldArea, bakeBend, outline, inside,
   pinWeight, pinned, mapPaths, bakeMap,
 };
