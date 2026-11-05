@@ -384,7 +384,7 @@ are the installs described here, each after you agree.
 
 Point it at SVG illustrations and it returns looped animations: Lottie JSON, GIF and MOV without
 background, plus MP4 (HEVC with alpha) on macOS. The skill is a router over two skills and looks at
-each illustration to pick the path (you can force one path for a whole folder). Before it plans or
+each illustration to pick the path: it starts on the simple one and takes the complex path only on a concrete warning (limbs that must bend, a limb stuck to the body, a figure on hinges); you can force one path for a whole folder. Before it plans or
 builds anything it offers four plots as text and waits for your pick; a run you told to go without
 stops takes its own main plot.
 
