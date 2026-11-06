@@ -14,6 +14,11 @@ Not every part of the work is in the packaged skill. A part that lives only in t
 - **Tracing a PNG uses `vtracer`.** Smooth settings (about 4 to 9 times fewer nodes than the defaults, flat fills); `trace_png.py` takes a PNG with alpha and writes per-part SVG. `vtracer` is MIT; no copyleft tracer is used.
 - **The Python packages are pinned.** The `tools` command lists what is missing and prints one pip command with fixed versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest); it installs nothing. None of the packages is copyleft.
 
+### White check
+
+- **A scene of a style with a transparent ground is checked for paint the source does not have.** `white-check.js` finds opaque white (a body, a backing under a moving part, a glow), a fill or a raster of a colour or alpha the source does not have (a translucent wash turned opaque), a gradient where the source has none, and a frame 0 that is opaque where the source is empty. A matte layer and a hidden layer are skipped. It runs before the judge, and a finding goes to one fix round: the paint is replaced by an inverted matte.
+- **The judge and the sheet tool draw such a style on grey.** White on a transparent ground is invisible on a white sheet; `judge.js` writes `white.md` when the Lottie holds white paint, and `sheet.js --bg grey` renders any sheet on grey.
+
 ### Frame check
 
 - **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
