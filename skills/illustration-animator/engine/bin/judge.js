@@ -8,7 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const { loadTools } = require('../src/setup');
 const { compileScene } = require('../src/scene/compile');
-const { sheetFromLottie, sheetFromVideo, blurFrames, motionSheets, legSheet } = require('../src/render/sheet');
+const { sheetFromLottie, sheetFromVideo, blurFrames, motionSheets, legSheet, setBackground } = require('../src/render/sheet');
+const W = require('../src/check/white');
 const J = require('../src/verify/judge');
 const { loopFacts } = require('../src/check/loop');
 const { writePlaces } = require('../src/check/lines');
@@ -41,6 +42,8 @@ const styleDir = path.resolve(dirArg);
   const scenes = flag('--scenes') ? flag('--scenes').split(',') : all;
   const rules = J.layout(root).styles;
   const style = flag('--style') || J.styleOf(path.basename(styleDir), rules) || J.styleOf(scenes[0], rules) || path.basename(styleDir);
+  // a style without a paper colour: the judge sees the frames on grey, where a white body painted into a part shows
+  if (W.isPaperless(style)) setBackground('grey');
   const taken = [], refused = [];
   for (const s of scenes) {
     const c = J.claim(styleDir, s);
@@ -54,7 +57,9 @@ const styleDir = path.resolve(dirArg);
     await legSheet(lottie, inner, model, tools, path.join(out, 'legs.png'));
     fs.writeFileSync(path.join(out, 'loop.md'), loopFacts(inner, model));
     await writePlaces(inner, model, out);
-    taken.push({ scene: s, dir: out, deadline: c.deadline });
+    const white = W.isPaperless(style) ? W.lintLottie(lottie, null).filter((x) => x.hard) : [];
+    if (white.length) fs.writeFileSync(path.join(out, 'white.md'), [...white.map((x) => `- ${x.where}: ${x.what}`), '', W.HINT, ''].join('\n'));
+    taken.push({ scene: s, dir: out, deadline: c.deadline, ...(white.length ? { white: white.length } : {}) });
   }
   if (!taken.length) { console.log(JSON.stringify({ brief: null, scenes: [], refused }, null, 2)); return; }
   const brief = J.buildBrief({ root, styleDir, style, scenes: taken.map((t) => t.scene), makeSheet: (v, o) => sheetFromVideo(tools, v, o), exclude: (flag('--exclude') || '').split(',').filter(Boolean) });
