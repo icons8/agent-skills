@@ -72,9 +72,12 @@ async function compareFrame0(svgFile, lottie, tools, [W, H], { frame = 0, diffOu
   if (!/\swidth=/.test(head)) svg = svg.replace(/<svg\b/, `<svg width="${W}" height="${H}"`);
   const res = await withPage(tools, [lottie.w, lottie.h], async (page) => {
     await load(page, lottie);
-    return page.evaluate(async (svg, W, H, size, frame, down) => {
-      const w = Math.round(size / down), h = w;
+    return page.evaluate(async (svg, W, H, LW, LH, frame, down) => {
+      const w = Math.round(Math.max(LW, LH) / down), h = w;
+      // both sides are letterboxed into the square compare canvas by their own aspect: the SVG by its size, the Lottie by its canvas
+      // (a square Lottie from make.js fills it, a Lottie of the SVG's own proportions from the simple path sits in the middle)
       const k = w / Math.max(W, H), dx = (w - W * k) / 2, dy = (h - H * k) / 2;
+      const kb = w / Math.max(LW, LH), bx = (w - LW * kb) / 2, by = (h - LH * kb) / 2;
       const img = (src) => new Promise((resolve, reject) => {
         const i = new Image();
         const timer = setTimeout(() => reject(new Error('SVG did not load within 20 seconds')), 20000);
@@ -91,7 +94,7 @@ async function compareFrame0(svgFile, lottie, tools, [W, H], { frame = 0, diffOu
       // white and black backgrounds: a white element on transparency shows up on black, a black one on white
       const runOn = (bg) => {
         const [, xa] = canvas(bg); xa.drawImage(imgA, dx, dy, W * k, H * k);
-        const [, xb] = canvas(bg); xb.drawImage(imgB, 0, 0, w, h); // the same letterbox as the SVG: a canvas that is not square must not be stretched
+        const [, xb] = canvas(bg); xb.drawImage(imgB, bx, by, LW * kb, LH * kb);
         const A = xa.getImageData(0, 0, w, h).data, B = xb.getImageData(0, 0, w, h).data;
         const [dc, xd] = canvas(bg); const im = xd.createImageData(w, h);
         let sum = 0, bad = 0;
@@ -112,7 +115,7 @@ async function compareFrame0(svgFile, lottie, tools, [W, H], { frame = 0, diffOu
       const onWhite = runOn('#fff'), onBlack = runOn('#000');
       const worse = onBlack.badPixelsPct > onWhite.badPixelsPct ? onBlack : onWhite;
       return { ...worse, leak: onWhite.leak };
-    }, svg, W, H, lottie.w, frame, down);
+    }, svg, W, H, lottie.w, lottie.h, frame, down);
   });
   if (diffOut) fs.writeFileSync(diffOut, Buffer.from(res.diff.split(',')[1], 'base64'));
   return { meanDiff: res.meanDiff, badPixelsPct: res.badPixelsPct, bad: res.bad, badPts: res.pts, leakPts: res.leak, ok: res.badPixelsPct < 0.5 };

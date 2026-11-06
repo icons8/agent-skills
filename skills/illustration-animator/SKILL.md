@@ -13,27 +13,38 @@ Talk to the user in their language.
 
 ## Setup
 
-Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL.md` ("Setup": it installs nothing until the user agrees to its plan). The simple path also needs Python 3 with a few packages: `node "${CLAUDE_SKILL_DIR}/engine/bin/simple.js" tools` lists what is missing and prints the install commands for the user to run; it installs nothing itself. The build script of each simple scene is written by the model and runs as Python with the user's permissions, like any other command the agent runs.
+Once per machine, `engine/bin/setup.js` as described in `complex-animation/SKILL.md` ("Setup": it installs nothing until the user agrees to its plan). The simple path also needs Python 3 with a few packages: `node "${CLAUDE_SKILL_DIR}/engine/bin/simple.js" tools` lists what is missing and prints the install commands for the user to run; it installs nothing itself.
 
 ## Choosing the path
 
 Look at each illustration (open the SVG as a picture and list its parts) and choose the path for it. The user may force one path for the whole folder: then do not choose.
 
+**Simple first.** Start on `simple-animation/SKILL.md`. Take `complex-animation/SKILL.md` only when the picture shows one of these concrete warnings:
+
+- a person or an animal whose limbs, wings or tail have to bend or walk;
+- a limb or a hand stuck to the body in one outline, so that a part has to be cut out and the hidden part redrawn;
+- a figure assembled on hinges (arms and legs are separate shapes that meet the body), because the people gate of the complex path reads it.
+
+A picture with none of these is simple, however many parts it has. A person drawn as one whole piece (a bust, a mascot, a hand and an object as separate shapes) is simple too.
+
 | The illustration | Path |
 |---|---|
-| A whole object or a few of them: a bell, a clock, a phone, a ghost, a robot, a bust, a plant, a device with a hand-free action | `simple-animation/SKILL.md` |
-| A person or an animal with limbs that must bend or walk; a hand; a group of people | `complex-animation/SKILL.md` |
+| No warning from the list above: a whole object or a few of them (a bell, a clock, a phone, a ghost, a robot, a bust, a plant), a figure drawn as one whole piece, a hand with an object as separate shapes | `simple-animation/SKILL.md` |
+| A person or an animal with limbs that must bend or walk; a group of people | `complex-animation/SKILL.md` |
 | Any picture where a part has to be cut out of a fused outline and the hidden part redrawn | `complex-animation/SKILL.md` |
-| A set of illustrations of one style in a folder, to be analyzed and built as a batch | `complex-animation/SKILL.md` |
-| Unsure | Look at the picture again; still unsure - `complex-animation/SKILL.md` |
+| Unsure | Look at the picture again; no concrete warning from the list - `simple-animation/SKILL.md` |
 
-A scene of the simple path that fails its checks twice goes to the complex path. Read the SKILL.md of the chosen path and follow it; the two paths are never mixed within one scene.
+A folder is not a warning: choose the path for each illustration in it. A scene of the simple path that fails its checks twice goes to the complex path. Read the SKILL.md of the chosen path and follow it; the two paths are never mixed within one scene.
+
+## Plot choice
+
+Both paths start the same way: before the storyboard, the plan or any build, offer four plots as plain text - your main plot and three other variants, each a title and one or two sentences - and wait for the person to pick one. This holds for a complex scene too. Exception, a run without a person (a batch the user told to run without stops, an evaluation or regression run): do not wait; take your main plot and write the other three into the `Other plots:` block of the scene's plan (the story keeps only the intent).
 
 ## Hard rules
 
 1. **The motion comes from the object.** A loader ring rotates, a wheel turns, a door opens on its hinge; a pulse or floating never stands in for it. Tested: a round loader animated as a wave of swelling segments instead of one turn of the whole ring was sent back on review.
 2. **Nothing is delivered unseen.** Before every delivery look at the whole preview yourself; a loop that was not looked at is not handed over.
-3. **Faster, not slower.** Take the short end of every timing range. Tested: reviewers asked to speed animations up six times and never to slow one down.
+3. **Faster, not slower.** Take the short end of every timing range. Tested: in review, speeding up was asked for four scenes (a shield and a team collaboration scene in Black Chalk, a premium badge and an exit door in Organic; see their style rules) and slowing down never.
 
 ## When not to apply
 

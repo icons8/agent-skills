@@ -1,6 +1,6 @@
 import sys, math; sys.path.insert(0, __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)), '..', 'scripts'))
 from lot import *
-SRC = 'flashlight.svg'   # copy from assets/approved/
+SRC = 'flashlight.svg'   # the source SVG of this example (not shipped)
 P = load_paths(SRC); W, H = svg_size(SRC); OP = 120
 D = Doc('Flashlight check loop', OP, w=W, h=H)
 

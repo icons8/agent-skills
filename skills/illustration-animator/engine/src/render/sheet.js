@@ -1,4 +1,4 @@
-// For the visual judge: a 4×4 contact sheet on white and motion-blur frames, from a Lottie or a video; for a scene also
+// For the visual judge: a 4×4 contact sheet on white (grey for Tint, setBackground) and motion-blur frames, from a Lottie or a video; for a scene also
 // the first frame of the loop large, ghosts of the loop with the path of every moving part, and the speed of each part.
 const fs = require('fs');
 const os = require('os');
@@ -20,6 +20,11 @@ async function renderFrames(lottie, tools, opts) {
   return renderChrome(lottie, tools, opts);
 }
 
+// The background the frames are laid on. White by default; grey for a style without a paper colour (Tint): a white body painted
+// into a part is invisible on white and shows on grey. The speed chart keeps its own white.
+let BG = 'white';
+const GREY = '0x808080';
+const setBackground = (c) => { BG = c === 'grey' ? GREY : (c || 'white'); };
 const ff = (tools, args) => execFileSync(tools.ffmpeg, ['-y', '-loglevel', 'error', ...args]);
 const pick = (total, n) => [...Array(n).keys()].map((i) => Math.floor((i * total) / n));
 const tmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'animator-sheet-'));
@@ -27,7 +32,7 @@ const tmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'animator-sheet-'));
 // <dir>/f0000.png … f00NN.png → one sheet of n cells on white
 function tile(tools, dir, out, n) {
   const cols = Math.round(Math.sqrt(n)), cell = 1200 / cols;
-  ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', 'color=c=white:s=1200x1200',
+  ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=${BG}:s=1200x1200`,
     '-filter_complex', `[0:v]scale=${cell}:${cell},tile=${cols}x${cols}[t];[1:v][t]overlay=format=auto,format=rgb24`,
     '-frames:v', '1', out]);
   return out;
@@ -43,7 +48,7 @@ async function sheetFromLottie(lottie, tools, out, { n = 16 } = {}) {
 // A leg on the 16-frame sheet is a quarter of its size: which way a knee bends and where a foot points cannot be read there.
 function tileCrop(tools, dir, out, n, [x, y, w, h]) {
   const cw = 400, ch = Math.round((h * cw) / w), rows = Math.ceil(n / 4);
-  ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${4 * cw}x${rows * ch}`,
+  ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=${BG}:s=${4 * cw}x${rows * ch}`,
     '-filter_complex', `[0:v]crop=${w}:${h}:${x}:${y},scale=${cw}:${ch},drawbox=x=0:y=0:w=iw:h=ih:color=gray@0.6:t=2,tile=4x${rows}[t];[1:v][t]overlay=format=auto,format=rgb24`,
     '-frames:v', '1', out]);
   return out;
@@ -76,7 +81,7 @@ async function legSheet(lottie, inner, model, tools, out, { n = 16 } = {}) {
     // render on white first: the frames are transparent
     const white = tmpDir();
     try {
-      ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${lottie.w}x${lottie.h}:r=1`,
+      ff(tools, ['-framerate', '1', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=${BG}:s=${lottie.w}x${lottie.h}:r=1`,
         '-filter_complex', '[1:v][0:v]overlay=format=auto:shortest=1,format=rgb24', '-start_number', '0', path.join(white, 'f%04d.png')]);
       return tileCrop(tools, white, out, n, box);
     } finally { fs.rmSync(white, { recursive: true, force: true }); }
@@ -89,7 +94,7 @@ function legSheetFromVideo(tools, video, out, { n = 16, from = 0.5 } = {}) {
   try {
     const probe = JSON.parse(execFileSync(tools.ffprobe, ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,codec_name,r_frame_rate', '-of', 'json', video]).toString()).streams[0];
     const dec = { vp9: ['-c:v', 'libvpx-vp9'], vp8: ['-c:v', 'libvpx'] }[probe.codec_name] || [];
-    ff(tools, [...dec, '-i', video, '-f', 'lavfi', '-i', `color=c=white:s=${probe.width}x${probe.height}:r=${probe.r_frame_rate}`,
+    ff(tools, [...dec, '-i', video, '-f', 'lavfi', '-i', `color=c=${BG}:s=${probe.width}x${probe.height}:r=${probe.r_frame_rate}`,
       '-filter_complex', '[1:v][0:v]overlay=format=auto:shortest=1,format=rgb24', path.join(all, 'a%05d.png')]);
     const files = fs.readdirSync(all).sort();
     if (!files.length) throw new Error(`Video has no frames: ${video}`);
@@ -130,7 +135,7 @@ async function blurFrames(lottie, tools, outDir, { n = 4, span = 5 } = {}) {
     const dir = await renderFrames(lottie, tools, { frames });
     const file = path.join(outDir, `blur-${i + 1}.png`);
     try {
-      ff(tools, ['-framerate', '30', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${lottie.w}x${lottie.h}`,
+      ff(tools, ['-framerate', '30', '-i', path.join(dir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=${BG}:s=${lottie.w}x${lottie.h}`,
         '-filter_complex', `[0:v]tmix=frames=${span},select=eq(n\\,${span - 1}),setpts=PTS-STARTPTS[b];[1:v][b]overlay=format=auto:shortest=1,scale=1200:1200,format=rgb24`,
         '-frames:v', '1', file]);
     } finally {
@@ -179,7 +184,7 @@ function trackPoint(inner, p, t) {
 async function motionSheets(lottie, inner, model, tools, outDir) {
   const { w, h, op } = model;
   const start = (op - model.keyFrame) % op; // authoring frame shown at output frame 0
-  const onWhite = (src, out) => ff(tools, ['-i', src, '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
+  const onWhite = (src, out) => ff(tools, ['-i', src, '-f', 'lavfi', '-i', `color=c=${BG}:s=${w}x${h}`,
     '-filter_complex', '[1:v][0:v]overlay=format=auto,scale=1200:1200,format=rgb24', '-frames:v', '1', out]);
 
   const one = await renderFrames(lottie, tools, { frames: [lottie.ip] });
@@ -189,7 +194,7 @@ async function motionSheets(lottie, inner, model, tools, outDir) {
   const lastF = lottie.op - 1;
   const two = await renderFrames(lottie, tools, { frames: [lastF, lottie.ip] });
   try {
-    ff(tools, ['-i', path.join(two, 'f0000.png'), '-i', path.join(two, 'f0001.png'), '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
+    ff(tools, ['-i', path.join(two, 'f0000.png'), '-i', path.join(two, 'f0001.png'), '-f', 'lavfi', '-i', `color=c=${BG}:s=${w}x${h}`,
       '-filter_complex', '[2:v]split[w1][w2];[w1][0:v]overlay=format=auto[a];[w2][1:v]overlay=format=auto[b];[a]split[a1][a2];[b]split[b1][b2];[a2][b2]blend=all_mode=difference,negate[d];[a1][b1][d]hstack=inputs=3,scale=1800:-1,format=rgb24',
       '-frames:v', '1', path.join(outDir, 'seam.png')]);
   } finally { fs.rmSync(two, { recursive: true, force: true }); }
@@ -208,7 +213,7 @@ async function motionSheets(lottie, inner, model, tools, outDir) {
   const blend = path.join(ghostDir, 'blend.png'), lines = path.join(ghostDir, 'lines.png');
   try {
     // average of 16 frames on white: still parts stay solid, moving ones turn into ghosts
-    ff(tools, ['-framerate', '16', '-i', path.join(ghostDir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=white:s=${w}x${h}`,
+    ff(tools, ['-framerate', '16', '-i', path.join(ghostDir, 'f%04d.png'), '-f', 'lavfi', '-i', `color=c=${BG}:s=${w}x${h}`,
       '-filter_complex', '[1:v][0:v]overlay=format=auto:shortest=1,tmix=frames=16,select=eq(n\\,15),setpts=PTS-STARTPTS,format=rgb24',
       '-frames:v', '1', blend]);
     const prims = paths.flatMap((x) => {
@@ -251,4 +256,4 @@ async function motionSheets(lottie, inner, model, tools, outDir) {
   return ['first.png', 'seam.png', 'ghosts.png', 'speed.png'].map((f) => path.join(outDir, f));
 }
 
-module.exports = { sheetFromLottie, sheetFromVideo, blurFrames, motionSheets, legSheet, legSheetFromVideo };
+module.exports = { setBackground, GREY, sheetFromLottie, sheetFromVideo, blurFrames, motionSheets, legSheet, legSheetFromVideo };
