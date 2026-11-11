@@ -34,7 +34,8 @@ run = best = 0
 for d in diffs + diffs:
     run = run + 1 if d < 0.01 else 0; best = max(best, run)
 best = min(best, len(fs))
-print(f'longest fully still stretch: {best} frames ({best / json.load(open(a.json, encoding='utf-8'))["fr"]:.2f} s)'
+fr = json.load(open(a.json, encoding='utf-8'))['fr']
+print(f'longest fully still stretch: {best} frames ({best / fr:.2f} s)'
       + ('  <- too long, reads as frozen (keep <= ~12 f)' if best > 12 else ''))
 print(f'frames {len(fs)} | seam {seam:.2f} vs step {step:.2f} -> {"OK" if ok else "JUMP at loop point!"}')
 # frame-edge check: nothing may leave the comp. Skottie clips to the comp, so render a copy whose

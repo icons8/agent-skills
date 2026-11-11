@@ -5,6 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { DEPS } = require('../setup/deps');
 
 const ROOT = path.join(__dirname, '..', '..', '..');
 // the module's folder: `vendor/simple-animation` in the source tree, `simple-animation` in the packaged skill
@@ -40,8 +41,11 @@ const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelement
 
 // Detect only: installs nothing. Returns what is there and the commands the user may run.
 function detect({ python, nodeModules } = {}) {
+  // canvaskit-wasm is one of the engine's pinned npm packages: setup.js installs it into ~/.animator/deps
+  const own = path.join(DEPS, 'node_modules');
   const cfg = { ...loadConfig(), ...(python ? { python } : {}), ...(nodeModules ? { nodeModules } : {}) };
-  const py = [cfg.python, 'python', 'python3'].filter(Boolean).find((p) => { const r = run(p, ['-c', 'print(1)']); return !r.error && r.status === 0; });
+  if (!cfg.nodeModules && fs.existsSync(path.join(own, 'canvaskit-wasm', 'package.json'))) cfg.nodeModules = own;
+  const py = [cfg.python, 'python3', 'python'].filter(Boolean).find((p) => { const r = run(p, ['-c', 'print(1)']); return !r.error && r.status === 0; });
   const out = { python: py || null, nodeModules: cfg.nodeModules || null, missing: [], install: [], shim: true };
   if (!py) { out.missing.push('python 3'); return out; }
   const has = JSON.parse(run(py, ['-c', PROBE], { cwd: os.tmpdir() }).stdout || '{}');
@@ -49,7 +53,7 @@ function detect({ python, nodeModules } = {}) {
   const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless', resvg_py: 'resvg-py==0.5.0' }[m] || m)).filter((m) => !m.startsWith('python'));
   if (pip.length) out.install.push(`${py} -m pip install ${pip.join(' ')}`);
   const nm = cfg.nodeModules && fs.existsSync(path.join(cfg.nodeModules, 'canvaskit-wasm', 'package.json'));
-  if (!nm) { out.missing.push('canvaskit-wasm 0.41.1 (Skottie)'); out.install.push('npm i --prefix <folder> canvaskit-wasm@0.41.1   then: node engine/bin/simple.js tools --node-modules <folder>/node_modules'); out.nodeModules = null; }
+  if (!nm) { out.missing.push('canvaskit-wasm 0.41.1 (Skottie)'); out.install.push('node engine/bin/setup.js   (installs the engine\'s pinned npm packages, canvaskit-wasm included, into ~/.animator/deps)'); out.nodeModules = null; }
   return out;
 }
 
