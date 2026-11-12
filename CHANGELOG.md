@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
-## [0.7.1] — 2026-11-03
+## [0.7.1] — 2026-11-12
 
 `illustration-animator` gets a newer simple-animation module and asks for a plot before it builds.
 
@@ -22,6 +22,9 @@ The plugin version lives in four manifests that have to agree: `plugin.json`,
 - **`tools` shows whether `oxipng` is installed.** It is optional and is not counted as missing; the simple path runs the lossless PNG pass only when `oxipng` is there.
 - **The "Tested" note of the tempo rule names only reviews found in the style rules** (a shield and a team collaboration scene in Black Chalk, a premium badge and an exit door in Organic).
 - **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
+- **Setup runs `npm ci` in the deps folder.** On npm 11.19 (Node 26) `npm ci --prefix` failed with `EUSAGE`; the bug was in 0.6.0 and 0.7.0.
+- **`tools` picks a Python the pinned packages install on.** The pins have wheels for Python 3.11 to 3.14 only (3.15 has no numpy or scipy wheel, 3.10 and older fail the pins' `requires-python`). `tools` tries `python3`, then `python3.14` to `python3.11`, and reports what it found when none fits. README and the skill name the range.
+- **`vtracer` is optional.** Only `trace_png.py` needs it; `tools` lists it next to `oxipng` and no longer counts it as missing, so an upgrade from 0.7.0 does not stop the simple path.
 
 ### Known issues
 

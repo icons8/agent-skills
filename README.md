@@ -419,7 +419,7 @@ It does not need the MCP server or an Icons8 account. It needs Node.js; the firs
 - Network access to `https://mcp.icons8.com/mcp/`
 - An Icons8 account, signed in through the browser on first use
 - An Icons8 API key **only** where the client cannot do OAuth, or on CI
-- For `illustration-animator`: Node.js 22.12 or newer, and ffmpeg (its setup shows how to install it); the simple path also needs Python 3
+- For `illustration-animator`: Node.js 22.12 or newer, and ffmpeg (its setup shows how to install it); the simple path also needs Python 3.11 to 3.14 (the pinned packages have wheels for these versions only; `tools` picks a matching `python3.x` when the default one is older or newer)
 
 ## Support
 
