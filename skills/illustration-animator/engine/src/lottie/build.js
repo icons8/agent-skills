@@ -28,7 +28,8 @@ function shapeGroup(el, keys) {
   const sh = el.paths.map((p, j) => ({
     ty: 'sh',
     ks: keys
-      ? { a: 1, k: keys.map((kf, n) => ({ t: kf.t, s: [shape(kf.paths[j])], ...(n < keys.length - 1 ? LIN : {}) })) }
+      // baked keys (bones, pins) go frame by frame, linear; morph keys carry their own easing (o/i) or hold (h)
+      ? { a: 1, k: keys.map((kf, n) => ({ t: kf.t, s: [shape(kf.paths[j])], ...(n < keys.length - 1 ? (kf.h ? { h: 1 } : kf.o ? { o: kf.o, i: kf.i } : LIN) : {}) })) }
       : st(shape(p)),
   }));
   const op = st(r2(el.opacity * 100));

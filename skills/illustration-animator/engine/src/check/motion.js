@@ -121,6 +121,66 @@ function checkSpeed(lottie, model) {
   return out;
 }
 
+// Jitter: many short, small back-and-forth moves instead of one smooth rubbery swing ("shaky, like on bumps").
+// Per animated property (a component of position, rotation, scale, bend), sampled each frame: the series is cut into
+// swings between turning points (a turn counts after `hyst` px, so noise does not). A run of swings that are all
+// small (≤ `swing` px) and quick (≤ `gap` frames apart) is a tremble if it has ≥ `swings` swings, lasts longer than a
+// settle (LIMITS.snap), is irregular (largest swing ≥ `regular`× the smallest: an even wave — a flame, a waving arm — is
+// intended) and has a swing that grows (> `grow`× the one before: a settle spring only decays). Calibrated on the approved scenes
+// (none flagged, 2026-10-16); it flags only part of the scenes a reviewer called shaky, so it is a warning, not a failure.
+const JITTER = { hyst: 2, swing: 20, gap: 7, swings: 4, grow: 1.25, regular: 1.6 };
+
+// extremes of a series where it turns by at least h
+function turningPoints(v, h) {
+  const out = [];
+  let dir = 0, hi = { t: 0, v: v[0] }, lo = { t: 0, v: v[0] };
+  for (let t = 1; t < v.length; t++) {
+    if (dir >= 0 && v[t] > hi.v) hi = { t, v: v[t] };
+    if (dir <= 0 && v[t] < lo.v) lo = { t, v: v[t] };
+    if (dir === 0) {
+      if (v[t] - lo.v >= h) { out.push(lo); dir = 1; hi = { t, v: v[t] }; }
+      else if (hi.v - v[t] >= h) { out.push(hi); dir = -1; lo = { t, v: v[t] }; }
+    } else if (dir === 1) {
+      if (hi.v - v[t] >= h) { out.push(hi); dir = -1; lo = { t, v: v[t] }; }
+    } else if (v[t] - lo.v >= h) { out.push(lo); dir = 1; hi = { t, v: v[t] }; }
+  }
+  return out;
+}
+
+function checkJitter(lottie, model) {
+  const J = JITTER, out = [];
+  for (const x of props(lottie, model)) {
+    const comps = at(x, 0).length;
+    for (let c = 0; c < comps; c++) {
+      if (x.prop === 's' && c === 1) continue; // uniform scale: y repeats x
+      const series = [];
+      for (let t = 0; t <= model.op; t++) series.push(at(x, t)[c]);
+      const tp = turningPoints(series, J.hyst);
+      const sw = tp.slice(1).map((q, k) => ({ a: Math.abs(q.v - tp[k].v), g: q.t - tp[k].t, t: tp[k].t }));
+      const small = (s) => s.a <= J.swing && s.g <= J.gap;
+      let hit = null;
+      for (let i = 0; i < sw.length && !hit; i++) {
+        if (!small(sw[i])) continue;
+        let j = i;
+        while (j + 1 < sw.length && small(sw[j + 1])) j++;
+        const run = sw.slice(i, j + 1);
+        const span = run[run.length - 1].t + run[run.length - 1].g - run[0].t;
+        const amps = run.map((s) => s.a);
+        const grows = run.some((s, k) => k && s.a > J.grow * run[k - 1].a);
+        if (run.length >= J.swings && span > LIMITS.snap && grows && Math.max(...amps) >= J.regular * Math.min(...amps)) {
+          hit = { t: run[0].t, n: run.length, span, max: Math.max(...amps) };
+        }
+        i = j;
+      }
+      if (hit) {
+        out.push({ check: 'jitter', part: x.L.nm, frame: hit.t, detail: `${x.prop}: ${hit.n} small back-and-forth swings (up to ${hit.max.toFixed(0)} px) in ${hit.span} frames — a tremble, not one smooth swing (merge them into one swing with an overshoot, or calm the secondary motion)` });
+        break; // one finding per property
+      }
+    }
+  }
+  return out;
+}
+
 // Frame-to-frame speed of every property over the loop, px per frame: s[t] = |X(t+1) − X(t)|.
 // A step that starts or ends hidden is not seen: a symbol moved to its start while invisible has speed 0.
 function speedSeries(lottie, model) {
@@ -199,4 +259,4 @@ function videoEnergy(tools, video) {
   }
 }
 
-module.exports = { LIMITS, checkSpeed, speedSeries, bursts, ldlj, startRatio, runStats, videoEnergy };
+module.exports = { LIMITS, JITTER, checkSpeed, checkJitter, turningPoints, speedSeries, bursts, ldlj, startRatio, runStats, videoEnergy };

@@ -12,7 +12,7 @@ if (!args[0] || args.indexOf('--style') < 0 || !/^[a-z0-9-]+$/.test(style || '')
   process.exit(1);
 }
 const ROOT = path.join(__dirname, '..', '..');
-const profileFile = [path.join(ROOT, 'references', 'styles')]
+const profileFile = [path.join(ROOT, 'complex-animation', 'references', 'styles')]
   .map((d) => path.join(d, `${style}.json`)).find((f) => fs.existsSync(f));
 if (!profileFile) {
   console.log(JSON.stringify({ skipped: `no rhythm profile for style ${style}: rhythm is not scored` }, null, 2));
