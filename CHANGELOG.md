@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
-## [0.7.0] — 2026-11-11
+## [0.7.0] — 2026-11-12
 
 `illustration-animator` keeps its name and becomes a router over two skills: one for whole objects, one for people and fused outlines.
 
