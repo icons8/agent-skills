@@ -37,7 +37,22 @@ const run = (cmd, args, opt = {}) => spawnSync(cmd, args, { encoding: 'utf8', ma
 
 // what the python needs: the module's packages and resvg-py, which renders the SVGs. The module calls cairosvg;
 // the stand-in in shim/ answers that call over resvg, so cairosvg (LGPL) and its cairo library are never needed.
-const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelements\",\"numpy\",\"PIL\",\"scipy\",\"cv2\",\"resvg_py\"]\nprint(json.dumps({x:u.find_spec(x) is not None for x in m}))";
+const PROBE = "import importlib.util as u,json\nm=[\"svgpathtools\",\"svgelements\",\"numpy\",\"PIL\",\"scipy\",\"cv2\",\"resvg_py\",\"vtracer\"]\nprint(json.dumps({x:u.find_spec(x) is not None for x in m}))";
+
+// pip names at fixed versions: the packages are MIT, BSD, Apache or similar, none is copyleft (see the package notes).
+const PIP = { svgpathtools: 'svgpathtools==1.8.0', svgelements: 'svgelements==1.9.6', numpy: 'numpy==2.4.4', PIL: 'pillow==12.2.0', scipy: 'scipy==1.17.1', cv2: 'opencv-python-headless==4.13.0.92', resvg_py: 'resvg-py==0.5.0', vtracer: 'vtracer==0.6.15' };
+
+// The pinned wheels (numpy 2.4.4, scipy 1.17.1, resvg-py 0.5.0, pillow 12.2.0) exist for Python 3.11 to 3.14 only: older ones fail
+// on the pins' requires-python, 3.15 has no numpy or scipy wheel and pip falls back to a source build that fails. `tools` picks a
+// python in this range (python3.14 ... python3.11 are tried after the default) and says so when the machine has none.
+const PY_RANGE = { min: [3, 11], max: [3, 14] };
+const pyVersion = (cmd) => {
+  const r = run(cmd, ['-c', 'import sys;print("%d.%d" % sys.version_info[:2])']);
+  if (r.error || r.status !== 0) return null;
+  const v = (r.stdout || '').trim().split('.').map(Number);
+  return v.length === 2 && v.every(Number.isInteger) ? v : null;
+};
+const inRange = (v) => v[0] === 3 && v[1] >= PY_RANGE.min[1] && v[1] <= PY_RANGE.max[1];
 
 // Detect only: installs nothing. Returns what is there and the commands the user may run.
 function detect({ python, nodeModules } = {}) {
@@ -45,12 +60,25 @@ function detect({ python, nodeModules } = {}) {
   const own = path.join(DEPS, 'node_modules');
   const cfg = { ...loadConfig(), ...(python ? { python } : {}), ...(nodeModules ? { nodeModules } : {}) };
   if (!cfg.nodeModules && fs.existsSync(path.join(own, 'canvaskit-wasm', 'package.json'))) cfg.nodeModules = own;
-  const py = [cfg.python, 'python3', 'python'].filter(Boolean).find((p) => { const r = run(p, ['-c', 'print(1)']); return !r.error && r.status === 0; });
+  const found = [];
+  const py = [...new Set([cfg.python, 'python3', 'python3.14', 'python3.13', 'python3.12', 'python3.11', 'python'].filter(Boolean))]
+    .find((p) => { const v = pyVersion(p); if (v) found.push(`${p} ${v.join('.')}`); return v && inRange(v); });
   const out = { python: py || null, nodeModules: cfg.nodeModules || null, missing: [], install: [], shim: true };
-  if (!py) { out.missing.push('python 3'); return out; }
+  // oxipng is optional: only scripts/optimize_lottie.py (textured loops) uses it. Reported, never counted as missing, never installed.
+  const ox = run('oxipng', ['--version']);
+  out.oxipng = !ox.error && ox.status === 0 ? ((ox.stdout || '').trim().split('\n')[0] || 'found') : null;
+  if (!out.oxipng) out.optional = ['oxipng: not found. Only scripts/optimize_lottie.py needs it (textured loops); without it skip that step. The user installs it from its releases or a package manager.'];
+  if (!py) {
+    out.missing.push(`python ${PY_RANGE.min.join('.')} to ${PY_RANGE.max.join('.')}` + (found.length ? ` (found: ${found.join(', ')})` : ''));
+    out.pythonRange = `${PY_RANGE.min.join('.')}-${PY_RANGE.max.join('.')}`;
+    out.install.push(`install Python ${PY_RANGE.min.join('.')} to ${PY_RANGE.max.join('.')} (for example python3.13 from your package manager), then run tools again`);
+    return out;
+  }
   const has = JSON.parse(run(py, ['-c', PROBE], { cwd: os.tmpdir() }).stdout || '{}');
   for (const m of ['svgpathtools', 'svgelements', 'numpy', 'PIL', 'scipy', 'cv2', 'resvg_py']) if (!has[m]) out.missing.push(m);
-  const pip = out.missing.map((m) => ({ PIL: 'pillow', cv2: 'opencv-python-headless', resvg_py: 'resvg-py==0.5.0' }[m] || m)).filter((m) => !m.startsWith('python'));
+  // vtracer is optional like oxipng: only scripts/trace_png.py (a PNG to an SVG) uses it, so the rest of the simple path runs without it.
+  if (!has.vtracer) (out.optional = out.optional || []).push(`vtracer: not found. Only scripts/trace_png.py (tracing a PNG) needs it; install it with ${py} -m pip install ${PIP.vtracer} when that step is wanted.`);
+  const pip = out.missing.filter((m) => !m.startsWith('python')).map((m) => PIP[m] || m);
   if (pip.length) out.install.push(`${py} -m pip install ${pip.join(' ')}`);
   const nm = cfg.nodeModules && fs.existsSync(path.join(cfg.nodeModules, 'canvaskit-wasm', 'package.json'));
   if (!nm) { out.missing.push('canvaskit-wasm 0.41.1 (Skottie)'); out.install.push('node engine/bin/setup.js   (installs the engine\'s pinned npm packages, canvaskit-wasm included, into ~/.animator/deps)'); out.nodeModules = null; }
@@ -82,7 +110,7 @@ function bans(lottie) {
   return issues;
 }
 
-// the module has the entry points the adapter calls
+// The module must have the four entry points the adapter calls.
 function guard(dir = MODULE) {
   const e = entryPoints(dir);
   return e.ok ? { ok: true, warn: null, state: 'ok' } : { ok: false, error: `The module in ${dir} lacks ${e.missing.join(', ')}` };

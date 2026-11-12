@@ -5,6 +5,32 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
+## [0.7.1] — 2026-11-12
+
+`illustration-animator` gets a newer simple-animation module and asks for a plot before it builds.
+
+### Changed
+
+- **The simple path runs on a newer module.** It brings the art direction rules (an analysis pass before the story, a motion mode per picture, smooth curves, endings and textures), a lossless pass over the PNGs inside a Lottie (needs the `oxipng` program, which you install yourself), and PNG sequences with real alpha on request.
+- **Tracing a PNG uses `vtracer` (MIT).** No copyleft tracer is involved.
+- **The Python packages are listed with fixed versions.** The `tools` command still installs nothing: it prints one pip command with pinned versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest). README and THIRD_PARTY_NOTICES name `vtracer` and `oxipng`.
+- **The router starts on the simple path.** `illustration-animator` takes `complex-animation` only when the picture shows a concrete warning: a person or an animal whose limbs have to bend or walk, a limb stuck to the body in one outline, or a figure assembled on hinges. An unsure picture, a borderline one and a whole folder go to `simple-animation` first; a scene that fails its checks twice still moves to the complex path.
+- **Both paths offer four plots first.** Before a storyboard, a plan or a build, the skill shows your pick of four plots as text (its main plot and three variants, a title and one or two sentences each), including for a complex scene. A run you told to go without stops takes its main plot and writes the other three into the `Other plots:` block of the plan (the story keeps only the intent).
+
+### Fixed
+
+- **`tools` shows whether `oxipng` is installed.** It is optional and is not counted as missing; the simple path runs the lossless PNG pass only when `oxipng` is there.
+- **The "Tested" note of the tempo rule names only reviews found in the style rules** (a shield and a team collaboration scene in Black Chalk, a premium badge and an exit door in Organic).
+- **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
+- **Setup runs `npm ci` in the deps folder.** On npm 11.19 (Node 26) `npm ci --prefix` failed with `EUSAGE`; the bug was in 0.6.0 and 0.7.0.
+- **`tools` picks a Python the pinned packages install on.** The pins have wheels for Python 3.11 to 3.14 only (3.15 has no numpy or scipy wheel, 3.10 and older fail the pins' `requires-python`). `tools` tries `python3`, then `python3.14` to `python3.11`, and reports what it found when none fits. README and the skill name the range.
+- **`vtracer` is optional.** Only `trace_png.py` needs it; `tools` lists it next to `oxipng` and no longer counts it as missing, so an upgrade from 0.7.0 does not stop the simple path.
+
+### Known issues
+
+- **The router can send a figure to the simple path without the people gate** when the file name has no word for a person or people (the check reads the name, not the picture). Tell the skill which path to use if a figure was routed wrong.
+- **The router can detect a puppet on a head** in some one-colour chalk drawings, where the parts are not limbs.
+
 ## [0.7.0] — 2026-11-12
 
 `illustration-animator` keeps its name and becomes a router over two skills: one for whole objects, one for people and fused outlines.

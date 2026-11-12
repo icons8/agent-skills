@@ -1,4 +1,4 @@
-// usage: node engine/bin/sheet.js <scene.json | video> --out <dir> — sheet.png (+ blur-1..4.png, first.png, ghosts.png,
+// usage: node engine/bin/sheet.js <scene.json | video> --out <dir> [--bg grey] — sheet.png (+ blur-1..4.png, first.png, ghosts.png,
 // speed.png, legs.png, seam.png, places.png + places.md and loop.md for a scene)
 const fs = require('fs');
 const path = require('path');
@@ -6,17 +6,18 @@ const { loadTools } = require('../src/setup');
 const { compileScene } = require('../src/scene/compile');
 const { loopFacts } = require('../src/check/loop');
 const { writePlaces } = require('../src/check/lines');
-const { sheetFromLottie, sheetFromVideo, blurFrames, motionSheets, legSheet } = require('../src/render/sheet');
+const { sheetFromLottie, sheetFromVideo, blurFrames, motionSheets, legSheet, setBackground } = require('../src/render/sheet');
 
 const args = process.argv.slice(2);
 const i = args.indexOf('--out');
 if (!args[0] || i < 0) {
-  console.error('Usage: node engine/bin/sheet.js <scene.json | video> --out <folder>');
+  console.error('Usage: node engine/bin/sheet.js <scene.json | video> --out <folder> [--bg grey]');
   process.exit(1);
 }
 const src = path.resolve(args[0]);
 const out = path.resolve(args[i + 1]);
 fs.mkdirSync(out, { recursive: true });
+if (args.includes('--bg')) setBackground(args[args.indexOf('--bg') + 1]);   // grey for a style without a paper colour (Tint)
 
 (async () => {
   const tools = loadTools();
