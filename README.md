@@ -127,13 +127,21 @@ Using the community [`skills`](https://www.npmjs.com/package/skills) installer (
 skill, not the plugin/marketplace):
 
 ```
+npx skills add icons8/agent-skills
+```
+
+That installs all ten skills (also listed on [skills.sh](https://skills.sh)); pick one with
+`--skill icons8` and an agent with `-a claude-code`:
+
+```
 npx skills add icons8/agent-skills --skill icons8 -a claude-code
 # -a codex to target Codex instead, or '*' for every detected agent; add -g for a global install
 ```
 
-This route installs the skill alone, so no MCP server is registered — add it for your client following
-the [icons8-mcp README](https://github.com/icons8/icons8-mcp#pick-your-plan). Until you do, the skill
-has nothing to search and will say so.
+Neither command registers the MCP server: `npx skills add` installs skills alone, all ten or one.
+Add the server for your client following the
+[icons8-mcp README](https://github.com/icons8/icons8-mcp#pick-your-plan). Until you do, a skill that
+searches Icons8 has nothing to search and will say so.
 
 ## Pick your plan
 
