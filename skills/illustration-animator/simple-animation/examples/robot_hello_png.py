@@ -1,8 +1,8 @@
 import sys, math; sys.path.insert(0, __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)), '..', 'scripts'))
-# PNG source: python scripts/trace_png.py robot_hello.png robot.svg  -> robot.svg + wash_*.png + wash.json
+# PNG source: node ../engine/bin/simple.js run scripts/trace_png.py robot_hello.png robot.svg  -> robot.svg + wash_*.png + wash.json
 # (source PNG: robot_hello.png, not shipped)
 from lot import *
-SRC = 'robot.svg'                      # traced from robot.png (trace.py); outlines from here, washes from the PNG
+SRC = 'robot.svg'                      # traced from robot_hello.png (trace_png.py); outlines from here, washes from the PNG
 P = load_paths(SRC); W, H = svg_size(SRC); OP = 120
 D = Doc('Robot hello loop', OP, w=W, h=H)
 bump = lambda t, c, w: loop_bump(t, c, w, OP)
@@ -18,7 +18,7 @@ env = lambda t: ss((t - W0) / 8) * ss((W1 - t) / 10)
 wave = lambda t: env(t) * math.sin(2 * math.pi * (t - W0) / PER) if W0 <= t <= W1 else 0.0
 FL = lambda t: math.sin(2 * math.pi * t / 60)                       # float, 2 per loop
 
-# the watercolour wash is the PNG's own pixels (wash.py), embedded under each part's vector outline
+# the watercolour wash is the PNG's own pixels (wash_*.png and wash.json written by trace_png.py), embedded under each part's vector outline
 import json as _j
 WASH = _j.load(open('wash.json', encoding='utf-8'))
 def wash(nm, i, parent):

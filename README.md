@@ -377,7 +377,7 @@ listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md):
 | `scipy` | BSD-3-Clause | Masks and silhouettes |
 | `opencv-python-headless` | Apache-2.0 | Contours of masks |
 | `pillow` | MIT-CMU | Reading and writing PNG |
-| `vtracer==0.6.15` | MIT | Tracing a PNG into per-part SVG (`trace_png.py`) |
+| `vtracer==0.6.15` | MIT | Optional: tracing a PNG into per-part SVG (`trace_png.py`); the rest of the simple path runs without it |
 | `svgwrite` | MIT | Pulled in by `svgpathtools` |
 
 The module's scripts call the renderer by the name `cairosvg`; the skill answers that call with its
@@ -419,7 +419,7 @@ It does not need the MCP server or an Icons8 account. It needs Node.js; the firs
 - Network access to `https://mcp.icons8.com/mcp/`
 - An Icons8 account, signed in through the browser on first use
 - An Icons8 API key **only** where the client cannot do OAuth, or on CI
-- For `illustration-animator`: Node.js 22.12 or newer, and ffmpeg (its setup shows how to install it); the simple path also needs Python 3.11 to 3.14 (the pinned packages have wheels for these versions only; `tools` picks a matching `python3.x` when the default one is older or newer)
+- For `illustration-animator`: Node.js 22.12 or newer, and ffmpeg (its setup shows how to install it); the simple path also needs Python 3.11 to 3.14 (the pinned packages have wheels for these versions only; `tools` picks a matching `python3.x`, on Windows also through the `py` launcher, when the default one is older or newer; a Python outside the range that already has the packages keeps working)
 
 ## Support
 

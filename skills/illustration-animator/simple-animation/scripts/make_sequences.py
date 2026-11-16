@@ -9,9 +9,11 @@ outdir/<name>_gif/<name>_0000.png ...     same, but every textured image layer g
                                           empty space outside / inside outlines stay transparent, no light fringe) — so the semi-transparent
                                           texture is baked onto white and survives GIF's 1-bit transparency.
 Layers whose name matches --skip (default 'lit': overlay copies of a base layer) get no underlay of their own.
+Run it through the skill, which puts the renderer on the node path:
+    node <skill>/engine/bin/simple.js run <skill>/simple-animation/scripts/make_sequences.py name_loop.json outdir
 Needs: numpy, opencv-python-headless, pillow, node + canvaskit (see the tools command of the skill).
 """
-import argparse, base64, copy, io, json, os, re, subprocess, sys
+import argparse, base64, copy, io, json, os, re, subprocess, sys, tempfile
 import numpy as np, cv2
 from PIL import Image
 
@@ -40,7 +42,7 @@ def white_underlay_asset(asset, lo=0.30, rim=1, max_hole=3000):
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
 def with_white_underlay(doc, skip_re):
-    d = copy.deepcopy(doc); assets = {a['id']: a for a in d['assets']}
+    d = copy.deepcopy(doc); assets = {a['id']: a for a in d.get('assets', [])}
     used = {l['ind'] for l in d['layers']}; nxt = max(used) + 1; new_assets = {}; out = []
     def process(layers):
         nonlocal nxt
@@ -56,7 +58,7 @@ def with_white_underlay(doc, skip_re):
                 u['ks']['o'] = copy.deepcopy(l['ks']['o'])
                 res.append(u)       # directly below the textured layer (children of it keep following the original)
         return res
-    d['layers'] = process(d['layers']); d['assets'] = d['assets'] + list(new_assets.values())
+    d['layers'] = process(d['layers']); d['assets'] = d.get('assets', []) + list(new_assets.values())
     return d
 
 def render(json_path, outdir, width, frames):
@@ -70,13 +72,14 @@ def main():
     a = ap.parse_args()
     name = os.path.basename(a.json).replace('.json', '')
     doc = json.load(open(a.json, encoding='utf-8')); frames = a.frames.split(',') if a.frames != 'all' else ['all']
-    tmp = os.path.join(a.outdir, '_tmp'); os.makedirs(tmp, exist_ok=True)
-    wj = os.path.join(tmp, name + '_white.json'); json.dump(with_white_underlay(doc, a.skip), open(wj, 'w', encoding='utf-8', newline=''), separators=(',', ':'))
-    for kind, src in (('alpha', a.json), ('gif', wj)):
-        d = os.path.join(a.outdir, f'{name}_{kind}'); render(src, d, a.width, frames)
-        for f in sorted(os.listdir(d)):                       # f012.png -> name_0012.png
-            m = re.match(r'f(\d+)\.png', f)
-            if m: os.replace(os.path.join(d, f), os.path.join(d, f'{name}_{int(m.group(1)):04d}.png'))
+    with tempfile.TemporaryDirectory() as tmp:               # the white-underlay copy lives only while it renders
+        wj = os.path.join(tmp, name + '_white.json')
+        with open(wj, 'w', encoding='utf-8', newline='') as fh: json.dump(with_white_underlay(doc, a.skip), fh, separators=(',', ':'))
+        for kind, src in (('alpha', a.json), ('gif', wj)):
+            d = os.path.join(a.outdir, f'{name}_{kind}'); render(src, d, a.width, frames)
+            for f in sorted(os.listdir(d)):                   # f012.png -> name_0012.png
+                m = re.match(r'f(\d+)\.png', f)
+                if m: os.replace(os.path.join(d, f), os.path.join(d, f'{name}_{int(m.group(1)):04d}.png'))
     print('done ->', a.outdir)
 
 if __name__ == '__main__':

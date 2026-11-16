@@ -24,7 +24,13 @@ async function renderFrames(lottie, tools, opts) {
 // into a part is invisible on white and shows on grey. The speed chart keeps its own white.
 let BG = 'white';
 const GREY = '0x808080';
-const setBackground = (c) => { BG = c === 'grey' ? GREY : (c || 'white'); };
+// The value goes into an ffmpeg filter string, so only a known name or a hex colour is taken.
+const setBackground = (c) => {
+  const v = String(c || 'white').trim();
+  if (v === 'grey' || v === 'gray') BG = GREY;
+  else if (/^(?:white|black|#[0-9a-fA-F]{6}|0x[0-9a-fA-F]{6})$/.test(v)) BG = v;
+  else throw new Error(`--bg ${v}: use grey, white, black or a hex colour (#RRGGBB)`);
+};
 const ff = (tools, args) => execFileSync(tools.ffmpeg, ['-y', '-loglevel', 'error', ...args]);
 const pick = (total, n) => [...Array(n).keys()].map((i) => Math.floor((i * total) / n));
 const tmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'animator-sheet-'));

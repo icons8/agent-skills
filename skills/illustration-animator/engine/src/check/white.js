@@ -6,12 +6,14 @@
 //   lintLottie(lottie, source)   no render: fills, strokes and solid layers, raster assets
 //   checkFrames(files, source)   transparent PNG frames of the Lottie (what the hand-over shows), frame 0 against the source PNG
 // source = sourceInfo(<svg|png>) — what colours the source has; null/undefined = the Tint pair of inks.
+// Which styles have a transparent ground is not in the package's style rules: judge.js takes --paperless for any such style;
+// a style named Tint (a style of the source tree, not shipped) is recognised by its name.
 const fs = require('fs');
 const zlib = require('zlib');
 
-const PAPERLESS_STYLES = new Set(['tint']);   // styles whose paper is transparent: no white anywhere, grey sheets for the judge
+const PAPERLESS_STYLES = new Set(['tint']);   // styles known by name to have transparent paper (judge.js --paperless for any other)
 const isPaperless = (style) => PAPERLESS_STYLES.has(String(style || '').toLowerCase());
-const INK = ['#0e43b3', '#089eff'];       // DARK and LIGHT of tools/raster-source/rs.py: the only two colours a Tint source has
+const INK = ['#0e43b3', '#089eff'];       // the dark and the light ink of the Tint style: the only two colours a Tint source has
 const WHITE_FRAC = 0.0002;                // a frame: more than ~300 px of 1200x1200 is a finding (the analyst's threshold)
 const RASTER_FRAC = 0.001;                // a raster asset: more than 0.1 % of its pixels
 const ALPHA_MIN = 25;                     // a semi-transparent white glow is white too (the watercolour keeps its blue RGB at any alpha)
@@ -19,7 +21,7 @@ const WHITE_MIN = 235;                    // min(R,G,B) of white
 const PALE_MIN = 140;                     // Tint inks are dark (min RGB ~11) and saturated blue (~8) at ANY alpha: an OPAQUE pixel above this is paper colour
 const SOLID_ALPHA = 200;
 
-// ---- PNG: 8/16 bit, grey / RGB / palette / grey+alpha / RGBA, not interlaced → RGBA bytes ----
+// ---- PNG: grey and palette at 1/2/4/8 bit (oxipng often writes these), all colour types at 8/16 bit, not interlaced → RGBA bytes ----
 function decodePng(buf) {
   if (buf.length < 33 || buf.readUInt32BE(0) !== 0x89504e47) throw new Error('not a PNG');
   let pos = 8, w = 0, h = 0, depth = 8, type = 6, interlace = 0, plte = null, trns = null;
@@ -34,10 +36,12 @@ function decodePng(buf) {
     pos += 12 + len;
   }
   if (interlace) throw new Error('interlaced PNG is not supported');
-  if (depth !== 8 && depth !== 16) throw new Error(`PNG bit depth ${depth} is not supported`);
   const ch = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[type];
   if (!ch) throw new Error(`PNG colour type ${type} is not supported`);
-  const bpp = ch * (depth / 8), stride = w * bpp;
+  const sub8 = depth < 8 && (type === 0 || type === 3) && [1, 2, 4].includes(depth);
+  if (!sub8 && depth !== 8 && depth !== 16) throw new Error(`PNG bit depth ${depth} is not supported for colour type ${type}`);
+  // bytes per pixel for the filters (at least 1) and bytes per row
+  const bpp = Math.max(1, (ch * depth) >> 3), stride = Math.ceil((w * ch * depth) / 8);
   const raw = zlib.inflateSync(Buffer.concat(idat));
   const px = Buffer.alloc(h * stride);
   for (let y = 0; y < h; y++) {
@@ -50,9 +54,18 @@ function decodePng(buf) {
       px[dst + x] = v & 255;
     }
   }
-  const out = new Uint8Array(w * h * 4), step = depth / 8;
+  const out = new Uint8Array(w * h * 4), step = Math.max(1, depth / 8);
+  const top = (1 << depth) - 1;
   for (let i = 0; i < w * h; i++) {
     const o = i * ch * step, q = i * 4;
+    if (sub8) {
+      // a sample of 1, 2 or 4 bits, packed from the high bit of each row's bytes
+      const x = i % w, y = (i - x) / w, bit = x * depth;
+      const v = (px[y * stride + (bit >> 3)] >> (8 - depth - (bit & 7))) & top;
+      if (type === 0) { out[q] = out[q + 1] = out[q + 2] = Math.round((v * 255) / top); out[q + 3] = 255; }
+      else { out[q] = plte[v * 3]; out[q + 1] = plte[v * 3 + 1]; out[q + 2] = plte[v * 3 + 2]; out[q + 3] = trns && v < trns.length ? trns[v] : 255; }
+      continue;
+    }
     const g = (k) => px[o + k * step];            // 16 bit: the high byte
     if (type === 6) { out[q] = g(0); out[q + 1] = g(1); out[q + 2] = g(2); out[q + 3] = g(3); }
     else if (type === 2) { out[q] = g(0); out[q + 1] = g(1); out[q + 2] = g(2); out[q + 3] = 255; }
@@ -152,7 +165,10 @@ function lintLottie(lottie, source) {
     const users = all.filter((L) => L.refId === a.id);
     if (users.length && users.every((L) => L.td === 1 || L.hd)) continue;   // only a matte uses it
     let img;
-    try { img = decodePng(Buffer.from(a.p.split(',', 2)[1], 'base64')); } catch (e) { continue; }
+    try { img = decodePng(Buffer.from(a.p.split(',', 2)[1], 'base64')); } catch (e) {
+      found.push({ where: users.map((L) => L.nm).join(',') || a.id, what: `raster piece not checked: ${e.message}`, hard: false });
+      continue;
+    }
     let n = 0;
     for (let i = 0; i < img.w * img.h; i++) { const q = i * 4; if (isWhite(img.data, q, lim)) n++; }
     if (n / (img.w * img.h) > RASTER_FRAC) found.push({ where: users.map((L) => L.nm).join(',') || a.id, what: `raster piece has ${(100 * n / (img.w * img.h)).toFixed(1)}% painted-in white or opaque pale pixels`, hard: true });

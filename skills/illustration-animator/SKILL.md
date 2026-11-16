@@ -38,7 +38,7 @@ A folder is not a warning: choose the path for each illustration in it. A scene 
 
 ## Plot choice
 
-Both paths start the same way: before the storyboard, the plan or any build, offer four plots as plain text - your main plot and three other variants, each a title and one or two sentences - and wait for the person to pick one. This holds for a complex scene too. Exception, a run without a person (a batch the user told to run without stops, an evaluation or regression run): do not wait; take your main plot and write the other three into the `Other plots:` block of the scene's plan (the story keeps only the intent).
+Both paths start the same way: before the storyboard, the plan or any build, offer four plots as plain text - your main plot and three other variants, each a title and one or two sentences - and wait for the person to pick one. This holds for a complex scene too. Exception, a run without a person (a batch the user told to run without stops, an evaluation or regression run): do not wait; take your main plot and write the other three into an `Other plots:` block: in the scene's plan on the complex path (the story keeps only the intent), in the scene's note on the simple path, which has no plan.
 
 ## Hard rules
 

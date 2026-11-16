@@ -62,7 +62,7 @@ What's wrong: <in plain words>
 What was tried: <1–2 lines>
 ```
 
-**Grey for a transparent ground.** For a style with no paper colour every picture a person or the judge looks at is rendered on grey, not white: `judge.js prepare` draws its sheets on grey by itself and writes `white.md` into the scene folder when the Lottie holds white paint; `sheet.js --bg grey` does the same; a preview made for a person is rendered on grey too. A white body is invisible on a white sheet.
+**Grey for a transparent ground.** For a style with no paper colour every picture a person or the judge looks at is rendered on grey, not white: `judge.js prepare ... --paperless` draws its sheets on grey and writes `white.md` into the scene folder when the Lottie holds white paint (pass `--paperless` for every such style; only a style named Tint is known without it); `sheet.js --bg grey` does the same; a preview made for a person is rendered on grey too. A white body is invisible on a white sheet.
 
 ## 4. Lessons
 

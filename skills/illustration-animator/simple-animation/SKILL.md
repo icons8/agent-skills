@@ -10,7 +10,7 @@ to describe the motion, check the frames, or fix anything themselves.
 
 ## What "done" looks like
 
-For each SVG: `<plot>_loop.json` (Lottie, transparent, canvas 1200×1200 (art scaled uniformly to fit and centred, not the raw viewBox), 30 fps,
+For each SVG: `<plot>_loop.json` (Lottie, transparent, the canvas of the SVG's own size: `W, H = svg_size(svg)` and `Doc(..., w=W, h=H)` as in every example, so frame 0 lines up with the SVG; the `Doc` default of 1500×1500 is only for a scene without an SVG; for a textured loop `optimize_lottie.py` shrinks a canvas above 1200 px), 30 fps,
 3–8 s unless asked otherwise) + `<plot>_loop_preview.gif`, and a short note per file: the
 plot in 2–4 sentences and anything they should know (e.g. masks used). Layers named
 sensibly (`Bell`, `Bubble`, `Arm L upper`…), parented where it's a rig, main accent colour
@@ -56,7 +56,7 @@ let the answers shape the story. They win over anything below.
 Ask: what does this object *do*? A bell rings, a megaphone shouts, a loader runs, a teacher
 explains. Build one small story: setup → action → hold → reset. One hero motion, one or two
 supporting, the rest still or barely breathing. Duration 3–8 s. If the user asked you to
-invent it, tell them the plot in a few lines. Send the user 4 plots as text (your main one + 3 variants, a title and 1-2 sentences each) and wait for their choice (maybe with edits) BEFORE building. Exception: a run without a person (an eval, a batch where the user said to go without stopping) - take your main plot, build it, and write the other 3 into the note of the scene. Pick patterns from `references/motion-recipes.md`
+invent it, tell them the plot in a few lines. Send the user 4 plots as text (your main one + 3 variants, a title and 1-2 sentences each) and wait for their choice (maybe with edits) BEFORE building. Exception: a run without a person (an eval, a batch where the user said to go without stopping) - take your main plot, build it, and write the other 3 into an `Other plots:` block of the scene's note (the simple path has no plan; on the complex path the same block goes into the plan). Pick patterns from `references/motion-recipes.md`
 (read it the first time in a session).
 
 ### 4. Build with `scripts/lot.py`
@@ -116,8 +116,8 @@ but keep a consistent house style (30 fps, similar energy, same easing family). 
 - `scripts/lot.py` - loader, groups, keyframe helpers (`anim`, `sine`, `bob`, `wrap_keys`,
   `wipe_mask`), occlusion (`silhouette`, `matte_layer`, `set_matte`), physics (`sample`, `pendulum`), splitting merged art (`ink_mask`, `mask_to_paths`, `mask_group`), reveals (`wipe_mask`, `axis_reveal`), path bending (`deform_group`, `bend_warp`, `motion_frames`), `Doc` builder (+ `Doc.image_layer` for embedded raster textures; semi-transparent fills keep their opacity).
 - `scripts/inspect_svg.py`, `scripts/check.py`, `scripts/render.js` - inspection, verification, Skottie render.
-- `scripts/make_sequences.py` - export PNG sequences: `_alpha` (real transparency) and `_gif` (white underlay under textured image layers only, for GIF). Run only when the user asks for sequences.
-- `node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/optimize_lottie.py" in.json out.json --verify` (needs the oxipng program, which the user installs) - lossless recompression of embedded PNGs (oxipng) plus tidy numbers; same pixels, about 30% lighter. If oxipng is installed (the `tools` command shows it), run it on every textured Lottie before delivery; without oxipng skip this step; keep the unoptimized original aside.
+- `node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/make_sequences.py" name_loop.json <outdir>` - export PNG sequences: `_alpha` (real transparency) and `_gif` (white underlay under textured image layers only, for GIF). Run only when the user asks for sequences, and always through `simple.js run`: it gives the renderer its node modules.
+- `node "${CLAUDE_SKILL_DIR}/../engine/bin/simple.js" run "${CLAUDE_SKILL_DIR}/scripts/optimize_lottie.py" in.json out.json --verify` (needs the oxipng program, which the user installs) - lossless recompression of embedded PNGs (oxipng), redundant keys dropped and tidy numbers, about 30% lighter. A canvas above 1200 px is first shrunk to 1200 and its textures resampled, which does change pixels (`--no-fit` keeps the canvas); `--lossy` also thins linear keys within a hair of a straight line. If oxipng is installed (the `tools` command shows it), run it on every textured Lottie before delivery; without oxipng skip this step; keep the unoptimized original aside.
 - `scripts/trace_png.py` - PNG with alpha → per-part SVG + texture washes (traced with the vtracer package; run it as in step 1b).
 - `references/style-notes.md` - the art director's rules (read every time).
 - `references/motion-recipes.md` - timing/easing recipes for common illustration beats.

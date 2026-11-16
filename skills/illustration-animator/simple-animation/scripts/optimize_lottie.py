@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""optimize_lottie.py — make a Lottie lighter without changing a single rendered pixel.
+"""optimize_lottie.py — make a Lottie lighter.
 
-    python optimize_lottie.py in.json out.json [--verify]
+    python optimize_lottie.py in.json out.json [--no-fit] [--lossy] [--verify]
 
-  1. every embedded PNG is recompressed losslessly with oxipng (max level + zopfli; the oxipng program),
-     then checked pixel-for-pixel against the original (aborts if any pixel differs);
-  2. keyframes that repeat the same value as both neighbours are removed (first/last of every hold stay);
-  3. canvas larger than 1200 px is shrunk to 1200 (textures resampled, one root null; --no-fit to skip);
+  1. canvas larger than 1200 px is shrunk to 1200 (one root null scales the comp; the textures are RESAMPLED with LANCZOS,
+     so this step changes pixels). --no-fit skips it; a canvas of 1200 px or less is left as it is;
+  2. every embedded PNG is recompressed losslessly with oxipng (max level + zopfli; the oxipng program),
+     then checked pixel-for-pixel against the PNG it replaces (aborts if any pixel differs);
+  3. keyframes that repeat the same value as both neighbours are removed (first/last of every hold stay);
   4. numbers that are whole (12.0) are written as ints, no spaces in the JSON.
+Steps 2-4 change no rendered pixel. --lossy also drops linearly eased keyframes that lie within a hair of the straight line
+between their neighbours (shape points within 0.05 px, numbers within 0.02): invisible, but not exact.
 --verify renders both files with Skottie (run through the skill, which finds the renderer) and reports the max frame difference.
 """
 import sys, json, base64, io, subprocess, tempfile, os, shutil
@@ -92,9 +95,11 @@ def fit_canvas(j, size=1200):
         im = Image.open(io.BytesIO(base64.b64decode(a['p'].split(',', 1)[1]))).convert('RGBA'); arr = np.array(im)
         nw, nh = max(1, round(im.width * k)), max(1, round(im.height * k))
         vis = arr[..., 3] > 0
-        if len(np.unique(arr[..., :3][vis].reshape(-1, 3), axis=0)) <= 2:      # constant colour: grain lives in alpha
+        cols = np.unique(arr[..., :3][vis].reshape(-1, 3), axis=0)
+        if len(cols) <= 1:                                                      # one colour (or nothing drawn): grain lives in alpha
             al = np.array(Image.fromarray(arr[..., 3]).resize((nw, nh), Image.LANCZOS))
-            out = np.zeros((nh, nw, 4), np.uint8); out[..., :3] = arr[..., :3][vis][0]; out[..., 3] = al
+            out = np.zeros((nh, nw, 4), np.uint8); out[..., 3] = al
+            if len(cols): out[..., :3] = cols[0]
         else:                                                                   # general case: premultiplied resize
             f = arr.astype(np.float32); f[..., :3] *= f[..., 3:] / 255
             r = np.array(Image.fromarray(f.astype(np.uint8)).resize((nw, nh), Image.LANCZOS)).astype(np.float32)

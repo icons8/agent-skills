@@ -1,5 +1,6 @@
 // The judge's brief and its one round per scene.
-//   node engine/bin/judge.js prepare <style folder> [--scenes a,b] [--exclude x,y] [--root <project root>]
+//   node engine/bin/judge.js prepare <style folder> [--scenes a,b] [--exclude x,y] [--root <project root>] [--paperless]
+//     --paperless: the style has a transparent ground (no paper colour): grey sheets and white.md (a style named Tint is known by itself)
 //     claims the scene's judge round, draws its sheets, writes <style folder>/.verify/judge-brief.md (style rules, judge
 //     examples, the closest rated clips) and prints it as JSON; a scene whose round is already used is listed as refused
 //   node engine/bin/judge.js record <style folder> <scene> --answer <judge answer.json> [--usage <output units>]
@@ -18,7 +19,7 @@ const args = process.argv.slice(2);
 const flag = (n) => { const i = args.indexOf(n); return i < 0 ? null : args[i + 1]; };
 const [cmd, dirArg, sceneArg] = args;
 if (!['prepare', 'record'].includes(cmd) || !dirArg) {
-  console.error('Usage: node engine/bin/judge.js prepare <style folder> [--scenes a,b] | record <style folder> <scene> --answer <file> [--usage N]');
+  console.error('Usage: node engine/bin/judge.js prepare <style folder> [--scenes a,b] [--paperless] | record <style folder> <scene> --answer <file> [--usage N]');
   process.exit(1);
 }
 const styleDir = path.resolve(dirArg);
@@ -43,7 +44,8 @@ const styleDir = path.resolve(dirArg);
   const rules = J.layout(root).styles;
   const style = flag('--style') || J.styleOf(path.basename(styleDir), rules) || J.styleOf(scenes[0], rules) || path.basename(styleDir);
   // a style without a paper colour: the judge sees the frames on grey, where a white body painted into a part shows
-  if (W.isPaperless(style)) setBackground('grey');
+  const paperless = args.includes('--paperless') || W.isPaperless(style);
+  if (paperless) setBackground('grey');
   const taken = [], refused = [];
   for (const s of scenes) {
     const c = J.claim(styleDir, s);
@@ -57,7 +59,7 @@ const styleDir = path.resolve(dirArg);
     await legSheet(lottie, inner, model, tools, path.join(out, 'legs.png'));
     fs.writeFileSync(path.join(out, 'loop.md'), loopFacts(inner, model));
     await writePlaces(inner, model, out);
-    const white = W.isPaperless(style) ? W.lintLottie(lottie, null).filter((x) => x.hard) : [];
+    const white = paperless ? W.lintLottie(lottie, null).filter((x) => x.hard) : [];
     if (white.length) fs.writeFileSync(path.join(out, 'white.md'), [...white.map((x) => `- ${x.where}: ${x.what}`), '', W.HINT, ''].join('\n'));
     taken.push({ scene: s, dir: out, deadline: c.deadline, ...(white.length ? { white: white.length } : {}) });
   }

@@ -17,7 +17,8 @@ if (!args[0] || i < 0) {
 const src = path.resolve(args[0]);
 const out = path.resolve(args[i + 1]);
 fs.mkdirSync(out, { recursive: true });
-if (args.includes('--bg')) setBackground(args[args.indexOf('--bg') + 1]);   // grey for a style without a paper colour (Tint)
+// grey for a style without a paper colour; an unknown value stops here (it would go into an ffmpeg filter)
+if (args.includes('--bg')) { try { setBackground(args[args.indexOf('--bg') + 1]); } catch (e) { console.error(e.message); process.exit(1); } }
 
 (async () => {
   const tools = loadTools();

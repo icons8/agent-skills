@@ -31,12 +31,16 @@ rgb, al = A[..., :3].astype(float), A[..., 3].astype(int)
 H, W = al.shape
 
 def kmeans(X, k, it=20):
-    rng = np.random.default_rng(0)
-    C = X[rng.choice(len(X), k, replace=False)]
+    # seeds are distinct COLOURS, not distinct pixels: flat art has few colours over many pixels, and k never exceeds
+    # how many colours there are (a drawing of fewer than k pixels or colours included)
+    U = np.unique(X, axis=0)
+    k = max(1, min(k, len(U)))
+    C = U[np.random.default_rng(0).choice(len(U), k, replace=False)]
     for _ in range(it):
         lab = ((X[:, None] - C[None]) ** 2).sum(-1).argmin(1)
         C = np.array([X[lab == j].mean(0) if (lab == j).any() else C[j] for j in range(k)])
-    return C
+    lab = ((X[:, None] - C[None]) ** 2).sum(-1).argmin(1)
+    return C[np.unique(lab)]               # an empty cluster (or a centre equal to another one) is dropped
 
 def palette(mask, k):
     X = rgb[mask]
@@ -97,6 +101,7 @@ hx = lambda c: '#%02X%02X%02X' % tuple(int(round(v)) for v in c)
 # ---- colours of everything drawn; each colour's ROLE comes from its median alpha:
 # opaque colours are ink (outlines, solid shapes), translucent colours are washes (watercolour, tint)
 drawn = al > 15
+if not drawn.any(): raise SystemExit(f'{a_.png}: nothing drawn (every pixel is transparent)')
 C = palette(drawn, a_.colors)
 lab = assign(drawn, C)
 role = []
