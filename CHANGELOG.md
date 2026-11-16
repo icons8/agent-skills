@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com); versioning: [SemVer](htt
 The plugin version lives in four manifests that have to agree: `plugin.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.cursor-plugin/plugin.json`.
 
-## [0.7.1] — 2026-11-12
+## [0.7.1] — 2026-11-16
 
 `illustration-animator` gets a newer simple-animation module and asks for a plot before it builds.
 
