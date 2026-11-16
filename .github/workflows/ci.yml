@@ -30,6 +30,23 @@ jobs:
         with:
           python-version: '3.x'
       - run: python .github/scripts/validate_plugin.py
+      - run: python -m unittest discover tests
+
+  # A PR that bumps the plugin version has to date the top CHANGELOG entry with the UTC day of this
+  # run: a date written days ago, or copied from the previous release, goes red. A PR that leaves
+  # the four manifest versions alone passes without a look at the date. The day compared is that of
+  # the last push to the PR, not of the merge. A tag is checked the same way by release-tag.yml.
+  changelog-date:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python .github/scripts/check_changelog_date.py pr --base "$BASE_SHA"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
 
   # What the checkout on each operating system actually produced: line endings, the .mcp.json
   # symlink, filename legality, the case of every cited reference path, and whether a shipped

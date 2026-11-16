@@ -1,0 +1,24 @@
+name: Release tag
+
+# A `v*` tag names a release. Its notes are the top CHANGELOG entry, so that entry has to be the
+# tagged version and carry the day of the tag push (UTC). The run goes red when it is not.
+# Releases are cut by hand (`gh release create` makes the tag and the release in one step), so this
+# run cannot stop the release from being created: it marks the tag red, and the fix is to delete the
+# release and the tag, correct CHANGELOG.md through a PR, and tag again.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  changelog-date:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python .github/scripts/check_changelog_date.py tag --tag "$TAG"
+        env:
+          TAG: ${{ github.ref_name }}
