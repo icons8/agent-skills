@@ -8,6 +8,15 @@ device, a plant, an icon, a scene. For every new illustration, run the **analysi
 below first, then plan the story so the answers are visible in the motion, then check the
 finished loop against every principle.
 
+## Cartoony mode (optional)
+Use it when the drawing has a story and the user wants lively motion, or asks for it. Tell the plain story with energetic,
+cartoony motion: lines DRAW ON, an element SHOOTS out of the line with scale + elastic overshoot + wobble, side
+marks/sparks shoot out along their own direction with a stagger, the body squashes slightly on impact, coins/objects fly in
+arcs and flip, then everything draws away in reverse and the loop restarts (drawn pose held at both ends). The moves are a
+vocabulary (draw-on, pop, flight with flips, squash, burst), chosen per picture - not a template. The hero action must read
+clearly at a glance (real travel, a wind-up, an accent per event, return with overshoot). Without this mode the restrained
+level of the principles below is the default.
+
 ## Analysis pass (do this for every illustration, before planning)
 
 Look at the labelled render and answer in a few words each - write the answers into your plan:
@@ -131,6 +140,8 @@ When a part turns by deformation (a head on a merged silhouette), measure the jo
 actual art - the narrowest point of the neck between its two contour lines, not a guess - and keep the
 transition band narrow (~1 stroke width across the neck): the part above rotates rigidly, the part below
 stays. A wide falloff (tens of px) shears the lower face and reads as a jaw being torn off.
+*His standing standard for character animation; first applied on the astronaut's raised arm; pivot note from the lotus hand;
+neck note from the ID badge ("the pivot must come from the neck - now it looks like his jaw is ripped out in a horror film").*
 
 
 ## 8. Separate objects move separately - never stretch one to stay glued to another
@@ -169,6 +180,7 @@ No element may cross the comp boundary at any frame - not a wind line sliding ou
 not a bob or drift near the edge. Fade things out before they reach the edge, limit travel by the
 element's distance to the edge, or keep motion inward. `check.py` renders a 30 % larger copy of the
 comp and reports "frame edge: CUT OFF" if any ink appears outside - this must say OK.
+*A standing rule, given on a bird animation whose wind lines slid off the left edge.*
 
 
 ## 10. The hero action reads clearly; restraint is for everything around it
@@ -239,6 +251,7 @@ edge, not a chunk of a neighbouring line, not a stub at a joint. A drawn object 
 stays still stays whole. Cut by each part's own shape (Principle 8: measured strokes, no box cuts, overlap at
 joints), then before delivering render the frames of largest displacement zoomed in on every cut and look:
 any stray piece, gap or torn edge means the cut is wrong - fix it, don't ship it.
+*A standing rule, given on the witch hat whose tip was torn by a box cut.*
 Check BOTH end states: the moved part's frames AND the frame where it is gone. When something slides into/behind an
 object (cash into a wallet, a letter into an envelope), render the empty state zoomed: the edge it slid behind must be
 the edge as drawn - no stubs of the departed lines, no ruled straight cut, no flat ledges. Split along the edge's own
@@ -326,6 +339,17 @@ make the matte the ring's inner area grown into the middle of its band - the lin
 ink, so no hairline gap shows at the junction at any scale. Call set_matte LAST: a layer parented to the target
 created afterwards is inserted between the matte and its target and silently breaks the matte.
 
----
+## 18. Keep the drawing's texture - never flatten it silently
+The look of the source belongs to the drawing as much as its shapes: watercolour wash, chalk grain, paper
+speckle. If vectors can't carry it, don't settle for a flat fill - keep the original pixels. For a raster
+source (PNG with alpha): trace only the outlines to vector (they bend, rig, stay sharp), and embed the
+texture area (e.g. the translucent wash) as the PNG's own pixels in an image layer directly behind the part's
+outline, parented to it (`Doc.image_layer`). Cut it per part along the traced fill region, ink pixels
+cleared (the vector outline covers them). Store it as a PNG with constant RGB and full 8-bit alpha - the grain
+lives in the alpha; a palette PNG posterizes it to a few levels. Check the rest frame against the source PNG
+(not the traced SVG) and a max-motion frame to confirm the texture rides with its part.
+Limits: an image layer only moves rigidly - no deform_group on it; mention the extra file weight.
+*Learned from: PNG robot ("you didn't notice the texture was semi-transparent like that? Can't it be recreated?").*
+
 ## Examples
-Complete build scripts, for the level of finish, not as templates to copy - a new picture gets its own story built from the analysis pass: `examples/ai_brain.py`, `examples/alarm_clock.py`, `examples/bell_ring.py`, `examples/chemistry_pour.py`, `examples/coffee_cup.py`, `examples/coffee_cup_split.py`, `examples/disco_spin_pseudo3d.py`, `examples/disco_spin_split.py`, `examples/dna_cell.py`, `examples/flashlight.py`, `examples/ghost.py`, `examples/globe_spin_pseudo3d.py`, `examples/gps.py`, `examples/handshake.py`, `examples/microphone.py`, `examples/new_email.py`, `examples/new_email_split.py`, `examples/party_blower.py`, `examples/saturn_constellation.py`, `examples/skeleton_run.py`, `examples/wallet.py`, `examples/wallet_split.py`, `examples/zero_balance.py`.
+Complete build scripts, for the level of finish, not as templates to copy - a new picture gets its own story built from the analysis pass: `examples/ai_brain.py`, `examples/alarm_clock.py`, `examples/bell_ring.py`, `examples/chemistry_pour.py`, `examples/coffee_cup.py`, `examples/coffee_cup_split.py`, `examples/disco_spin_pseudo3d.py`, `examples/disco_spin_split.py`, `examples/dna_cell.py`, `examples/flashlight.py`, `examples/ghost.py`, `examples/globe_spin_pseudo3d.py`, `examples/gps.py`, `examples/handshake.py`, `examples/microphone.py`, `examples/new_email.py`, `examples/new_email_split.py`, `examples/party_blower.py`, `examples/robot_hello_png.py`, `examples/saturn_constellation.py`, `examples/skeleton_run.py`, `examples/wallet.py`, `examples/wallet_split.py`, `examples/zero_balance.py`.

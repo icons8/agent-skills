@@ -4,6 +4,42 @@ What changed in the `illustration-animator` skill, newest first. Each entry says
 
 Not every part of the work is in the packaged skill. A part that lives only in the skill's source tree is marked "source tree only": the scoring script of the router, the After Effects build path, and the tools that measure the skill itself (regression and capability runs, the run ledger, grids). They are listed here so the history is complete, and they are not in this folder.
 
+## 0.7.1
+
+### Simple path
+
+- **The simple-animation module is replaced by its newer version.** The same folder and the same adapter; the module is checked against the adapter's contract (its four entry points). Source tree only: the check of the module against its recorded checksum (`vendor-verify`).
+- **The simple path has the module's new art direction rules**: an analysis pass before the story, a motion mode per picture (a story told with energetic cartoon motion, or calm continuous motion for things that move by nature), smooth curves without jolts, endings and textures.
+- **Textured loops are lighter and can be exported as frames.** A lossless pass recompresses the embedded PNGs and drops repeated keys (needs the `oxipng` program, which you install yourself; the `tools` command shows whether it is installed, and without it the step is skipped); the canvas is fitted to at most 1200 px. On request, PNG sequences with real alpha and a variant for GIF.
+- **Tracing a PNG uses `vtracer`.** Smooth settings (about 4 to 9 times fewer nodes than the defaults, flat fills); `trace_png.py` takes a PNG with alpha and writes per-part SVG. `vtracer` is MIT; no copyleft tracer is used.
+- **The Python packages are pinned.** The `tools` command lists what is missing and prints one pip command with fixed versions (`resvg-py==0.5.0`, `vtracer==0.6.15` and the rest); it installs nothing. None of the packages is copyleft.
+- **`tools` picks a Python the pins install on (3.11 to 3.14).** It tries `python3`, then `python3.14` to `python3.11`, on Windows also `py -3.14` to `py -3.11`. A Python outside the range that already has the packages (0.7.0 on Python 3.10, say) keeps running the simple path, with a warning. `vtracer` is optional: only `trace_png.py` needs it.
+- **The scripts stop failing on edge cases.** `trace_png.py --colors N` on flat art or on a picture of a few pixels no longer crashes on an empty colour cluster; a fully transparent PNG gets a plain message. `optimize_lottie.py` keeps a two-colour texture in its colours and takes a fully transparent one when it shrinks the canvas; its text says that shrinking resamples the textures (the rest of the pass is lossless) and describes `--lossy`. `make_sequences.py` leaves no `_tmp` folder, takes a Lottie without assets, and SKILL.md runs it through `simple.js run`.
+- **The canvas is the SVG's own size.** SKILL.md said 1200×1200 while the build scripts take the SVG's size, which is what the frame 0 check expects.
+
+### White check
+
+- **A scene of a style with a transparent ground is checked for paint the source does not have.** `white-check.js` finds opaque white (a body, a backing under a moving part, a glow), a fill or a raster of a colour or alpha the source does not have (a translucent wash turned opaque), a gradient where the source has none, and a frame 0 that is opaque where the source is empty. A matte layer and a hidden layer are skipped. It runs before the judge, and a finding goes to one fix round: the paint is replaced by an inverted matte.
+- **The judge and the sheet tool draw such a style on grey.** White on a transparent ground is invisible on a white sheet; `judge.js prepare --paperless` writes `white.md` when the Lottie holds white paint (a style named Tint needs no flag), and `sheet.js --bg grey` renders any sheet on grey; `--bg` takes only grey, white, black or a hex colour.
+- **`white-check.js` reads PNGs of 1, 2 and 4 bits** (oxipng often writes them) and names a raster it cannot read instead of skipping it.
+
+### Frame check
+
+- **The frame 0 check of the simple path handles a canvas that is not square.** The SVG and the Lottie are each fitted into the compare canvas by their own proportions, so a wide drawing no longer reports a false difference of about 20 %.
+
+### Plot choice
+
+- **Four plots first, in both paths.** Before the storyboard, the plan or any build, the skill offers four plots as text (its main plot and three variants, a title and one or two sentences each) and waits for your pick; this includes a complex scene. A run without a person (a batch you told to run without stops, an evaluation or regression run) does not wait: it takes its main plot and writes the other three into an `Other plots:` block: in the plan on the complex path (the story keeps only the intent), in the scene's note on the simple path.
+
+### Router
+
+- **The simple path goes first.** The router takes `complex-animation` only when the picture shows a concrete warning: a person or an animal whose limbs have to bend or walk, a limb stuck to the body in one outline, or a figure assembled on hinges. A picture with none of these is simple, and so is a borderline one (a hand with an object, a figure drawn as one whole piece); before, an unsure picture and a whole folder went to the complex path. A scene of the simple path that fails its checks twice still moves to the complex path. Source tree only: the scoring script of the router makes the same choice, a borderline picture is fast unless the look shows a limb stuck to the body.
+
+### Known issues
+
+- **The router can send a figure to the simple path without the people gate** when the file name has no word for a person or people (the check reads the name, not the picture). Tell the skill which path to use if a figure was routed wrong.
+- **The router can detect a puppet on a head** in some one-colour chalk drawings, where the parts are not limbs.
+
 ## 0.7.0
 
 ### Choosing how to animate
