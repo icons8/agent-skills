@@ -4,7 +4,8 @@ organization that is not Verified.
 
     python3 .github/scripts/check_directory_package.py PACKAGE_DIR
 
-Fails (exit 1) on: a file type outside Markdown, text, JSON, YAML, PNG, JPEG, GIF, WebP, ICO or SVG;
+Fails (exit 1) on: Markdown text that names a script path or `${CLAUDE_SKILL_DIR}` the package does not
+hold (the directory-edition note line is exempt); a file type outside Markdown, text, JSON, YAML, PNG, JPEG, GIF, WebP, ICO or SVG;
 a file that starts with `#!`; a package-manager file; a symlink; a text file that is not UTF-8 or
 holds a NUL byte; a package.json field outside the allowed list; an MCP entry field outside the
 allowed list. Prints warnings for skill text that names a skill the package does not ship, unless the file
@@ -13,6 +14,7 @@ Needs only the standard library.
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +30,9 @@ PACKAGE_JSON_FIELDS = {
     "contributors", "maintainers", "funding", "repository", "private", "type", "files", "engines", "$schema",
 }
 MCP_FIELDS = {"type", "url", "headers", "timeout", "alwaysLoad", "oauth", "name", "title", "displayName", "description"}
+# A command or a path of a script, and the folder variable that only a script path uses.
+SCRIPT_MENTION = re.compile(r"scripts/[\w.-]+\.(?:py|js|sh|mjs|cjs|ts)|\$\{CLAUDE_SKILL_DIR\}")
+NOTE_PREFIX = "> **Directory edition.**"
 # Skills of the full plugin that this package leaves out.
 LEFT_OUT = ("illustration-animator",)
 
@@ -72,6 +77,12 @@ def main():
                 extra = set(entry) - MCP_FIELDS
                 if extra:
                     errors.append(f"{rel}: MCP server {name} fields not accepted: {sorted(extra)}")
+        if suffix == ".md":
+            # The note at the top of a skill says what is missing; it may name the script. The rest may not.
+            body = "\n".join(l for l in text.splitlines() if not l.startswith(NOTE_PREFIX))
+            for mention in sorted(set(SCRIPT_MENTION.findall(body))):
+                if not (root / mention).is_file() and not any(root.glob(f"skills/*/{mention}")):
+                    errors.append(f"{rel}: names {mention}, which this package does not ship")
         if suffix == ".md" and rel != "README.md":
             for skill in LEFT_OUT:
                 if skill in text and "**Directory edition.**" not in text:

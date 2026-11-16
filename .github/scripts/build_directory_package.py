@@ -57,6 +57,119 @@ NOTES = {
         f"(`{FULL_INSTALL}`) and do not try to animate the SVG with a script of your own.\n"
     ),
 }
+# Text of the full plugin that points at the measuring script. The lite edition ships no script, so each
+# passage below is replaced by text that works without it. The build stops when a passage is not found,
+# so a change to the source text cannot leave a stale command in the lite package.
+REPLACEMENTS = {
+    "skills/ouch/SKILL.md": [
+        (
+            """Measure, do not eyeball:
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" assets/illustrations/*
+# per file: ground-line offset %, mass offset %, saturation
+```
+
+`${CLAUDE_SKILL_DIR}` is the folder that holds this SKILL.md. Claude Code
+fills it in. Other clients leave it as is, and no shell can resolve it, so
+replace it with that folder's absolute path before you run the command. The
+shell starts in the user's project, not in this folder.
+
+On Windows the interpreter is spelled differently. The path stays the same,
+forward slashes included:
+
+```
+py -3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" assets/illustrations/*
+```
+
+The script expands `*` itself, so the pattern works in cmd and PowerShell.
+
+The script ships in this skill's `scripts/` folder. It needs Python 3 with
+Pillow (`python3 -m pip install pillow`, or `uv run` the script) and Chrome or
+Edge to rasterize SVG; PNG needs no browser. It finds a browser in the standard
+install locations and on `PATH`; for one installed elsewhere, add
+`--chrome <path to the binary>`. Do not re-derive the formulas
+inline: two hand-copied versions have already drifted apart once, and the eval
+gates import the same functions.
+
+Then apply the numbers:
+""",
+            """Measure, do not eyeball. This edition ships no measuring script, so take the numbers
+from the render: open the page in a real browser, take a screenshot, and read for
+each picture two offsets, as a percentage of its box height. The ground-line
+offset is the gap between the lowest visible pixel of the artwork and the bottom
+of the box. The mass offset is the distance of the visible mass's centre from the
+centre of the box. Say in your report that the offsets were read from a render.
+
+Then apply the numbers:
+""",
+        ),
+        (
+            """There is no recolour tool, so replace the odd ones at selection time. Measure
+rather than eyeball: near-grey and low-saturation colour look the same on a
+contact sheet and different on the page.
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" <files>   # same tool as step 5; saturation column
+# Windows: the `py -3` line in step 5 applies here too
+```
+
+A truly colourless work (under 0.10) next to a colourful one (over 0.35) is a
+broken set: replace the odd one. A run that had this rule in words still
+shipped such a set, so treat the number as the check, not the intention.
+
+The number only catches the gross split. After it, look: same hue family, same
+accent, same amount of colour per picture. Four blue icons and one steel-grey
+one measure alike and still read as two sets.
+""",
+            """There is no recolour tool, so replace the odd ones at selection time. This edition
+ships no script that measures saturation, so judge it by eye on the contact sheet
+and say in your report that it was judged by eye and not measured. Near-grey and
+low-saturation colour look alike on a small sheet and different on the page, so
+look at each grey picture on its own.
+
+A truly colourless work next to a colourful one is a broken set: replace the odd
+one. A run that had this rule in words still shipped such a set, so do the check
+every time, not only when something looks wrong.
+
+After that look closer: same hue family, same accent, same amount of colour per
+picture. Four blue icons and one steel-grey one look alike at a glance and still
+read as two sets.
+""",
+        ),
+        (
+            """- `scripts/measure.py`: ground line, mass offset and saturation for steps 5-6;
+  the single source of those formulas. Python 3 + Pillow; Chrome or Edge for SVG.
+""",
+            "",
+        ),
+    ],
+    "skills/ouch/references/LAYOUT.md": [
+        (
+            "a real browser or with `scripts/measure.py`; the rules in `SKILL.md` are the\nshort form.",
+            "a real browser; the rules in `SKILL.md` are the short form.",
+        ),
+        (
+            """thresholds in the skill, under 0.10 next to over 0.35, are calibrated against
+the formula in `scripts/measure.py` (black pixels stay in the denominator);
+gates and skill import the same function so they cannot drift apart again.
+""",
+            """thresholds, under 0.10 next to over 0.35, are the numbers the full plugin's
+measuring script gives (black pixels stay in the denominator). This edition
+has no script: use them as a guide when you judge the set by eye.
+""",
+        ),
+    ],
+    "skills/ouch/references/ANIMATION.md": [
+        (
+            """- **`scripts/measure.py` does not take Lottie or video.** It rasterises SVG and
+  PNG. For animation, render the page, crop the slot box from the screenshot and
+  measure that.""",
+            """- **Measure animation in the render.** Render the page, crop the slot box from the
+  screenshot and measure that.""",
+        ),
+    ],
+}
 MCP_ENTRY = {"mcpServers": {"icons8mcp": {"type": "http", "url": "https://mcp.icons8.com/mcp/"}}}
 
 
@@ -78,14 +191,19 @@ def accepted_type(path):
 
 
 def with_note(path, data):
-    """Insert the directory-edition note right after the front matter of the skill.
+    """Apply the replacements of the file, then insert its directory-edition note.
 
-    A reference file has no front matter; its note goes right after the first line, the `# ` heading.
+    The note goes right after the front matter of a skill. A reference file has no front matter; its
+    note goes right after the first line, the `# ` heading.
     """
+    text = data.decode("utf-8")
+    for old, new in REPLACEMENTS.get(path, []):
+        if old not in text:
+            sys.exit(f"{path}: a passage this builder replaces is gone from the source; update REPLACEMENTS")
+        text = text.replace(old, new)
     note = NOTES.get(path)
     if note is None:
-        return data
-    text = data.decode("utf-8")
+        return text.encode("utf-8")
     if text.startswith("---\n"):
         head, sep, rest = text.partition("\n---\n")
         if not sep:

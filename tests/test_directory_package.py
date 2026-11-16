@@ -4,6 +4,8 @@ The build must hold nothing the directory refuses, and every skill file must equ
 full plugin except for the directory-edition notes the builder adds.
 """
 
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -50,8 +52,9 @@ class DirectoryPackageTest(unittest.TestCase):
                 continue
             rel = built.relative_to(self.out).as_posix()
             source = (REPO / rel).read_bytes()
-            if rel in builder.NOTES:
-                self.assertIn(builder.NOTES[rel].encode("utf-8"), built.read_bytes())
+            if rel in builder.NOTES or rel in builder.REPLACEMENTS:
+                if rel in builder.NOTES:
+                    self.assertIn(builder.NOTES[rel].encode("utf-8"), built.read_bytes())
                 self.assertEqual(builder.with_note(rel, source), built.read_bytes(), rel)
             else:
                 self.assertEqual(source, built.read_bytes(), rel)
@@ -68,6 +71,30 @@ class DirectoryPackageTest(unittest.TestCase):
                 continue
             self.assertIn(marker, body, rel)
             self.assertLess(body.index(marker), body.index("illustration-animator"), rel)
+
+    def test_no_file_names_a_script_the_package_does_not_ship(self):
+        # The directory note at the top of a skill does not excuse a command or a path in its body.
+        pattern = re.compile(r"scripts/[\w.-]+\.(?:py|js|sh|mjs)|CLAUDE_SKILL_DIR")
+        for built in self.out.rglob("*.md"):
+            rel = built.relative_to(self.out).as_posix()
+            lines = [l for l in built.read_text(encoding="utf-8").splitlines() if not l.startswith("> **Directory edition.**")]
+            self.assertEqual(pattern.findall("\n".join(lines)), [], rel)
+
+    def test_ouch_steps_keep_their_numbers_without_the_script(self):
+        text = (self.out / "skills" / "ouch" / "SKILL.md").read_text(encoding="utf-8")
+        for heading in ("### 5.", "### 6."):
+            self.assertIn(heading, text)
+        self.assertNotIn("measure.py", text.replace(builder.NOTES["skills/ouch/SKILL.md"], ""))
+
+    def test_checker_flags_a_script_the_package_does_not_ship(self):
+        bad = Path(self.tmp.name) / "bad"
+        shutil.copytree(self.out, bad)
+        skill = bad / "skills" / "ouch" / "SKILL.md"
+        skill.write_text(skill.read_text(encoding="utf-8") + '\npython3 "${CLAUDE_SKILL_DIR}/scripts/measure.py" x\n', encoding="utf-8")
+        run = subprocess.run([sys.executable, "-I", str(SCRIPTS / "check_directory_package.py"), str(bad)],
+                             capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(run.returncode, 1, run.stdout)
+        self.assertIn("scripts/measure.py", run.stdout)
 
     def test_mcp_entry_is_remote_only(self):
         text = (self.out / ".mcp.json").read_text(encoding="utf-8")
