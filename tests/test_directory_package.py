@@ -1,7 +1,7 @@
 """Tests of the directory-lite package builder: python3 -m unittest discover -s tests -v
 
 The build must hold nothing the directory refuses, and every skill file must equal its source in the
-full plugin except for the two directory-edition notes the builder adds.
+full plugin except for the directory-edition notes the builder adds.
 """
 
 import subprocess
@@ -55,6 +55,19 @@ class DirectoryPackageTest(unittest.TestCase):
                 self.assertEqual(builder.with_note(rel, source), built.read_bytes(), rel)
             else:
                 self.assertEqual(source, built.read_bytes(), rel)
+
+    def test_every_mention_of_the_animator_sits_under_a_directory_note(self):
+        # README.md is the edition's own text and says what the edition leaves out; every other file that
+        # names the skill must say, before the first mention in its body, that the skill is not shipped.
+        marker = "**Directory edition.**"
+        for built in self.out.rglob("*.md"):
+            rel = built.relative_to(self.out).as_posix()
+            text = built.read_text(encoding="utf-8")
+            body = text.partition("\n---\n")[2] if text.startswith("---\n") else text
+            if rel == "README.md" or "illustration-animator" not in body:
+                continue
+            self.assertIn(marker, body, rel)
+            self.assertLess(body.index(marker), body.index("illustration-animator"), rel)
 
     def test_mcp_entry_is_remote_only(self):
         text = (self.out / ".mcp.json").read_text(encoding="utf-8")

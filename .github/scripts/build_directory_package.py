@@ -46,6 +46,16 @@ NOTES = {
         "in this edition. If someone asks for it, say it is in the full plugin "
         f"(`{FULL_INSTALL}`) and do not try to animate the SVG with a script of your own.\n"
     ),
+    "skills/motion/SKILL.md": (
+        "> **Directory edition.** The `illustration-animator` skill (a static SVG to a looped animation) is not "
+        "in this edition. If someone asks for it, say it is in the full plugin "
+        f"(`{FULL_INSTALL}`) and do not try to animate the SVG with a script of your own.\n"
+    ),
+    "skills/ouch/references/ANIMATION.md": (
+        "> **Directory edition.** The `illustration-animator` skill (a static SVG to a looped animation) is not "
+        "in this edition. If someone asks for it, say it is in the full plugin "
+        f"(`{FULL_INSTALL}`) and do not try to animate the SVG with a script of your own.\n"
+    ),
 }
 MCP_ENTRY = {"mcpServers": {"icons8mcp": {"type": "http", "url": "https://mcp.icons8.com/mcp/"}}}
 
@@ -68,14 +78,25 @@ def accepted_type(path):
 
 
 def with_note(path, data):
-    """Insert the directory-edition note right after the front matter of the skill."""
+    """Insert the directory-edition note right after the front matter of the skill.
+
+    A reference file has no front matter; its note goes right after the first line, the `# ` heading.
+    """
     note = NOTES.get(path)
     if note is None:
         return data
     text = data.decode("utf-8")
-    head, sep, rest = text.partition("\n---\n")
-    if not text.startswith("---\n") or not sep:
-        sys.exit(f"{path}: no front matter to put the directory note after")
+    if text.startswith("---\n"):
+        head, sep, rest = text.partition("\n---\n")
+        if not sep:
+            sys.exit(f"{path}: front matter is not closed")
+    elif text.startswith("# "):
+        head, sep, rest = text.partition("\n")
+        if not sep:
+            sys.exit(f"{path}: no text after the heading")
+        sep = "\n"
+    else:
+        sys.exit(f"{path}: no front matter and no heading to put the directory note after")
     return (head + sep + "\n" + note + "\n" + rest.lstrip("\n")).encode("utf-8")
 
 

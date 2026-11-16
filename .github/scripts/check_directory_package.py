@@ -8,7 +8,7 @@ Fails (exit 1) on: a file type outside Markdown, text, JSON, YAML, PNG, JPEG, GI
 a file that starts with `#!`; a package-manager file; a symlink; a text file that is not UTF-8 or
 holds a NUL byte; a package.json field outside the allowed list; an MCP entry field outside the
 allowed list. Prints warnings for skill text that names a skill the package does not ship, unless the file
-carries the directory-edition note (a skill's own references fall under their skill's note).
+carries the directory-edition note (each file needs its own note).
 Needs only the standard library.
 """
 
@@ -74,7 +74,7 @@ def main():
                     errors.append(f"{rel}: MCP server {name} fields not accepted: {sorted(extra)}")
         if suffix == ".md" and rel != "README.md":
             for skill in LEFT_OUT:
-                if skill in text and "**Directory edition.**" not in text and not rel.startswith("skills/ouch/references/"):
+                if skill in text and "**Directory edition.**" not in text:
                     warnings.append(f"{rel}: names {skill}, which this package does not ship")
     for w in warnings:
         print(f"warning: {w}")
